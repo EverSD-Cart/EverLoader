@@ -230,7 +230,7 @@ namespace EverLoader
                 // Emulator Settings
                 var platform = _gamesManager.GetGamePlatform(_game);
 
-                rbInternalCore.Enabled = platform?.InternalCore != null;
+                rbInternalCore.Enabled = platform?.BlastRetroCore != null;
                 rbRetroArchCore.Enabled = cbRetroArchCore.Enabled = platform?.RetroArchCores.Length > 0;
                 cbRetroArchCore.DataSource = platform?.RetroArchCores.Length > 0
                     ? platform.RetroArchCores.Select(c => new ComboboxItem(c.DisplayName, c.CoreFileName)).ToArray()

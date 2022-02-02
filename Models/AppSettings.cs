@@ -34,7 +34,7 @@ namespace EverLoader.Models
         public string[] RomFileExtensions { get; set; } = new string[] { };
         public string[] AltFileExtensions { get; set; } = new string[] { };
         public string[] BiosFiles { get; set; } = new string[] { };
-        public Core InternalCore { get; set; }
+        public Core BlastRetroCore { get; set; }
         public Core[] RetroArchCores { get; set; } = new Core[] { };
         public string GoogleSuffix { get; set; } //used for a future feature (Google image search)
         // GET /search?q=Kid+Icarus+(fds+%7c+nes+%7c+famicom)+(box%7ccover)+art&source=lnms&tbm=isch HTTP/1.1

@@ -136,7 +136,7 @@ namespace EverLoader.Services
                 game.romFileName = newRomFileName;
 
                 //when game has switched platform, try default to internalcore
-                if (platform.InternalCore == null && platform.RetroArchCores.Length > 0)
+                if (platform.BlastRetroCore == null && platform.RetroArchCores.Length > 0)
                 {
                     game.RetroArchCore = platform.RetroArchCores[0].CoreFileName;
                 }
@@ -192,7 +192,7 @@ namespace EverLoader.Services
                 // 4a. copy emulator core (if doesn't exist yet) + bios files (if don't exist yet)
                 //first select the right core (note: megadrive doesn't have a core)
                 var selectedCore = game.RetroArchCore == null
-                    ? platform.InternalCore
+                    ? platform.BlastRetroCore
                     : platform.RetroArchCores.FirstOrDefault(c => c.CoreFileName == game.RetroArchCore);
 
                 if (selectedCore != null)
@@ -354,7 +354,7 @@ namespace EverLoader.Services
                 };
 
                 //if no internal core, preselect the first RA core
-                if (platform.InternalCore == null && platform.RetroArchCores.Length > 0)
+                if (platform.BlastRetroCore == null && platform.RetroArchCores.Length > 0)
                 {
                     newGame.RetroArchCore = platform.RetroArchCores[0].CoreFileName;
                 }
