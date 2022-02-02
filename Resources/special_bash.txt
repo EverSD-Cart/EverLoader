@@ -1,0 +1,3 @@
+#!/bin/bash -x
+
+/usr/bin/blastretro "/sdcard/{CORE_FILENAME}" "/sdcard/game/{ROM_FILENAME}"

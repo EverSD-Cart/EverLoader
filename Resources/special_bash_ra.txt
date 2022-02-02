@@ -1,0 +1,18 @@
+#!/bin/bash -x
+
+RA_PATH=/usr/bin/retroarch2
+if [ -f /sdcard/retroarch/retroarch ]; then
+  cp -u /sdcard/retroarch/retroarch /tmp
+  chmod +x /tmp/retroarch
+  RA_PATH=/tmp/retroarch
+fi
+
+RA_CONFIG=
+if [ "$(cat /etc/rootfs_version | grep -i VS)" ] && [ -f /sdcard/retroarch/config/retroarch_vs.cfg ]; then
+  RA_CONFIG=retroarch_vs.cfg
+else
+  RA_CONFIG=retroarch.cfg
+fi
+
+${RA_PATH} -c "/sdcard/retroarch/config/${RA_CONFIG}" -L "/sdcard/retroarch/cores/{CORE_FILENAME}" "/sdcard/roms/{ROM_FILENAME}"
+#rm -f /tmp/retroarch
