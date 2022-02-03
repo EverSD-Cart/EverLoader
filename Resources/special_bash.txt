@@ -1,3 +1,5 @@
 #!/bin/bash -x
 
-/usr/bin/blastretro "/sdcard/{CORE_FILENAME}" "/sdcard/game/{ROM_FILENAME}"
+SCRIPT_DIR=$(dirname "$BASH_SOURCE")
+
+/usr/bin/blastretro "${SCRIPT_DIR}/../{CORE_FILENAME}" "${SCRIPT_DIR}/../game/{ROM_FILENAME}"

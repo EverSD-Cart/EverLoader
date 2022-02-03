@@ -229,14 +229,18 @@ namespace EverLoader
             {
                 // Emulator Settings
                 var platform = _gamesManager.GetGamePlatform(_game);
-
+#if RA_SUPPORTED
                 rbInternalCore.Enabled = platform?.BlastRetroCore != null;
                 rbRetroArchCore.Enabled = cbRetroArchCore.Enabled = platform?.RetroArchCores.Length > 0;
+
                 cbRetroArchCore.DataSource = platform?.RetroArchCores.Length > 0
                     ? platform.RetroArchCores.Select(c => new ComboboxItem(c.DisplayName, c.CoreFileName)).ToArray()
                     : null;
                 cbRetroArchCore.DataBindings.DefaultDataSourceUpdateMode = DataSourceUpdateMode.Never;
                 cbRetroArchCore.DataBindings.AddSingle("SelectedValue", _game, nameof(_game.RetroArchCore));
+#else
+                rbInternalCore.Enabled = _game != null;
+#endif
 
                 if (_game == null)
                 {
@@ -244,8 +248,12 @@ namespace EverLoader
                 }
                 else
                 {
+#if RA_SUPPORTED
                     rbInternalCore.Checked = _game?.RetroArchCore == null;
                     rbRetroArchCore.Checked = _game?.RetroArchCore != null;
+#else
+                    rbInternalCore.Checked = true;
+#endif
                 }
 
                 UpdateMissingBiosFilesLabel();

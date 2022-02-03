@@ -1,18 +1,22 @@
 #!/bin/bash -x
 
+SCRIPT_DIR=$(dirname "$BASH_SOURCE")
+
 RA_PATH=/usr/bin/retroarch2
-if [ -f /sdcard/retroarch/retroarch ]; then
-  cp -u /sdcard/retroarch/retroarch /tmp
+if [ -f "${SCRIPT_DIR}/../retroarch/retroarch" ]; then
+  cp -u "${SCRIPT_DIR}/../retroarch/retroarch" /tmp
   chmod +x /tmp/retroarch
   RA_PATH=/tmp/retroarch
 fi
 
 RA_CONFIG=
-if [ "$(cat /etc/rootfs_version | grep -i VS)" ] && [ -f /sdcard/retroarch/config/retroarch_vs.cfg ]; then
+if [ "${SCRIPT_DIR}" == "/sdcard2/special" ] && [ -f "${SCRIPT_DIR}/../retroarch/config/retroarch_vs_sd2.cfg" ]; then
+  RA_CONFIG=retroarch_vs_sd2.cfg
+elif [ "$(cat /etc/rootfs_version | grep -i VS)" ] && [ -f "${SCRIPT_DIR}/../retroarch/config/retroarch_vs.cfg" ]; then
   RA_CONFIG=retroarch_vs.cfg
 else
   RA_CONFIG=retroarch.cfg
 fi
 
-${RA_PATH} -c "/sdcard/retroarch/config/${RA_CONFIG}" -L "/sdcard/retroarch/cores/{CORE_FILENAME}" "/sdcard/roms/{ROM_FILENAME}"
+${RA_PATH} -c "${SCRIPT_DIR}/../retroarch/config/${RA_CONFIG}" -L "${SCRIPT_DIR}/../retroarch/cores/{CORE_FILENAME}" "${SCRIPT_DIR}/../roms/{ROM_FILENAME}"
 #rm -f /tmp/retroarch

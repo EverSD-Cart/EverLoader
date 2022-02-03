@@ -13,48 +13,70 @@ namespace EverLoader.Services
 {
     public class DownloadManager
     {
-        public async Task<string> GetDownloadedFilePath(Uri zipUrl, string relativeFilePathInZip)
+        public async Task<string> GetDownloadedFilePath(Uri url, string relativeFilePathInZip)
         {
-            if (!Path.GetExtension(zipUrl.AbsolutePath).In(".zip", ".gz"))
+            if (relativeFilePathInZip != null && !Path.GetExtension(url.AbsolutePath).In(".zip", ".gz"))
             {
-                throw new ArgumentException("Can only download .zip of .gz files");
+                throw new ArgumentException("Can only extract .zip or .gz files");
             }
 
-            var cachedZipDirectoryPath = $"{Constants.APP_ROOT_FOLDER}cache/{zipUrl.Host}{zipUrl.AbsolutePath}/";
-            var cachedAbsoluteFilePath = $"{cachedZipDirectoryPath}{relativeFilePathInZip}";
-            if (File.Exists(cachedAbsoluteFilePath))
+            //string cachedFilePath = null;
+            //string upzippedDirectoryPath = null;
+            //if (relativeFilePathInZip == null)
+            //{
+            //    cachedFilePath = $"{Constants.APP_ROOT_FOLDER}cache/{url.Host}{url.AbsolutePath}";
+            //    Directory.CreateDirectory(cachedFilePath);
+            //}
+
+            var localFilePath = $"{Constants.APP_ROOT_FOLDER}cache/{url.Host}{url.AbsolutePath}";
+            string localUnzipFolder = null;
+            if (relativeFilePathInZip != null)
             {
-                return cachedAbsoluteFilePath;
+                localUnzipFolder = Path.Combine(Path.GetDirectoryName(localFilePath), Path.GetFileNameWithoutExtension(localFilePath));
+                localFilePath = Path.Combine(localUnzipFolder, relativeFilePathInZip);
+            }
+            if (File.Exists(localFilePath))
+            {
+                return localFilePath;
             }
 
             //not in cache yet, so download
-            Directory.CreateDirectory(cachedZipDirectoryPath);
+
+            //first create target directory structure
+            Directory.CreateDirectory(Path.GetDirectoryName(localFilePath));
 
             using (var client = new HttpClient())
-            using (var response = await client.GetAsync(zipUrl))
+            using (var response = await client.GetAsync(url))
             using (var responseStream = await response.Content.ReadAsStreamAsync())
             {
-                if (Path.GetExtension(zipUrl.AbsolutePath) == ".gz")
+                if (relativeFilePathInZip == null)
                 {
-                    using (var outputFile = File.OpenWrite(cachedAbsoluteFilePath))
-                    using (var archive = new GZipStream(responseStream, CompressionMode.Decompress))
+                    using (var outputFile = File.OpenWrite(localFilePath))
                     {
-                        archive.CopyTo(outputFile);
+                        await responseStream.CopyToAsync(outputFile);
                     }
                 }
-                if (Path.GetExtension(zipUrl.AbsolutePath) == ".zip")
+                else if (Path.GetExtension(url.AbsolutePath) == ".gz")
+                {
+                    using (var outputFile = File.OpenWrite(localFilePath))
+                    using (var archive = new GZipStream(responseStream, CompressionMode.Decompress))
+                    {
+                        await archive.CopyToAsync(outputFile);
+                    }
+                }
+                else if (Path.GetExtension(url.AbsolutePath) == ".zip")
                 {
                     using (var archive = new ZipArchive(responseStream))
                     {
-                        archive.ExtractToDirectory(cachedZipDirectoryPath);
+                        archive.ExtractToDirectory(localUnzipFolder);
                     }
                 }
             }
-            if (!File.Exists(cachedAbsoluteFilePath))
+            if (!File.Exists(localFilePath))
             {
-                throw new ArgumentException($"File {relativeFilePathInZip} does not exist in {zipUrl.AbsoluteUri}");
+                throw new ArgumentException($"File {relativeFilePathInZip} does not exist in {url.AbsoluteUri}");
             }
-            return cachedAbsoluteFilePath;
+            return localFilePath;
         }
     }
 }
