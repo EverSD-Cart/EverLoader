@@ -20,14 +20,6 @@ namespace EverLoader.Services
                 throw new ArgumentException("Can only extract .zip or .gz files");
             }
 
-            //string cachedFilePath = null;
-            //string upzippedDirectoryPath = null;
-            //if (relativeFilePathInZip == null)
-            //{
-            //    cachedFilePath = $"{Constants.APP_ROOT_FOLDER}cache/{url.Host}{url.AbsolutePath}";
-            //    Directory.CreateDirectory(cachedFilePath);
-            //}
-
             var localFilePath = $"{Constants.APP_ROOT_FOLDER}cache/{url.Host}{url.AbsolutePath}";
             string localUnzipFolder = null;
             if (relativeFilePathInZip != null)

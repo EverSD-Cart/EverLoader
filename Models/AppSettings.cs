@@ -32,7 +32,6 @@ namespace EverLoader.Models
         public int GroupItemSortOrder { get; set; } = 0; // 0 = not ordered
         public IdName[] TGDB_PlatformIds { get; set; } = new IdName[] { };
         public string[] RomFileExtensions { get; set; } = new string[] { };
-        public string[] AltFileExtensions { get; set; } = new string[] { };
         public string[] BiosFiles { get; set; } = new string[] { };
         public Core BlastRetroCore { get; set; }
         public Core[] RetroArchCores { get; set; } = new Core[] { };

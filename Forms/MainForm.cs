@@ -537,7 +537,7 @@ namespace EverLoader
             toolTip1.Hide(lvGames); //hide the welcome text
 
             var supportedExtensions = String.Join(";", _appSettings.Platforms
-                .SelectMany(p => p.RomFileExtensions).Select(e => $"*{e}"));
+                .SelectMany(p => p.RomFileExtensions).Distinct().Select(e => $"*{e}"));
 
             OpenFileDialog dialog = new OpenFileDialog()
             {

@@ -26,8 +26,15 @@ namespace EverLoader.Models
         public int romPlatformId
         {
             get => _romPlatformId;
-            set => base.NotifyChange(ref _romPlatformId, value); 
-            //note: GamesManager.SerializeGame will rename rom file extension if needed
+            set
+            {
+                if (_romPlatformId != 0 && _romPlatformId != value)
+                {
+                    //changing platform: clear the selected core
+                    _retroArchCore = null;
+                }
+                base.NotifyChange(ref _romPlatformId, value);
+            }
         }
 
         public string OriginalRomFileName { get; set; }

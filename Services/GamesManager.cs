@@ -114,43 +114,13 @@ namespace EverLoader.Services
         public IEnumerable<Platform> GetGamePlatformsByRomExtesion(string extension)
         {
             if (extension == null) return null;
-            return _appSettings.Platforms.Where(p => p.RomFileExtensions.Union(p.AltFileExtensions).Contains(extension.ToLowerInvariant()));
+            return _appSettings.Platforms.Where(p => p.RomFileExtensions.Contains(extension.ToLowerInvariant()));
         }
 
         public async Task SerializeGame(GameInfo game)
         {
-            game.SuppressChangeNotifactions = true;
-
-            // Change the romFileName extension in case it doesn't match platform
-            var platform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
-            game.romPlatform = platform?.Name;
-            var gameExt = Path.GetExtension(game.romFileName);
-            if (platform?.RomFileExtensions.Contains(gameExt) == false)
-            {
-                //rename the rom file
-                var newRomFileName = Path.ChangeExtension(game.romFileName, platform.RomFileExtensions[0]);
-                File.Move(
-                    $"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}{game.romFileName}", 
-                    $"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}{newRomFileName}");
-
-                game.romFileName = newRomFileName;
-
-                //when game has switched platform, try default to internalcore
-                if (platform.BlastRetroCore == null && platform.RetroArchCores.Length > 0)
-                {
-                    game.RetroArchCore = platform.RetroArchCores[0].CoreFileName;
-                }
-                else
-                {
-                    game.RetroArchCore = null;
-                }
-            }
-
-            // 2. Save the gameinfo json
             var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
             await File.WriteAllTextAsync($"{APP_GAMES_FOLDER}{game.Id}\\{game.Id}.json", gameJson);
-
-            game.SuppressChangeNotifactions = false;
         }
 
         public async Task SyncToSd(string sdDrive, string cartName, IProgress<(string, int, int)> progress)
@@ -329,8 +299,7 @@ namespace EverLoader.Services
                 var newId = GenerateGameId(title);
                 var newRomFileName = $"{newId}{ext}";
 
-                //for mame: leave the romFileName as it was, otherwise the .cue files won't be valid
-                var platform = _appSettings.Platforms.FirstOrDefault(p => p.RomFileExtensions.Contains(ext));
+                var platform = _appSettings.Platforms.OrderBy(p => p.BlastRetroCore?.AutoLaunch).FirstOrDefault(p => p.RomFileExtensions.Contains(ext));
 
                 if (platform == null) continue; //!!!! unmapped extension. This should not be possible
 
