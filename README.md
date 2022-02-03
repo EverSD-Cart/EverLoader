@@ -17,5 +17,5 @@ On usage, it creates a folder named 'everloader_data' alongside the EverLoader e
 
 Enjoy!
 
-Disclaimer: EverSD and EverLoader is not affiliated in any way with EVERCADE™.
+Disclaimer: EverSD and EverLoader are not affiliated in any way with EVERCADE™.
 EverSD does not support or condone piracy.
