@@ -16,3 +16,6 @@ EverLoader is a portable Windows app, which means that after unzipping, you can 
 On usage, it creates a folder named 'everloader_data' alongside the EverLoader executable to hold all games, images and other information.
 
 Enjoy!
+
+Disclaimer: EverSD and EverLoader is not affiliated in any way with EVERCADE™.
+EverSD does not support or condone piracy.
