@@ -60,7 +60,8 @@
   <data name="lblInfo.Text" xml:space="preserve">
     <value>You are running EverLoader version {ProductVersion}.
 
-This tool helps you to load games onto a MicroSD card to be played on your Evercade™ using an EverSD cartridge.
+This tool helps you to load games onto a MicroSD card to be played
+on your Evercade™ using an EverSD cartridge.
 
 External components used:
 - TheGamesDBApiWrapper by Malte Peters
