@@ -49,6 +49,7 @@ namespace EverLoader
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ProgressForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Progress";
             this.ResumeLayout(false);
             this.PerformLayout();

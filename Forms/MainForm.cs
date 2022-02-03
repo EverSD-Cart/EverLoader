@@ -1,5 +1,6 @@
 ﻿using EverLoader.Enums;
 using EverLoader.Extensions;
+using EverLoader.Forms;
 using EverLoader.Helpers;
 using EverLoader.Models;
 using EverLoader.Services;
@@ -736,14 +737,10 @@ namespace EverLoader
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"You are running EverLoader version {Application.ProductVersion}.\n" +
-                $"\nThis tool allows you to easily add games to your EverSD cartridge" +
-                $" and was created with Visual Studio 2019 Community Edition.\n" +
-                $"\nExternal components used:\n" +
-                $"- TheGamesDBApiWrapper by Malte Peters\n" +
-                $"- Crc32.NET by force\n" +
-                $"- DropDownControls by Bradley Smith", 
-                "About EverLoader", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (var aboutBox = new AboutBox())
+            {
+                aboutBox.ShowDialog(this);
+            }
         }
 
         private void deleteSelectedGamesToolStripMenuItem_Click(object sender, EventArgs e)

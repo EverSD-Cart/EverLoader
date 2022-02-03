@@ -71,7 +71,7 @@ namespace EverLoader.Services
 
         public async Task Init()
         {
-            using (var ms = new MemoryStream(Properties.Resources.romfile))
+            using (var ms = new MemoryStream(Properties.Resources.crc2rom_mappings))
             using (var archive = new ZipArchive(ms))
             using (var entryStream = archive.Entries[0].Open())
             using (var reader = new StreamReader(entryStream, Encoding.UTF8))

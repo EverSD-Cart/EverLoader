@@ -15,6 +15,9 @@ namespace EverLoader
         public ProgressForm()
         {
             InitializeComponent();
+
+            this.MaximumSize = this.MinimumSize = this.Size; //no resizing
+
             progressBar1.Maximum = 100;
             progressBar1.Step = 1;
             progressBar1.Value = 0;
@@ -30,7 +33,7 @@ namespace EverLoader
             _parent = parent;
             _parent.Enabled = false;
             this.Show(_parent);
-            this.CenterToScreen();
+            this.CenterToParent();
             Application.DoEvents();
         }
 

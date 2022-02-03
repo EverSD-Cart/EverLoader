@@ -81,6 +81,16 @@ namespace EverLoader.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] crc2rom_mappings {
+            get {
+                object obj = ResourceManager.GetObject("crc2rom_mappings", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap green {
@@ -151,19 +161,11 @@ namespace EverLoader.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] romfile {
-            get {
-                object obj = ResourceManager.GetObject("romfile", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to #!/bin/bash -x
         ///
-        ///.
+        ///SCRIPT_DIR=$(dirname &quot;$BASH_SOURCE&quot;)
+        ///
+        ////usr/bin/blastretro &quot;${SCRIPT_DIR}/../{CORE_FILENAME}&quot; &quot;${SCRIPT_DIR}/../game/{ROM_FILENAME}&quot;.
         /// </summary>
         internal static string special_bash {
             get {
@@ -174,22 +176,19 @@ namespace EverLoader.Properties {
         /// <summary>
         ///   Looks up a localized string similar to #!/bin/bash -x
         ///
+        ///SCRIPT_DIR=$(dirname &quot;$BASH_SOURCE&quot;)
+        ///
         ///RA_PATH=/usr/bin/retroarch2
-        ///if [ -f /sdcard/retroarch/retroarch ]; then
-        ///  cp -u /sdcard/retroarch/retroarch /tmp
+        ///if [ -f &quot;${SCRIPT_DIR}/../retroarch/retroarch&quot; ]; then
+        ///  cp -u &quot;${SCRIPT_DIR}/../retroarch/retroarch&quot; /tmp
         ///  chmod +x /tmp/retroarch
         ///  RA_PATH=/tmp/retroarch
         ///fi
         ///
         ///RA_CONFIG=
-        ///if [ &quot;$(cat /etc/rootfs_version | grep -i VS)&quot; ] &amp;&amp; [ -f /sdcard/retroarch/config/retroarch_vs.cfg ]; then
-        ///  RA_CONFIG=retroarch_vs.cfg
-        ///else
-        ///  RA_CONFIG=retroarch.cfg
-        ///fi
-        ///
-        ///${RA_PATH} -c &quot;/sdcard/retroarch/config/${RA_CONFIG}&quot; -L &quot;/sdcard/retroarch/cores/{CORE_FILENAME}&quot; &quot;/sdcard/roms/{ROM_FILENAME}&quot;
-        /// [rest of string was truncated]&quot;;.
+        ///if [ &quot;${SCRIPT_DIR}&quot; == &quot;/sdcard2/special&quot; ] &amp;&amp; [ -f &quot;${SCRIPT_DIR}/../retroarch/config/retroarch_vs_sd2.cfg&quot; ]; then
+        ///  RA_CONFIG=retroarch_vs_sd2.cfg
+        ///elif [ &quot;$(cat /etc/rootfs_version | grep -i VS)&quot; ] &amp;&amp; [ -f &quot;${SCRIPT_DIR}/../retroarch/confi [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string special_bash_ra {
             get {
