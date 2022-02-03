@@ -737,8 +737,7 @@ namespace EverLoader
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show($"You are running EverLoader version {Application.ProductVersion}.\n" +
-                $"\nThis tool allows you to easily add games to your EverSD cartridge" +
-                $" and was created with Visual Studio 2019 Community Edition.\n" +
+                $"\nThis tool allows you to easily add games to your EverSD cartridge.\n" +
                 $"\nExternal components used:\n" +
                 $"- TheGamesDBApiWrapper by Malte Peters\n" +
                 $"- Crc32.NET by force\n" +
