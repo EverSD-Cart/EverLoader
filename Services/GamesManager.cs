@@ -119,6 +119,12 @@ namespace EverLoader.Services
 
         public async Task SerializeGame(GameInfo game)
         {
+            if (string.IsNullOrEmpty(game.romPlatform))
+            {
+                var platform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
+                game.romPlatform = platform?.Name; //updating romPlatform won't trigger update events 
+            }
+
             var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
             await File.WriteAllTextAsync($"{APP_GAMES_FOLDER}{game.Id}\\{game.Id}.json", gameJson);
         }
@@ -153,13 +159,11 @@ namespace EverLoader.Services
             // 4. Save assets for each selected game
             foreach (var game in _games.Values.Where(g => g.IsSelected)) 
             {
-                //await SerializeGame(game); //this will always fix any issues inside game
-
                 progress.Show(("Syncing Games", ++syncedGameIndex, selectedGameIds.Length));
 
                 var platform = _appSettings.Platforms.Single(p => p.Id == game.romPlatformId);
 
-                // 4a. copy emulator core (if doesn't exist yet) + bios files (if don't exist yet)
+                // 4a. copy emulator core (only overwrite if newer) + bios files (only overwrite if newer)
                 //first select the right core (note: megadrive doesn't have a core)
                 var selectedCore = game.RetroArchCore == null
                     ? platform.BlastRetroCore
@@ -169,50 +173,45 @@ namespace EverLoader.Services
                 {
                     foreach (var file in selectedCore.Files)
                     {
-                        var sdFilePath = $"{sdDrive}{file.TargetPath}";
-                        if (!File.Exists(sdFilePath))
-                        {
-                            //TODO: maybe overwrite when core file(s) have newer date?
-                            var localFilePath = await _downloadManager.GetDownloadedFilePath(new Uri(file.SourceUrl), file.SourcePath);
-                            Directory.CreateDirectory(Path.GetDirectoryName(sdFilePath)); //ensure target directory exists
-                            File.Copy(localFilePath, sdFilePath);
-                        }
+                        var sourceFile = new FileInfo(await _downloadManager.GetDownloadedFilePath(new Uri(file.SourceUrl), file.SourcePath));
+                        var destFilePath = $"{sdDrive}{file.TargetPath}";
+                        if (!File.Exists(destFilePath)) Directory.CreateDirectory(Path.GetDirectoryName(destFilePath)); //ensure target dir exists
+                        sourceFile.CopyToOverwriteIfNewer(destFilePath);
                     }
 
                     //copy over BIOS files (if not exists)
                     foreach (string biosFile in platform.BiosFiles)
                     {
-                        var localBiosFile = $"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile}";
+                        var sourceBiosFile = new FileInfo($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile}");
                         //bios files go into /sdcard/bios (for internal emulator) or /sdcard/retroarch/system (for RA cores)
-                        var sdBiosFile = $"{sdDrive}{(game.RetroArchCore == null ? "bios" : "retroarch\\system")}\\{biosFile}";
-                        if (!File.Exists(sdBiosFile) && File.Exists(localBiosFile))
+                        var destBiosFilePath = $"{sdDrive}{(game.RetroArchCore == null ? "bios" : "retroarch\\system")}\\{biosFile}";
+                        if (sourceBiosFile.Exists)
                         {
-                            //TODO: maybe overwrite when BIOS file(s) have newer date?
-                            Directory.CreateDirectory(Path.GetDirectoryName(sdBiosFile)); //ensure target directory exists
-                            File.Copy(localBiosFile, sdBiosFile);
+                            if (!File.Exists(destBiosFilePath)) Directory.CreateDirectory(Path.GetDirectoryName(destBiosFilePath)); //ensure target dir exists
+                            sourceBiosFile.CopyToOverwriteIfNewer(destBiosFilePath);
                         }
                     }
                 }
 
-                // 4b. copy all image files
+                // 4b. copy all image files (only overwrite if newer)
                 var imagesDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_IMAGES}");
                 if (imagesDir.Exists) imagesDir.GetFiles().ToList().ForEach(f =>
                 {
-                    f.CopyTo($"{sdDrive}game\\{f.Name}", overwrite: true);
+                    f.CopyToOverwriteIfNewer($"{sdDrive}game\\{f.Name}");
                 });
 
-                // 4c. copy over rom file
-                var romPath = $"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}\\{game.romFileName}";
-                if (File.Exists(romPath))
+                // 4c. copy over rom file(s) (only overwrite if newer)
+                var romDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}");
+                if (romDir.Exists) romDir.GetFiles().ToList().ForEach(f =>
                 {
-                    var targetDir = game.RetroArchCore != null 
+                    var targetDir = game.RetroArchCore != null
                         ? "roms"                                /* for RetroArch, put all roms under /sdcard/roms */
                         : (platform.Id == 1 ? "mame" : "game"); /* special case for mame roms, otherwise use /sdcard/game */
                     Directory.CreateDirectory($"{sdDrive}{targetDir}"); //ensure target directory exists on MicroSD card
 
                     var targetFile = $"{sdDrive}{targetDir}\\{game.PreferedRomFileName()}";
-                    File.Copy(romPath, targetFile, overwrite: true);
-                }
+                    f.CopyToOverwriteIfNewer(targetFile);
+                });
 
                 //custom handling for cores without autolaunch
                 var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
@@ -220,7 +219,7 @@ namespace EverLoader.Services
                 if (selectedCore?.AutoLaunch == false)
                 {
                     // for internal Arcade/MAME, we have special way of launching using .cue file
-                    if (game.RetroArchCore == null && platform.Id == 1) 
+                    if (game.RetroArchCore == null && platform.Id == 1)
                     {
                         File.WriteAllText($"{sdDrive}game\\{game.Id}.cue", game.PreferedRomFileName());
                         evercadeGameInfo.romFileName = $"{game.Id}.cue";

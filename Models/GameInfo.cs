@@ -32,6 +32,7 @@ namespace EverLoader.Models
                 {
                     //changing platform: clear the selected core
                     _retroArchCore = null;
+                    romPlatform = null;
                 }
                 base.NotifyChange(ref _romPlatformId, value);
             }

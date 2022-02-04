@@ -26,5 +26,15 @@ namespace EverLoader.Extensions
             progress.Report(msg); 
             Application.DoEvents();
         }
+
+        public static FileInfo CopyToOverwriteIfNewer(this FileInfo sourceFile, string destFilePath)
+        {
+            var destFile = new FileInfo(destFilePath);
+            if (!destFile.Exists || sourceFile.LastWriteTime > destFile.LastWriteTime)
+            {
+                return sourceFile.CopyTo(destFilePath, overwrite:true);
+            }
+            return null;
+        }
     }
 }
