@@ -312,7 +312,7 @@ namespace EverLoader.Services
                     if (isDisk1 > 0)
                     {
                         multiDiskGameId = newId;
-                        multiDiskBaseTitle = title.Substring(0, isDisk1);
+                        title = multiDiskBaseTitle = title.Substring(0, isDisk1); //update title so it won't display the "(disk 1 of ..."
                     }
                     else if (title.StartsWith(multiDiskBaseTitle))
                     {
@@ -604,7 +604,7 @@ namespace EverLoader.Services
                         mappedGame.romPlayers = tgdbGame.Players.HasValue ? tgdbGame.Players.Value : 1; //default 1
                         mappedGame.romReleaseDate = tgdbGame.ReleaseDate.HasValue ? tgdbGame.ReleaseDate.Value.ToString("yyyy-MM-dd") : "";
                         mappedGame.romPlatformId = _romManager.TryMapToPlatform(tgdbGame.Platform, out int platform) ? platform : mappedGame.romPlatformId;
-                        //don't overwrite title, as we want to keep original name in case match was a false positive
+                        //probably don't overwrite title, as we want to keep original name in case match was a false positive
                         //mappedGame.romTitle = !string.IsNullOrWhiteSpace(tgdbGame.GameTitle) ? tgdbGame.GameTitle : mappedGame.romTitle;
                         mappedGame.romGenre = _romManager.MapToGenre(tgdbGame.Genres);
 
@@ -661,7 +661,7 @@ namespace EverLoader.Services
             }
         }
 
-        public async Task ClearImage(GameInfo gameInfo, ImageType imageType)
+        public async Task ClearImage(GameInfo gameInfo, ImageType imageType, bool autoSerialize = true)
         {
             var imagePath = GetGameImageInfo(gameInfo.Id, imageType).LocalPath;
             File.Delete(imagePath);
@@ -678,7 +678,7 @@ namespace EverLoader.Services
                 case ImageType.Banner: gameInfo.ImageBanner = null; break;
             }
 
-            await SerializeGame(gameInfo);
+            if (autoSerialize) await SerializeGame(gameInfo);
         }
 
         public string GetRomListTitle(GameInfo game)

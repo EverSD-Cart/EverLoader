@@ -1468,7 +1468,6 @@ namespace EverLoader
             this.rbInternalCore.TabStop = true;
             this.rbInternalCore.Text = "Internal";
             this.rbInternalCore.UseVisualStyleBackColor = true;
-            this.rbInternalCore.AutoCheck = true;
             // 
             // lblMissingBiosFiles
             // 
@@ -1496,7 +1495,6 @@ namespace EverLoader
             this.rbRetroArchCore.Text = "External RetroArch Core";
             this.rbRetroArchCore.UseVisualStyleBackColor = true;
             this.rbRetroArchCore.CheckedChanged += new System.EventHandler(this.rbRetroArchCore_CheckedChanged);
-            this.rbRetroArchCore.AutoCheck = true;
             // 
             // gbScrapeByName
             // 

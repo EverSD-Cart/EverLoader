@@ -877,8 +877,6 @@ namespace EverLoader
                 _game.romPlayers = selectedResult.Game.Players.HasValue ? selectedResult.Game.Players.Value : 1; //default 1
                 _game.romReleaseDate = selectedResult.Game.ReleaseDate.HasValue ? selectedResult.Game.ReleaseDate.Value.ToString("yyyy-MM-dd") : "";
 
-                pbBanner.Tag = 0; //reset banner offset
-
                 if (selectedResult.BoxArt != null)
                 {
                     await _imageManager.ResizeImage($"{selectedResult.ImageBaseUrl}{selectedResult.BoxArt.FileName}", _game, _gamesManager.GetGameBoxartImageInfo(_game.Id));
@@ -886,12 +884,10 @@ namespace EverLoader
 
                 if (selectedResult.Banners?.Length > 0)
                 {
+                    pbBanner.Tag = 0; //reset banner offset
                     await _imageManager.ResizeImage($"{selectedResult.ImageBaseUrl}{selectedResult.Banners[0].FileName}", _game, new[] { _gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner) });
                 }
-                else
-                {
-                    _game.ImageBanner = null;
-                }
+
                 llBannerNext.Visible = llBannerPrev.Visible = (selectedResult.Banners?.Length > 1);
 
                 await _gamesManager.SerializeGame(_game);
