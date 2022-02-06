@@ -870,8 +870,8 @@ namespace EverLoader
                 _game.GameInfoChanged -= Game_GameInfoChanged; //suppress
 
                 _game.TgdbId = selectedResult.GameId;
-                _game.romTitle = selectedResult.Game.GameTitle;
-                lvGames.SelectedItems[0].Text = _gamesManager.GetRomListTitle(_game);
+                //_game.romTitle = selectedResult.Game.GameTitle;
+                //lvGames.SelectedItems[0].Text = _gamesManager.GetRomListTitle(_game);
                 _game.romDescription = selectedResult.Game.Overview;
                 _game.romGenre = _romManager.MapToGenre(selectedResult.Game.Genres);
                 _game.romPlayers = selectedResult.Game.Players.HasValue ? selectedResult.Game.Players.Value : 1; //default 1

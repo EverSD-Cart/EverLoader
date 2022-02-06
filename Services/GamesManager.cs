@@ -200,16 +200,18 @@ namespace EverLoader.Services
                     f.CopyToOverwriteIfNewer($"{sdDrive}game\\{f.Name}");
                 });
 
-                // 4c. copy over rom file(s) (only overwrite if newer)
-                var romDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}");
-                if (romDir.Exists) romDir.GetFiles().ToList().ForEach(f =>
-                {
-                    var targetDir = game.RetroArchCore != null
+                // 4c. copy over rom file (only overwrite if newer)
+                var targetRomDir = game.RetroArchCore != null
                         ? "roms"                                /* for RetroArch, put all roms under /sdcard/roms */
                         : (platform.Id == 1 ? "mame" : "game"); /* special case for mame roms, otherwise use /sdcard/game */
-                    Directory.CreateDirectory($"{sdDrive}{targetDir}"); //ensure target directory exists on MicroSD card
-
-                    var targetFile = $"{sdDrive}{targetDir}\\{game.PreferedRomFileName()}";
+                Directory.CreateDirectory($"{sdDrive}{targetRomDir}"); //ensure target directory exists on MicroSD card
+                var sourceRomDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}");
+                if (sourceRomDir.Exists) sourceRomDir.GetFiles().ToList().ForEach(f =>
+                {
+                    var targetRomFileName = game.RetroArchCore != null
+                        ? f.Name /* this allows multi-disks */
+                        : game.romFileName;
+                    var targetFile = $"{sdDrive}{targetRomDir}\\{targetRomFileName}";
                     f.CopyToOverwriteIfNewer(targetFile);
                 });
 
@@ -283,6 +285,10 @@ namespace EverLoader.Services
         {
             var newGames = new List<GameInfo>();
             int importedGames = 0;
+
+            string multiDiskGameId = null;
+            string multiDiskBaseTitle = null;
+
             foreach (var romPath in romPaths)
             {
                 progress.Show(("Importing game(s)", ++importedGames, romPaths.Length));
@@ -297,27 +303,41 @@ namespace EverLoader.Services
                 var ext = Path.GetExtension(romPath).ToLower();
                 var newId = GenerateGameId(title);
                 var newRomFileName = $"{newId}{ext}";
+                var originalRomFileName = $"{title}{ext}";
+
+                //handle multi-disk
+                if (Regex.IsMatch(title, @"\([Dd]isk [0-9]+ of [0-9]+\)"))
+                {
+                    var isDisk1 = title.ToLower().IndexOf("(disk 1 of ");
+                    if (isDisk1 > 0)
+                    {
+                        multiDiskGameId = newId;
+                        multiDiskBaseTitle = title.Substring(0, isDisk1);
+                    }
+                    else if (title.StartsWith(multiDiskBaseTitle))
+                    {
+                        File.Copy(romPath, $"{APP_GAMES_FOLDER}{multiDiskGameId}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite:true);
+                        continue; //after copying the rom, we are done
+                    }
+                }
+                else
+                {
+                    multiDiskGameId = multiDiskBaseTitle = null;
+                }
 
                 var platform = _appSettings.Platforms.OrderBy(p => p.BlastRetroCore?.AutoLaunch).FirstOrDefault(p => p.RomFileExtensions.Contains(ext));
-
                 if (platform == null) continue; //!!!! unmapped extension. This should not be possible
-
-                if (platform.Id == 1)
-                {
-                    //for MAME arcade roms, we don't want to change the filename
-                    newRomFileName = $"{title}{ext}";
-                }
 
                 //create minimal GameInfo information
                 var newGame = new GameInfo()
                 {
                     Id = newId,
                     romTitle = title,
-                    romFileName = newRomFileName,
+                    romFileName = platform.Id == 1 ? originalRomFileName : newRomFileName, //for MAME rom zips, don't change the filename
                     romPlatformId = platform.Id,
                     romCRC32 = romCRC32,
                     romMD5 = romMD5,
-                    OriginalRomFileName = $"{GetCleanedTitle(title)}{ext}",
+                    OriginalRomFileName = originalRomFileName,
                     IsRecentlyAdded = true
                 };
 
@@ -332,7 +352,7 @@ namespace EverLoader.Services
                 Directory.CreateDirectory($"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}");
 
                 //4. copy over the rom file
-                File.Copy(romPath, $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}{newRomFileName}");
+                File.Copy(romPath, $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite: true);
                 await SerializeGame(newGame);
 
                 _games.Add(newId, newGame);
@@ -424,7 +444,10 @@ namespace EverLoader.Services
                     if (gameInfo.Id != gameDir.Name) continue; //skip 
 
                     //rom MUST exist
-                    if (!File.Exists($"{APP_GAMES_FOLDER}{gameInfo.Id}\\{SUBFOLDER_ROM}{gameInfo.romFileName}")) continue; //skip 
+                    var romsDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{gameInfo.Id}\\{SUBFOLDER_ROM}");
+                    if (!romsDir.Exists || romsDir.GetFiles().Length == 0) continue; //skip 
+
+                    //TODO: before skipping invalid game folder, maybe clean it up first
 
                     //ensure image folders exist
                     Directory.CreateDirectory($"{APP_GAMES_FOLDER}{gameInfo.Id}\\{SUBFOLDER_IMAGES_SOURCE}"); //this also creates the images subfolder
@@ -565,8 +588,9 @@ namespace EverLoader.Services
                     var imgBaseUrl = resp.Include?.BoxArt?.BaseUrl?.Medium;
 
                     var tgdbGames = resp.Data.Games.Where(g => GetCompareTitle(g.GameTitle) == GetCompareTitle(nonMappedGame.romTitle));
-                    // if we have a single title-match, then we can be pretty sure we have a good match
-                    if (tgdbGames.Count() == 1)
+                    var firstMatchPlatform = tgdbGames.FirstOrDefault()?.Platform;
+                    // if matches are for the same platform, then we can be pretty sure the first match is a good one
+                    if (tgdbGames.Count() > 0 && tgdbGames.All(g => g.Platform == firstMatchPlatform))
                     {
                         var tgdbGame = tgdbGames.First();
                         var mappedGame = nonMappedGame;

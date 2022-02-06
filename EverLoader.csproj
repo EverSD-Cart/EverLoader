@@ -8,6 +8,10 @@
     <Version>2.0.0</Version>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;RA_SUPPORTED</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="bin\**" />
     <EmbeddedResource Remove="bin\**" />
