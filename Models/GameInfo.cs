@@ -44,6 +44,8 @@ namespace EverLoader.Models
         {
             return (RetroArchCore != null ? OriginalRomFileName : null) ?? romFileName;
         }
+
+        public bool IsMultiDisc { get; set; }
         
         public string romMD5 { get; set; }
         public string romCRC32 { get; set; }

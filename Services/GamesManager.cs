@@ -129,6 +129,11 @@ namespace EverLoader.Services
             await File.WriteAllTextAsync($"{APP_GAMES_FOLDER}{game.Id}\\{game.Id}.json", gameJson);
         }
 
+        public string RemoveInvalidChars(string filename)
+        {
+            return string.Concat(filename.Split(Path.GetInvalidFileNameChars()));
+        }
+
         public async Task SyncToSd(string sdDrive, string cartName, IProgress<(string, int, int)> progress)
         {
             var selectedGameIds = _games.Values.Where(g => g.IsSelected).Select(g => g.Id).ToArray();
@@ -215,6 +220,13 @@ namespace EverLoader.Services
                     f.CopyToOverwriteIfNewer(targetFile);
                 });
 
+                string multiDiscFilePath = null;
+                if (game.IsMultiDisc)
+                {
+                    multiDiscFilePath = $"{sdDrive}{targetRomDir}\\{RemoveInvalidChars(game.romTitle)}.m3u";
+                    File.WriteAllLines(multiDiscFilePath, sourceRomDir.GetFiles().Select(f => f.Name));
+                }
+
                 //custom handling for cores without autolaunch
                 var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
                 var evercadeGameInfo = new EvercadeGameInfo(gameJson);
@@ -232,13 +244,16 @@ namespace EverLoader.Services
                         evercadeGameInfo.romFileName = Path.GetFileNameWithoutExtension(evercadeGameInfo.romFileName);
                         File.Create($"{sdDrive}game\\{game.Id}").Dispose(); //0-byte marker
 
+                        //create m3u for multi-disc games
+                        //RemoveInvalidChars
+
                         Directory.CreateDirectory($"{sdDrive}special"); //ensure special directory exists
 
                         string shScript = game.RetroArchCore != null ? Resources.special_bash_ra : Resources.special_bash;
-
+                        string scriptRomFileName = multiDiscFilePath != null ? Path.GetFileName(multiDiscFilePath) : game.PreferedRomFileName();
                         shScript = shScript
                             .Replace("{CORE_FILENAME}", selectedCore.CoreFileName)
-                            .Replace("{ROM_FILENAME}", game.PreferedRomFileName())
+                            .Replace("{ROM_FILENAME}", scriptRomFileName)
                             .Replace("\r", ""); //remove possible windows CR
 
                         await File.WriteAllTextAsync($"{sdDrive}special\\{game.Id}.sh", shScript, System.Text.Encoding.UTF8);
@@ -338,7 +353,8 @@ namespace EverLoader.Services
                     romCRC32 = romCRC32,
                     romMD5 = romMD5,
                     OriginalRomFileName = originalRomFileName,
-                    IsRecentlyAdded = true
+                    IsRecentlyAdded = true,
+                    IsMultiDisc = newId == multiDiskGameId
                 };
 
                 //if no internal core, preselect the first RA core

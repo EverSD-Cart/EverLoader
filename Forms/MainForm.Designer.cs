@@ -43,6 +43,7 @@ namespace EverLoader
             this.label7 = new System.Windows.Forms.Label();
             this.lblGameId = new System.Windows.Forms.Label();
             this.panel8 = new System.Windows.Forms.Panel();
+            this.cbMultiDisc = new System.Windows.Forms.CheckBox();
             this.tbTitle = new System.Windows.Forms.TextBox();
             this.lblTitle = new System.Windows.Forms.Label();
             this.panel9 = new System.Windows.Forms.Panel();
@@ -294,6 +295,7 @@ namespace EverLoader
             // panel8
             // 
             this.tableLayoutPanel4.SetColumnSpan(this.panel8, 2);
+            this.panel8.Controls.Add(this.cbMultiDisc);
             this.panel8.Controls.Add(this.tbTitle);
             this.panel8.Controls.Add(this.lblTitle);
             this.panel8.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -302,6 +304,21 @@ namespace EverLoader
             this.panel8.Name = "panel8";
             this.panel8.Size = new System.Drawing.Size(333, 44);
             this.panel8.TabIndex = 0;
+            // 
+            // cbMultiDisc
+            // 
+            this.cbMultiDisc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbMultiDisc.AutoSize = true;
+            this.cbMultiDisc.Checked = true;
+            this.cbMultiDisc.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbMultiDisc.Enabled = false;
+            this.cbMultiDisc.Location = new System.Drawing.Point(42, -1);
+            this.cbMultiDisc.Name = "cbMultiDisc";
+            this.cbMultiDisc.Size = new System.Drawing.Size(80, 19);
+            this.cbMultiDisc.TabIndex = 2;
+            this.cbMultiDisc.Text = "multi-disc";
+            this.cbMultiDisc.UseVisualStyleBackColor = true;
+            this.cbMultiDisc.Visible = false;
             // 
             // tbTitle
             // 
@@ -1562,7 +1579,6 @@ namespace EverLoader
             this.pbEverSD.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pbEverSD.TabIndex = 11;
             this.pbEverSD.TabStop = false;
-            this.pbEverSD.Click += new System.EventHandler(this.pbEverSD_Click);
             // 
             // panel6
             // 
@@ -1812,6 +1828,7 @@ namespace EverLoader
         private AspectRatioPanel panel14;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel15;
+        private System.Windows.Forms.CheckBox cbMultiDisc;
     }
 }
 

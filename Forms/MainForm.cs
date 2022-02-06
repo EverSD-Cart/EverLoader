@@ -4,7 +4,6 @@ using EverLoader.Forms;
 using EverLoader.Helpers;
 using EverLoader.Models;
 using EverLoader.Services;
-using Force.Crc32;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,17 +12,11 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using TheGamesDBApiWrapper.Models.Enums;
-using TheGamesDBApiWrapper.Models.Responses.Games;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EverLoader
 {
@@ -231,6 +224,8 @@ namespace EverLoader
                 // Emulator Settings
                 var platform = _gamesManager.GetGamePlatform(_game);
 #if RA_SUPPORTED
+                cbMultiDisc.Visible = _game?.IsMultiDisc == true;
+
                 rbInternalCore.Enabled = platform?.BlastRetroCore != null;
                 rbRetroArchCore.Enabled = cbRetroArchCore.Enabled = platform?.RetroArchCores.Length > 0;
 
@@ -737,7 +732,7 @@ namespace EverLoader
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (var aboutBox = new AboutBox())
+            using (var aboutBox = Program.ServiceProvider.GetRequiredService<AboutBox>())
             {
                 aboutBox.ShowDialog(this);
             }
@@ -952,12 +947,6 @@ namespace EverLoader
         private async void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             await _appUpdateManager.CheckForUpdate(this);
-        }
-
-        private void pbEverSD_Click(object sender, EventArgs e)
-        {
-            //open EverSD website
-            Process.Start(new ProcessStartInfo("https://eversd.com") { UseShellExecute = true });
         }
 
         private void pbGameImage_SizeChanged(object sender, EventArgs e)

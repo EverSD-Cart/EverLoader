@@ -1,3 +1,4 @@
+using EverLoader.Forms;
 using EverLoader.Helpers;
 using EverLoader.Models;
 using EverLoader.Services;
@@ -19,6 +20,8 @@ namespace EverLoader
 {
     static class Program
     {
+        public static IServiceProvider ServiceProvider { get; set; }
+
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
@@ -35,19 +38,19 @@ namespace EverLoader
 
             //IoC for WinForms
             //see https://docs.microsoft.com/en-us/answers/questions/277466/dependency-injection-in-windows-forms-and-ef-core.html
-            var services = new ServiceCollection();
-            ConfigureServices(services, appSettings);
-            using (ServiceProvider serviceProvider = services.BuildServiceProvider())
-            {
-                var mainForm = serviceProvider.GetRequiredService<MainForm>();
-                Application.Run(mainForm);
-            }
+            ConfigureServices(appSettings);
+
+            var mainForm = ServiceProvider.GetRequiredService<MainForm>();
+            Application.Run(mainForm);
         }
 
-        private static void ConfigureServices(ServiceCollection services, AppSettings appSettings)
+        private static void ConfigureServices(AppSettings appSettings)
         {
+            var services = new ServiceCollection();
+
             //add forms
             services.AddScoped<MainForm>();
+            services.AddTransient<AboutBox>();
 
             //add settings
             services.AddSingleton(appSettings);
@@ -69,6 +72,8 @@ namespace EverLoader
                 ApiKey = appSettings.Secrets?.TheGamesDBApi_ApiKey,
                 ForceVersion = false
             });
+
+            ServiceProvider = services.BuildServiceProvider();
         }
 
         private static AppSettings ReadAppsettings()
