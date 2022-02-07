@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.RegularExpressions;
 
 namespace EverLoader
 {
@@ -31,7 +32,7 @@ namespace EverLoader
 
         public string SDDrive { get; set; }
 
-        public MainForm(GamesManager gamesManager, 
+        public MainForm(GamesManager gamesManager,
             ScrapeManager scrapeManager,
             RomManager romManager,
             ImageManager imageManager,
@@ -61,6 +62,12 @@ namespace EverLoader
             llBannerUp.TabStop = false;
             llBannerDown.TabStop = false;
 
+            //allow image dropping in picture box
+            pbBoxArtLarge.AllowDrop = true;
+            pbBoxArtMedium.AllowDrop = true;
+            pbBoxArtSmall.AllowDrop = true;
+            pbBanner.AllowDrop = true;
+
             PopulateComboboxes();
         }
 
@@ -79,8 +86,8 @@ namespace EverLoader
             {
                 var xPlatform = _appSettings.Platforms.FirstOrDefault(p => p.Name == x);
                 var yPlatform = _appSettings.Platforms.FirstOrDefault(p => p.Name == y);
-                if (xPlatform != null && yPlatform != null 
-                    && xPlatform.Group == yPlatform.Group 
+                if (xPlatform != null && yPlatform != null
+                    && xPlatform.Group == yPlatform.Group
                     && xPlatform.GroupItemSortOrder * yPlatform.GroupItemSortOrder != 0)
                 {
                     return Comparer<int>.Default.Compare(xPlatform.GroupItemSortOrder, yPlatform.GroupItemSortOrder);
@@ -303,7 +310,7 @@ namespace EverLoader
                     lblMissingBiosFiles.LinkColor = Color.Red;
                     missingBiosList = string.Join("\n - ", missingBiosFiles.Where(b => b.Required).Select(b => b.FileName));
                     missingBiosText = "requires\nthese missing";
-                } 
+                }
                 else
                 {
                     lblMissingBiosFiles.Text = "Upload optional BIOS files";
@@ -358,7 +365,7 @@ namespace EverLoader
                     //game name could have been changed
                     lvGames.SelectedItems[0].Text = _gamesManager.GetRomListTitle(_game);
                 }
-                
+
             }
         }
 
@@ -499,32 +506,41 @@ namespace EverLoader
         {
             if (_game != null && (openGameImage.ShowDialog() == DialogResult.OK))
             {
-                var controlName = ((Control)sender).Name;
-                List<ImageInfo> gameImages = new List<ImageInfo>();
-
-                if (controlName == nameof(pbBoxArtSmall) || controlName == nameof(pbBoxArtLarge))
-                {
-                    gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Small));
-                }
-                if (controlName == nameof(pbBoxArtMedium) || controlName == nameof(pbBoxArtLarge))
-                {
-                    gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Medium));
-                }
-                if (controlName == nameof(pbBoxArtLarge))
-                {
-                    gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Large));
-                }
-                if (controlName == nameof(pbBanner))
-                {
-                    gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner));
-                }
-
-                await _imageManager.ResizeImage(openGameImage.FileName, _game, gameImages);
-
-                LoadBoxArt();
-
-                await _gamesManager.SerializeGame(_game);
+                await ImportResizeImages(sender as Control, openGameImage.FileName);
             }
+        }
+
+        private async Task ImportResizeImages(Control targetControl, string imageFilePath, byte[] fileBytes = null)
+        {
+            if (_game == null) return;
+
+            var controlName = targetControl.Name;
+            List<ImageInfo> gameImages = new List<ImageInfo>();
+
+            if (controlName == nameof(pbBoxArtSmall) || (controlName == nameof(pbBoxArtLarge) && _game.Image == null))
+            {
+                gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Small));
+            }
+            if (controlName == nameof(pbBoxArtMedium) || (controlName == nameof(pbBoxArtLarge) && _game.ImageHD == null))
+            {
+                gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Medium));
+            }
+            if (controlName == nameof(pbBoxArtLarge))
+            {
+                gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Large));
+            }
+            if (controlName == nameof(pbBanner))
+            {
+                gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner));
+                pbBanner.Tag = 0;
+            }
+
+            if (imageFilePath != null) await _imageManager.ResizeImage(imageFilePath, _game, gameImages);
+            if (fileBytes != null) _imageManager.ResizeImage(fileBytes, _game, gameImages);
+
+            LoadBoxArt();
+
+            await _gamesManager.SerializeGame(_game);
         }
 
         private async void btnAddGames_Click(object sender, EventArgs e)
@@ -581,7 +597,7 @@ namespace EverLoader
                 if (lvGames.Groups[1].Items.Count > 0)
                 {
                     lvGames.SelectedIndices.Clear();
-                    lvGames.Groups[1].Items[lvGames.Groups[1].Items.Count -1].EnsureVisible();
+                    lvGames.Groups[1].Items[lvGames.Groups[1].Items.Count - 1].EnsureVisible();
                     lvGames.Groups[1].Items[0].Focused = true;
                     lvGames.Groups[1].Items[0].Selected = true;
                     lvGames.Groups[1].Items[0].EnsureVisible();
@@ -622,7 +638,7 @@ namespace EverLoader
                     return;
                 }
             }
-            MessageBox.Show("The selected ROMs were synced to MicroSD.\nPut the MicroSD card back in your EverSD cartridge and enjoy!", 
+            MessageBox.Show("The selected ROMs were synced to MicroSD.\nPut the MicroSD card back in your EverSD cartridge and enjoy!",
                 "ROM Sync Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -666,7 +682,7 @@ namespace EverLoader
                 }
                 if (!itemWasChecked)
                 {
-                    await SelectSDDrive (null);
+                    await SelectSDDrive(null);
                 }
             }
         }
@@ -676,7 +692,7 @@ namespace EverLoader
             if (_game != null)
             {
                 //clear banner img
-                if (Enum.TryParse<ImageType>(((Control)sender).Tag as string, ignoreCase:true, out ImageType imgType))
+                if (Enum.TryParse<ImageType>(((Control)sender).Tag as string, ignoreCase: true, out ImageType imgType))
                 {
                     await _gamesManager.ClearImage(_game, imgType);
                     if (imgType == ImageType.Banner)
@@ -808,7 +824,7 @@ namespace EverLoader
                 foreach (var romFilePath in dialog.FileNames)
                 {
                     Directory.CreateDirectory(platformRomsDir);
-                    File.Copy(romFilePath, Path.Combine(platformRomsDir,Path.GetFileName(romFilePath)));
+                    File.Copy(romFilePath, Path.Combine(platformRomsDir, Path.GetFileName(romFilePath)));
                 }
 
                 UpdateMissingBiosFilesLabel();
@@ -842,7 +858,7 @@ namespace EverLoader
             if (e.KeyChar == (char)Keys.Return)
             {
                 btnScrape_Click(null, null);
-            }  
+            }
         }
 
         private async void lbScrapeResults_SelectedIndexChanged(object sender, EventArgs e)
@@ -850,9 +866,9 @@ namespace EverLoader
             var selectedResult = lbScrapeResults.SelectedItem as TgdbScrapeResult;
             if (selectedResult != null && _game != null)
             {
-                if ((_game.romDescription != "" || _game.Image != null || _game.Image1080 != null) 
+                if ((_game.romDescription != "" || _game.Image != null || _game.Image1080 != null)
                     && (lbScrapeResults.Tag as string) != "WARNING_SHOWN"
-                    && MessageBox.Show("This will overwrite the current ROM description and images with the scraped information.\nIs this OK?", 
+                    && MessageBox.Show("This will overwrite the current ROM description and images with the scraped information.\nIs this OK?",
                     "Applying scraped game content",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning) == DialogResult.No)
@@ -886,7 +902,7 @@ namespace EverLoader
                 llBannerNext.Visible = llBannerPrev.Visible = (selectedResult.Banners?.Length > 1);
 
                 await _gamesManager.SerializeGame(_game);
-                SetDataBindings(refreshOnly:true);
+                SetDataBindings(refreshOnly: true);
 
                 _game.GameInfoChanged += Game_GameInfoChanged;
             }
@@ -972,6 +988,58 @@ namespace EverLoader
                     llBannerPrev.Location = new Point(pbBanner.Location.X, pbBanner.Location.Y + (pbBanner.Height - llBannerPrev.Height) / 2);
                     llBannerNext.Location = new Point(pbBanner.Location.X + pbBanner.Width - llBannerNext.Width, pbBanner.Location.Y + (pbBanner.Height - llBannerNext.Height) / 2);
                     break;
+            }
+        }
+
+        private void pbGameImage_DragEnter(object sender, DragEventArgs e)
+        {
+            if (_game == null) return;
+
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files == null || files.Length > 1 || !Path.GetExtension(files[0]).In(".bmp", ".png", ".jpg", ".jpeg", ".gif")) return;
+                e.Effect = DragDropEffects.Copy;
+            }
+
+            if (e.Data.GetDataPresent(DataFormats.Html))
+            {
+                var html = (string)e.Data.GetData(DataFormats.Html);
+                if (html == null) return;
+                if (Regex.IsMatch(html, "<img src=\"data:image/(bmp|jpeg|png|gif);base64,")
+                    || Regex.IsMatch(html, "<img[^>]* src=\"https?://"))
+                {
+                    e.Effect = DragDropEffects.Copy;
+                }
+            }
+        }
+
+        private async void pbGameImage_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                await ImportResizeImages(sender as Control, files[0]);
+            }
+
+            if (e.Data.GetDataPresent(DataFormats.Html))
+            {
+                var html = (string)e.Data.GetData(DataFormats.Html);
+                if (Regex.IsMatch(html, "<img src=\"data:image/(bmp|jpeg|png|gif);base64,"))
+                {
+                    var ixBase64Start = html.IndexOf(";base64,") + ";base64,".Length;
+                    var ixBase64End = html.IndexOf("\"", ixBase64Start);
+                    var base64Img = html.Substring(ixBase64Start, ixBase64End - ixBase64Start);
+                    var imgBytes = Convert.FromBase64String(base64Img);
+                    await ImportResizeImages(sender as Control, null, imgBytes);
+                }
+                else
+                {
+                    var ixUrlStart = html.IndexOf(" src=\"http", html.IndexOf("<img ")) + " src=\"".Length;
+                    var ixUrlEnd = html.IndexOf("\"", ixUrlStart);
+                    var imgUrl = html.Substring(ixUrlStart, ixUrlEnd - ixUrlStart);
+                    await ImportResizeImages(sender as Control, imgUrl);
+                }
             }
         }
     }

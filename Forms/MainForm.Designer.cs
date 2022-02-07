@@ -131,9 +131,9 @@ namespace EverLoader
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.cbRetroArchCore = new System.Windows.Forms.ComboBox();
-            this.rbInternalCore = new NonTabStopRadioButton();
+            this.rbInternalCore = new EverLoader.Controls.NonTabStopRadioButton();
             this.lblMissingBiosFiles = new System.Windows.Forms.LinkLabel();
-            this.rbRetroArchCore = new NonTabStopRadioButton();
+            this.rbRetroArchCore = new EverLoader.Controls.NonTabStopRadioButton();
             this.gbScrapeByName = new System.Windows.Forms.GroupBox();
             this.lbScrapeResults = new System.Windows.Forms.ListBox();
             this.btnScrape = new System.Windows.Forms.Button();
@@ -610,6 +610,8 @@ namespace EverLoader
             this.pbBoxArtLarge.TabStop = false;
             this.pbBoxArtLarge.SizeChanged += new System.EventHandler(this.pbGameImage_SizeChanged);
             this.pbBoxArtLarge.Click += new System.EventHandler(this.pbGameImage_Click);
+            this.pbBoxArtLarge.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
+            this.pbBoxArtLarge.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragDrop);
             // 
             // btnClearLarge
             // 
@@ -666,6 +668,8 @@ namespace EverLoader
             this.pbBoxArtMedium.TabStop = false;
             this.pbBoxArtMedium.SizeChanged += new System.EventHandler(this.pbGameImage_SizeChanged);
             this.pbBoxArtMedium.Click += new System.EventHandler(this.pbGameImage_Click);
+            this.pbBoxArtMedium.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
+            this.pbBoxArtMedium.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragDrop);
             // 
             // btnClearMedium
             // 
@@ -722,6 +726,8 @@ namespace EverLoader
             this.pbBoxArtSmall.TabStop = false;
             this.pbBoxArtSmall.SizeChanged += new System.EventHandler(this.pbGameImage_SizeChanged);
             this.pbBoxArtSmall.Click += new System.EventHandler(this.pbGameImage_Click);
+            this.pbBoxArtSmall.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
+            this.pbBoxArtSmall.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragDrop);
             // 
             // btnClearSmall
             // 
@@ -853,6 +859,8 @@ namespace EverLoader
             this.pbBanner.TabStop = false;
             this.pbBanner.SizeChanged += new System.EventHandler(this.pbGameImage_SizeChanged);
             this.pbBanner.Click += new System.EventHandler(this.pbGameImage_Click);
+            this.pbBanner.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
+            this.pbBanner.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragDrop);
             // 
             // label8
             // 
@@ -1482,7 +1490,6 @@ namespace EverLoader
             this.rbInternalCore.Name = "rbInternalCore";
             this.rbInternalCore.Size = new System.Drawing.Size(65, 19);
             this.rbInternalCore.TabIndex = 26;
-            this.rbInternalCore.TabStop = true;
             this.rbInternalCore.Text = "Internal";
             this.rbInternalCore.UseVisualStyleBackColor = true;
             // 

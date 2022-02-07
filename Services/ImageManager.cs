@@ -33,6 +33,11 @@ namespace EverLoader.Services
                 fileBytes = await File.ReadAllBytesAsync(sourceImagePath);
             }
 
+            ResizeImage(fileBytes, game, targets, saveOriginal: saveOriginal);
+        }
+
+        public void ResizeImage(byte[] fileBytes, GameInfo game, IEnumerable<ImageInfo> targets, bool saveOriginal = true)
+        {
             using (var source = new ImageConverter().ConvertFrom(fileBytes) as Image)
             {
                 foreach (var target in targets)
@@ -81,19 +86,6 @@ namespace EverLoader.Services
                             {
                                 offset.Height = (source.Size.Height - correctedSize.Height) * (ImageInfo.MaxVerticalOffset + target.VerticalOffset) / (2 * ImageInfo.MaxVerticalOffset);
                             }
-                            //ImageInfo.MinVerticalOffset
-
-                            //switch (target.VerticalCrop)
-                            //{
-                            //    case Enums.ImageVerticalAlign.Top:
-                            //        offset.Height = 0; break;
-                            //    case Enums.ImageVerticalAlign.MiddleTop:
-                            //        offset.Height = (source.Size.Height - correctedSize.Height) / 4; break;
-                            //    case Enums.ImageVerticalAlign.Bottom:
-                            //        offset.Height = (source.Size.Height - correctedSize.Height); break;
-                            //    case Enums.ImageVerticalAlign.MiddleBottom:
-                            //        offset.Height = (source.Size.Height - correctedSize.Height) * 3 / 4; break;
-                            //}
                         }
                         else
                         {
