@@ -114,43 +114,24 @@ namespace EverLoader.Services
         public IEnumerable<Platform> GetGamePlatformsByRomExtesion(string extension)
         {
             if (extension == null) return null;
-            return _appSettings.Platforms.Where(p => p.RomFileExtensions.Union(p.AltFileExtensions).Contains(extension.ToLowerInvariant()));
+            return _appSettings.Platforms.Where(p => p.RomFileExtensions.Contains(extension.ToLowerInvariant()));
         }
 
         public async Task SerializeGame(GameInfo game)
         {
-            game.SuppressChangeNotifactions = true;
-
-            // Change the romFileName extension in case it doesn't match platform
-            var platform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
-            game.romPlatform = platform?.Name;
-            var gameExt = Path.GetExtension(game.romFileName);
-            if (platform?.RomFileExtensions.Contains(gameExt) == false)
+            if (string.IsNullOrEmpty(game.romPlatform))
             {
-                //rename the rom file
-                var newRomFileName = Path.ChangeExtension(game.romFileName, platform.RomFileExtensions[0]);
-                File.Move(
-                    $"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}{game.romFileName}", 
-                    $"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}{newRomFileName}");
-
-                game.romFileName = newRomFileName;
-
-                //when game has switched platform, try default to internalcore
-                if (platform.BlastRetroCore == null && platform.RetroArchCores.Length > 0)
-                {
-                    game.RetroArchCore = platform.RetroArchCores[0].CoreFileName;
-                }
-                else
-                {
-                    game.RetroArchCore = null;
-                }
+                var platform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
+                game.romPlatform = platform?.Name; //updating romPlatform won't trigger update events 
             }
 
-            // 2. Save the gameinfo json
             var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
             await File.WriteAllTextAsync($"{APP_GAMES_FOLDER}{game.Id}\\{game.Id}.json", gameJson);
+        }
 
-            game.SuppressChangeNotifactions = false;
+        public string RemoveInvalidChars(string filename)
+        {
+            return string.Concat(filename.Split(Path.GetInvalidFileNameChars()));
         }
 
         public async Task SyncToSd(string sdDrive, string cartName, IProgress<(string, int, int)> progress)
@@ -183,13 +164,11 @@ namespace EverLoader.Services
             // 4. Save assets for each selected game
             foreach (var game in _games.Values.Where(g => g.IsSelected)) 
             {
-                //await SerializeGame(game); //this will always fix any issues inside game
-
                 progress.Show(("Syncing Games", ++syncedGameIndex, selectedGameIds.Length));
 
                 var platform = _appSettings.Platforms.Single(p => p.Id == game.romPlatformId);
 
-                // 4a. copy emulator core (if doesn't exist yet) + bios files (if don't exist yet)
+                // 4a. copy emulator core (only overwrite if newer) + bios files (only overwrite if newer)
                 //first select the right core (note: megadrive doesn't have a core)
                 var selectedCore = game.RetroArchCore == null
                     ? platform.BlastRetroCore
@@ -199,49 +178,53 @@ namespace EverLoader.Services
                 {
                     foreach (var file in selectedCore.Files)
                     {
-                        var sdFilePath = $"{sdDrive}{file.TargetPath}";
-                        if (!File.Exists(sdFilePath))
-                        {
-                            //TODO: maybe overwrite when core file(s) have newer date?
-                            var localFilePath = await _downloadManager.GetDownloadedFilePath(new Uri(file.SourceUrl), file.SourcePath);
-                            Directory.CreateDirectory(Path.GetDirectoryName(sdFilePath)); //ensure target directory exists
-                            File.Copy(localFilePath, sdFilePath);
-                        }
+                        var sourceFile = new FileInfo(await _downloadManager.GetDownloadedFilePath(new Uri(file.SourceUrl), file.SourcePath));
+                        var destFilePath = $"{sdDrive}{file.TargetPath}";
+                        if (!File.Exists(destFilePath)) Directory.CreateDirectory(Path.GetDirectoryName(destFilePath)); //ensure target dir exists
+                        sourceFile.CopyToOverwriteIfNewer(destFilePath);
                     }
 
-                    //copy over BIOS files (if not exists)
-                    foreach (string biosFile in platform.BiosFiles)
+                    //copy over BIOS files
+                    foreach (var biosFile in platform.BiosFiles)
                     {
-                        var localBiosFile = $"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile}";
+                        var sourceBiosFile = new FileInfo($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile.FileName}");
                         //bios files go into /sdcard/bios (for internal emulator) or /sdcard/retroarch/system (for RA cores)
-                        var sdBiosFile = $"{sdDrive}{(game.RetroArchCore == null ? "bios" : "retroarch\\system")}\\{biosFile}";
-                        if (!File.Exists(sdBiosFile) && File.Exists(localBiosFile))
+                        var destBiosFilePath = $"{sdDrive}{(game.RetroArchCore == null ? "bios" : "retroarch\\system")}\\{biosFile.FileName}";
+                        if (sourceBiosFile.Exists)
                         {
-                            //TODO: maybe overwrite when BIOS file(s) have newer date?
-                            Directory.CreateDirectory(Path.GetDirectoryName(sdBiosFile)); //ensure target directory exists
-                            File.Copy(localBiosFile, sdBiosFile);
+                            if (!File.Exists(destBiosFilePath)) Directory.CreateDirectory(Path.GetDirectoryName(destBiosFilePath)); //ensure target dir exists
+                            sourceBiosFile.CopyToOverwriteIfNewer(destBiosFilePath);
                         }
                     }
                 }
 
-                // 4b. copy all image files
+                // 4b. copy all image files (only overwrite if newer)
                 var imagesDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_IMAGES}");
                 if (imagesDir.Exists) imagesDir.GetFiles().ToList().ForEach(f =>
                 {
-                    f.CopyTo($"{sdDrive}game\\{f.Name}", overwrite: true);
+                    f.CopyToOverwriteIfNewer($"{sdDrive}game\\{f.Name}");
                 });
 
-                // 4c. copy over rom file
-                var romPath = $"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}\\{game.romFileName}";
-                if (File.Exists(romPath))
-                {
-                    var targetDir = game.RetroArchCore != null 
+                // 4c. copy over rom file (only overwrite if newer)
+                var targetRomDir = game.RetroArchCore != null
                         ? "roms"                                /* for RetroArch, put all roms under /sdcard/roms */
                         : (platform.Id == 1 ? "mame" : "game"); /* special case for mame roms, otherwise use /sdcard/game */
-                    Directory.CreateDirectory($"{sdDrive}{targetDir}"); //ensure target directory exists on MicroSD card
+                Directory.CreateDirectory($"{sdDrive}{targetRomDir}"); //ensure target directory exists on MicroSD card
+                var sourceRomDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}");
+                if (sourceRomDir.Exists) sourceRomDir.GetFiles().ToList().ForEach(f =>
+                {
+                    var targetRomFileName = game.RetroArchCore != null
+                        ? f.Name /* this allows multi-disks */
+                        : game.romFileName;
+                    var targetFile = $"{sdDrive}{targetRomDir}\\{targetRomFileName}";
+                    f.CopyToOverwriteIfNewer(targetFile);
+                });
 
-                    var targetFile = $"{sdDrive}{targetDir}\\{game.PreferedRomFileName()}";
-                    File.Copy(romPath, targetFile, overwrite: true);
+                string multiDiscFilePath = null;
+                if (game.IsMultiDisc)
+                {
+                    multiDiscFilePath = $"{sdDrive}{targetRomDir}\\{RemoveInvalidChars(game.romTitle)}.m3u";
+                    File.WriteAllLines(multiDiscFilePath, sourceRomDir.GetFiles().Select(f => f.Name));
                 }
 
                 //custom handling for cores without autolaunch
@@ -250,7 +233,7 @@ namespace EverLoader.Services
                 if (selectedCore?.AutoLaunch == false)
                 {
                     // for internal Arcade/MAME, we have special way of launching using .cue file
-                    if (game.RetroArchCore == null && platform.Id == 1) 
+                    if (game.RetroArchCore == null && platform.Id == 1)
                     {
                         File.WriteAllText($"{sdDrive}game\\{game.Id}.cue", game.PreferedRomFileName());
                         evercadeGameInfo.romFileName = $"{game.Id}.cue";
@@ -261,13 +244,16 @@ namespace EverLoader.Services
                         evercadeGameInfo.romFileName = Path.GetFileNameWithoutExtension(evercadeGameInfo.romFileName);
                         File.Create($"{sdDrive}game\\{game.Id}").Dispose(); //0-byte marker
 
+                        //create m3u for multi-disc games
+                        //RemoveInvalidChars
+
                         Directory.CreateDirectory($"{sdDrive}special"); //ensure special directory exists
 
                         string shScript = game.RetroArchCore != null ? Resources.special_bash_ra : Resources.special_bash;
-
+                        string scriptRomFileName = multiDiscFilePath != null ? Path.GetFileName(multiDiscFilePath) : game.PreferedRomFileName();
                         shScript = shScript
                             .Replace("{CORE_FILENAME}", selectedCore.CoreFileName)
-                            .Replace("{ROM_FILENAME}", game.PreferedRomFileName())
+                            .Replace("{ROM_FILENAME}", scriptRomFileName)
                             .Replace("\r", ""); //remove possible windows CR
 
                         await File.WriteAllTextAsync($"{sdDrive}special\\{game.Id}.sh", shScript, System.Text.Encoding.UTF8);
@@ -314,6 +300,10 @@ namespace EverLoader.Services
         {
             var newGames = new List<GameInfo>();
             int importedGames = 0;
+
+            string multiDiskGameId = null;
+            string multiDiskBaseTitle = null;
+
             foreach (var romPath in romPaths)
             {
                 progress.Show(("Importing game(s)", ++importedGames, romPaths.Length));
@@ -328,29 +318,43 @@ namespace EverLoader.Services
                 var ext = Path.GetExtension(romPath).ToLower();
                 var newId = GenerateGameId(title);
                 var newRomFileName = $"{newId}{ext}";
+                var originalRomFileName = $"{title}{ext}";
 
-                //for mame: leave the romFileName as it was, otherwise the .cue files won't be valid
-                var platform = _appSettings.Platforms.FirstOrDefault(p => p.RomFileExtensions.Contains(ext));
-
-                if (platform == null) continue; //!!!! unmapped extension. This should not be possible
-
-                if (platform.Id == 1)
+                //handle multi-disk
+                if (Regex.IsMatch(title, @"\([Dd]isk [0-9]+ of [0-9]+\)"))
                 {
-                    //for MAME arcade roms, we don't want to change the filename
-                    newRomFileName = $"{title}{ext}";
+                    var isDisk1 = title.ToLower().IndexOf("(disk 1 of ");
+                    if (isDisk1 > 0)
+                    {
+                        multiDiskGameId = newId;
+                        title = multiDiskBaseTitle = title.Substring(0, isDisk1); //update title so it won't display the "(disk 1 of ..."
+                    }
+                    else if (title.StartsWith(multiDiskBaseTitle))
+                    {
+                        File.Copy(romPath, $"{APP_GAMES_FOLDER}{multiDiskGameId}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite:true);
+                        continue; //after copying the rom, we are done
+                    }
                 }
+                else
+                {
+                    multiDiskGameId = multiDiskBaseTitle = null;
+                }
+
+                var platform = _appSettings.Platforms.OrderBy(p => p.BlastRetroCore?.AutoLaunch).FirstOrDefault(p => p.RomFileExtensions.Contains(ext));
+                if (platform == null) continue; //!!!! unmapped extension. This should not be possible
 
                 //create minimal GameInfo information
                 var newGame = new GameInfo()
                 {
                     Id = newId,
                     romTitle = title,
-                    romFileName = newRomFileName,
+                    romFileName = platform.Id == 1 ? originalRomFileName : newRomFileName, //for MAME rom zips, don't change the filename
                     romPlatformId = platform.Id,
                     romCRC32 = romCRC32,
                     romMD5 = romMD5,
-                    OriginalRomFileName = $"{GetCleanedTitle(title)}{ext}",
-                    IsRecentlyAdded = true
+                    OriginalRomFileName = originalRomFileName,
+                    IsRecentlyAdded = true,
+                    IsMultiDisc = newId == multiDiskGameId
                 };
 
                 //if no internal core, preselect the first RA core
@@ -364,7 +368,7 @@ namespace EverLoader.Services
                 Directory.CreateDirectory($"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}");
 
                 //4. copy over the rom file
-                File.Copy(romPath, $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}{newRomFileName}");
+                File.Copy(romPath, $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite: true);
                 await SerializeGame(newGame);
 
                 _games.Add(newId, newGame);
@@ -456,7 +460,10 @@ namespace EverLoader.Services
                     if (gameInfo.Id != gameDir.Name) continue; //skip 
 
                     //rom MUST exist
-                    if (!File.Exists($"{APP_GAMES_FOLDER}{gameInfo.Id}\\{SUBFOLDER_ROM}{gameInfo.romFileName}")) continue; //skip 
+                    var romsDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{gameInfo.Id}\\{SUBFOLDER_ROM}");
+                    if (!romsDir.Exists || romsDir.GetFiles().Length == 0) continue; //skip 
+
+                    //TODO: before skipping invalid game folder, maybe clean it up first
 
                     //ensure image folders exist
                     Directory.CreateDirectory($"{APP_GAMES_FOLDER}{gameInfo.Id}\\{SUBFOLDER_IMAGES_SOURCE}"); //this also creates the images subfolder
@@ -597,8 +604,9 @@ namespace EverLoader.Services
                     var imgBaseUrl = resp.Include?.BoxArt?.BaseUrl?.Medium;
 
                     var tgdbGames = resp.Data.Games.Where(g => GetCompareTitle(g.GameTitle) == GetCompareTitle(nonMappedGame.romTitle));
-                    // if we have a single title-match, then we can be pretty sure we have a good match
-                    if (tgdbGames.Count() == 1)
+                    var firstMatchPlatform = tgdbGames.FirstOrDefault()?.Platform;
+                    // if matches are for the same platform, then we can be pretty sure the first match is a good one
+                    if (tgdbGames.Count() > 0 && tgdbGames.All(g => g.Platform == firstMatchPlatform))
                     {
                         var tgdbGame = tgdbGames.First();
                         var mappedGame = nonMappedGame;
@@ -612,7 +620,7 @@ namespace EverLoader.Services
                         mappedGame.romPlayers = tgdbGame.Players.HasValue ? tgdbGame.Players.Value : 1; //default 1
                         mappedGame.romReleaseDate = tgdbGame.ReleaseDate.HasValue ? tgdbGame.ReleaseDate.Value.ToString("yyyy-MM-dd") : "";
                         mappedGame.romPlatformId = _romManager.TryMapToPlatform(tgdbGame.Platform, out int platform) ? platform : mappedGame.romPlatformId;
-                        //don't overwrite title, as we want to keep original name in case match was a false positive
+                        //probably don't overwrite title, as we want to keep original name in case match was a false positive
                         //mappedGame.romTitle = !string.IsNullOrWhiteSpace(tgdbGame.GameTitle) ? tgdbGame.GameTitle : mappedGame.romTitle;
                         mappedGame.romGenre = _romManager.MapToGenre(tgdbGame.Genres);
 
@@ -669,7 +677,7 @@ namespace EverLoader.Services
             }
         }
 
-        public async Task ClearImage(GameInfo gameInfo, ImageType imageType)
+        public async Task ClearImage(GameInfo gameInfo, ImageType imageType, bool autoSerialize = true)
         {
             var imagePath = GetGameImageInfo(gameInfo.Id, imageType).LocalPath;
             File.Delete(imagePath);
@@ -686,7 +694,7 @@ namespace EverLoader.Services
                 case ImageType.Banner: gameInfo.ImageBanner = null; break;
             }
 
-            await SerializeGame(gameInfo);
+            if (autoSerialize) await SerializeGame(gameInfo);
         }
 
         public string GetRomListTitle(GameInfo game)

@@ -4,7 +4,6 @@ using EverLoader.Forms;
 using EverLoader.Helpers;
 using EverLoader.Models;
 using EverLoader.Services;
-using Force.Crc32;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,17 +12,11 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using TheGamesDBApiWrapper.Models.Enums;
-using TheGamesDBApiWrapper.Models.Responses.Games;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EverLoader
 {
@@ -63,8 +56,7 @@ namespace EverLoader
             lvGames.Groups.Add(new ListViewGroup("ROMs", HorizontalAlignment.Center)); //group 0
             lvGames.Groups.Add(new ListViewGroup("Added Just Now", HorizontalAlignment.Center)); //group 1
 
-            //Visual Studio Forms Editor keeps setting these TabStops to true, so manually set to false again
-            rbInternalCore.TabStop = false;
+            //set TabStop for linklabels to false
             lblMissingBiosFiles.TabStop = false;
             llBannerNext.TabStop = false;
             llBannerPrev.TabStop = false;
@@ -231,6 +223,8 @@ namespace EverLoader
                 // Emulator Settings
                 var platform = _gamesManager.GetGamePlatform(_game);
 #if RA_SUPPORTED
+                cbMultiDisc.Visible = _game?.IsMultiDisc == true;
+
                 rbInternalCore.Enabled = platform?.BlastRetroCore != null;
                 rbRetroArchCore.Enabled = cbRetroArchCore.Enabled = platform?.RetroArchCores.Length > 0;
 
@@ -303,26 +297,42 @@ namespace EverLoader
             var platform = _gamesManager.GetGamePlatform(_game);
             if (platform != null)
             {
-                toolTip1.SetToolTip(lblMissingBiosFiles, $"The '{platform.Name}' emulator\nrequires these missing BIOS files:\n - {string.Join("\n - ", missingBiosFiles) }");
+                string missingBiosText = null;
+                string missingBiosList = null;
+                if (missingBiosFiles.Any(b => b.Required))
+                {
+                    lblMissingBiosFiles.Text = "Upload required BIOS files";
+                    lblMissingBiosFiles.LinkColor = Color.Red;
+                    missingBiosList = string.Join("\n - ", missingBiosFiles.Where(b => b.Required).Select(b => b.FileName));
+                    missingBiosText = "requires\nthese missing";
+                } 
+                else
+                {
+                    lblMissingBiosFiles.Text = "Upload optional BIOS files";
+                    lblMissingBiosFiles.LinkColor = Color.Orange;
+                    missingBiosList = string.Join("\n - ", missingBiosFiles.Select(b => b.FileName));
+                    missingBiosText = "supports\nthese optional";
+                }
+                toolTip1.SetToolTip(lblMissingBiosFiles, $"The {platform.Name} emulator {missingBiosText} BIOS files:\n - {missingBiosList}");
             }
         }
 
-        private string[] GetMissingRomFiles()
+        private BiosFile[] GetMissingRomFiles()
         {
             var platform = _gamesManager.GetGamePlatform(_game);
             if (platform?.BiosFiles != null)
             {
-                List<string> missingBiosFiles = new List<string>();
+                List<BiosFile> missingBiosFiles = new List<BiosFile>();
                 foreach (var biosFile in platform.BiosFiles)
                 {
-                    if (!File.Exists($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile}"))
+                    if (!File.Exists($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile.FileName}"))
                     {
                         missingBiosFiles.Add(biosFile);
                     }
                 }
                 return missingBiosFiles.ToArray();
             }
-            return new string[0];
+            return new BiosFile[0];
         }
 
         private void LoadBoxArt()
@@ -537,7 +547,7 @@ namespace EverLoader
             toolTip1.Hide(lvGames); //hide the welcome text
 
             var supportedExtensions = String.Join(";", _appSettings.Platforms
-                .SelectMany(p => p.RomFileExtensions).Select(e => $"*{e}"));
+                .SelectMany(p => p.RomFileExtensions).Distinct().Select(e => $"*{e}"));
 
             OpenFileDialog dialog = new OpenFileDialog()
             {
@@ -737,7 +747,7 @@ namespace EverLoader
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (var aboutBox = new AboutBox())
+            using (var aboutBox = Program.ServiceProvider.GetRequiredService<AboutBox>())
             {
                 aboutBox.ShowDialog(this);
             }
@@ -797,7 +807,7 @@ namespace EverLoader
 
         private void lblMissingBiosFiles_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            var missingFileList = string.Join(";", GetMissingRomFiles());
+            var missingFileList = string.Join(";", GetMissingRomFiles().Select(b => b.FileName));
 
             //upload BIOS files for this platform
             OpenFileDialog dialog = new OpenFileDialog()
@@ -870,14 +880,12 @@ namespace EverLoader
                 _game.GameInfoChanged -= Game_GameInfoChanged; //suppress
 
                 _game.TgdbId = selectedResult.GameId;
-                _game.romTitle = selectedResult.Game.GameTitle;
-                lvGames.SelectedItems[0].Text = _gamesManager.GetRomListTitle(_game);
+                //_game.romTitle = selectedResult.Game.GameTitle;
+                //lvGames.SelectedItems[0].Text = _gamesManager.GetRomListTitle(_game);
                 _game.romDescription = selectedResult.Game.Overview;
                 _game.romGenre = _romManager.MapToGenre(selectedResult.Game.Genres);
                 _game.romPlayers = selectedResult.Game.Players.HasValue ? selectedResult.Game.Players.Value : 1; //default 1
                 _game.romReleaseDate = selectedResult.Game.ReleaseDate.HasValue ? selectedResult.Game.ReleaseDate.Value.ToString("yyyy-MM-dd") : "";
-
-                pbBanner.Tag = 0; //reset banner offset
 
                 if (selectedResult.BoxArt != null)
                 {
@@ -886,12 +894,10 @@ namespace EverLoader
 
                 if (selectedResult.Banners?.Length > 0)
                 {
+                    pbBanner.Tag = 0; //reset banner offset
                     await _imageManager.ResizeImage($"{selectedResult.ImageBaseUrl}{selectedResult.Banners[0].FileName}", _game, new[] { _gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner) });
                 }
-                else
-                {
-                    _game.ImageBanner = null;
-                }
+
                 llBannerNext.Visible = llBannerPrev.Visible = (selectedResult.Banners?.Length > 1);
 
                 await _gamesManager.SerializeGame(_game);
@@ -956,12 +962,6 @@ namespace EverLoader
         private async void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             await _appUpdateManager.CheckForUpdate(this);
-        }
-
-        private void pbEverSD_Click(object sender, EventArgs e)
-        {
-            //open EverSD website
-            Process.Start(new ProcessStartInfo("https://eversd.com") { UseShellExecute = true });
         }
 
         private void pbGameImage_SizeChanged(object sender, EventArgs e)

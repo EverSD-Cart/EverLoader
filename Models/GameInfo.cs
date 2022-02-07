@@ -26,8 +26,16 @@ namespace EverLoader.Models
         public int romPlatformId
         {
             get => _romPlatformId;
-            set => base.NotifyChange(ref _romPlatformId, value); 
-            //note: GamesManager.SerializeGame will rename rom file extension if needed
+            set
+            {
+                if (_romPlatformId != 0 && _romPlatformId != value)
+                {
+                    //changing platform: clear the selected core
+                    _retroArchCore = null;
+                    romPlatform = null;
+                }
+                base.NotifyChange(ref _romPlatformId, value);
+            }
         }
 
         public string OriginalRomFileName { get; set; }
@@ -36,6 +44,8 @@ namespace EverLoader.Models
         {
             return (RetroArchCore != null ? OriginalRomFileName : null) ?? romFileName;
         }
+
+        public bool IsMultiDisc { get; set; }
         
         public string romMD5 { get; set; }
         public string romCRC32 { get; set; }

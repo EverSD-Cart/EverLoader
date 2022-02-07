@@ -43,6 +43,7 @@ namespace EverLoader
             this.label7 = new System.Windows.Forms.Label();
             this.lblGameId = new System.Windows.Forms.Label();
             this.panel8 = new System.Windows.Forms.Panel();
+            this.cbMultiDisc = new System.Windows.Forms.CheckBox();
             this.tbTitle = new System.Windows.Forms.TextBox();
             this.lblTitle = new System.Windows.Forms.Label();
             this.panel9 = new System.Windows.Forms.Panel();
@@ -130,9 +131,9 @@ namespace EverLoader
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.cbRetroArchCore = new System.Windows.Forms.ComboBox();
-            this.rbInternalCore = new System.Windows.Forms.RadioButton();
+            this.rbInternalCore = new NonTabStopRadioButton();
             this.lblMissingBiosFiles = new System.Windows.Forms.LinkLabel();
-            this.rbRetroArchCore = new System.Windows.Forms.RadioButton();
+            this.rbRetroArchCore = new NonTabStopRadioButton();
             this.gbScrapeByName = new System.Windows.Forms.GroupBox();
             this.lbScrapeResults = new System.Windows.Forms.ListBox();
             this.btnScrape = new System.Windows.Forms.Button();
@@ -294,6 +295,7 @@ namespace EverLoader
             // panel8
             // 
             this.tableLayoutPanel4.SetColumnSpan(this.panel8, 2);
+            this.panel8.Controls.Add(this.cbMultiDisc);
             this.panel8.Controls.Add(this.tbTitle);
             this.panel8.Controls.Add(this.lblTitle);
             this.panel8.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -302,6 +304,21 @@ namespace EverLoader
             this.panel8.Name = "panel8";
             this.panel8.Size = new System.Drawing.Size(333, 44);
             this.panel8.TabIndex = 0;
+            // 
+            // cbMultiDisc
+            // 
+            this.cbMultiDisc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbMultiDisc.AutoSize = true;
+            this.cbMultiDisc.Checked = true;
+            this.cbMultiDisc.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbMultiDisc.Enabled = false;
+            this.cbMultiDisc.Location = new System.Drawing.Point(42, -1);
+            this.cbMultiDisc.Name = "cbMultiDisc";
+            this.cbMultiDisc.Size = new System.Drawing.Size(80, 19);
+            this.cbMultiDisc.TabIndex = 2;
+            this.cbMultiDisc.Text = "multi-disc";
+            this.cbMultiDisc.UseVisualStyleBackColor = true;
+            this.cbMultiDisc.Visible = false;
             // 
             // tbTitle
             // 
@@ -1468,7 +1485,6 @@ namespace EverLoader
             this.rbInternalCore.TabStop = true;
             this.rbInternalCore.Text = "Internal";
             this.rbInternalCore.UseVisualStyleBackColor = true;
-            this.rbInternalCore.AutoCheck = true;
             // 
             // lblMissingBiosFiles
             // 
@@ -1496,7 +1512,6 @@ namespace EverLoader
             this.rbRetroArchCore.Text = "External RetroArch Core";
             this.rbRetroArchCore.UseVisualStyleBackColor = true;
             this.rbRetroArchCore.CheckedChanged += new System.EventHandler(this.rbRetroArchCore_CheckedChanged);
-            this.rbRetroArchCore.AutoCheck = true;
             // 
             // gbScrapeByName
             // 
@@ -1564,7 +1579,6 @@ namespace EverLoader
             this.pbEverSD.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pbEverSD.TabIndex = 11;
             this.pbEverSD.TabStop = false;
-            this.pbEverSD.Click += new System.EventHandler(this.pbEverSD_Click);
             // 
             // panel6
             // 
@@ -1766,9 +1780,9 @@ namespace EverLoader
         private System.Windows.Forms.Panel panel9;
         private System.Windows.Forms.Panel panel10;
         private System.Windows.Forms.Panel panel11;
-        private System.Windows.Forms.RadioButton rbInternalCore;
+        private NonTabStopRadioButton rbInternalCore;
         private System.Windows.Forms.ComboBox cbRetroArchCore;
-        private System.Windows.Forms.RadioButton rbRetroArchCore;
+        private NonTabStopRadioButton rbRetroArchCore;
         private System.Windows.Forms.Label lblGameCRC;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label lblGameId;
@@ -1814,6 +1828,7 @@ namespace EverLoader
         private AspectRatioPanel panel14;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel15;
+        private System.Windows.Forms.CheckBox cbMultiDisc;
     }
 }
 
