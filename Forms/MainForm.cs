@@ -30,8 +30,6 @@ namespace EverLoader
         private readonly AppSettings _appSettings;
 
         public string SDDrive { get; set; }
-        private Keys[] _konamiCode = new [] { Keys.Up, Keys.Up, Keys.Down, Keys.Down, Keys.Left, Keys.Right, Keys.Left, Keys.Right, Keys.B, Keys.A };
-        private int _konamiIndex = 0;
 
         public MainForm(GamesManager gamesManager, 
             ScrapeManager scrapeManager,
@@ -466,19 +464,6 @@ namespace EverLoader
                 {
                     item.Selected = true;
                 }
-            }
-            if (e.KeyCode == _konamiCode[_konamiIndex])
-            {
-                if (++_konamiIndex == _konamiCode.Length)
-                {
-                    _konamiIndex = 0;
-                    Process.Start(new ProcessStartInfo(Encoding.UTF8.GetString(Convert.FromBase64String("aHR0cDovL2xvZGVydW5uZXJ3ZWJnYW1lLmNvbS9nYW1l"))) { UseShellExecute = true });
-                    MessageBox.Show("Kazuhisa Hashimoto and Douglas Smith R.I.P.", "Code was cracked");
-                }
-            }
-            else
-            {
-                _konamiIndex = 0;
             }
         }
 

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;RA_SUPPORTED</DefineConstants>
+    <DefineConstants>TRACE;NO_RA_SUPPORTED</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
