@@ -769,7 +769,7 @@ namespace EverLoader
             this.llBannerDown.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
             this.llBannerDown.Size = new System.Drawing.Size(23, 19);
             this.llBannerDown.TabIndex = 27;
-            this.llBannerDown.TabStop = true;
+            this.llBannerDown.TabStop = false;
             this.llBannerDown.Text = "ê";
             this.llBannerDown.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llBannerUpDown_LinkClicked);
             // 
@@ -785,7 +785,7 @@ namespace EverLoader
             this.llBannerUp.Name = "llBannerUp";
             this.llBannerUp.Size = new System.Drawing.Size(23, 17);
             this.llBannerUp.TabIndex = 26;
-            this.llBannerUp.TabStop = true;
+            this.llBannerUp.TabStop = false;
             this.llBannerUp.Text = "é";
             this.llBannerUp.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llBannerUpDown_LinkClicked);
             // 
@@ -817,7 +817,7 @@ namespace EverLoader
             this.llBannerNext.Name = "llBannerNext";
             this.llBannerNext.Size = new System.Drawing.Size(34, 26);
             this.llBannerNext.TabIndex = 23;
-            this.llBannerNext.TabStop = true;
+            this.llBannerNext.TabStop = false;
             this.llBannerNext.Text = "ð";
             this.llBannerNext.Visible = false;
             this.llBannerNext.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llBannerNextPrev_LinkClicked);
@@ -833,7 +833,7 @@ namespace EverLoader
             this.llBannerPrev.Name = "llBannerPrev";
             this.llBannerPrev.Size = new System.Drawing.Size(34, 26);
             this.llBannerPrev.TabIndex = 24;
-            this.llBannerPrev.TabStop = true;
+            this.llBannerPrev.TabStop = false;
             this.llBannerPrev.Text = "ï";
             this.llBannerPrev.Visible = false;
             this.llBannerPrev.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llBannerNextPrev_LinkClicked);
@@ -1482,7 +1482,7 @@ namespace EverLoader
             this.rbInternalCore.Name = "rbInternalCore";
             this.rbInternalCore.Size = new System.Drawing.Size(65, 19);
             this.rbInternalCore.TabIndex = 26;
-            this.rbInternalCore.TabStop = true;
+            this.rbInternalCore.TabStop = false;
             this.rbInternalCore.Text = "Internal";
             this.rbInternalCore.UseVisualStyleBackColor = true;
             // 
@@ -1494,7 +1494,7 @@ namespace EverLoader
             this.lblMissingBiosFiles.Name = "lblMissingBiosFiles";
             this.lblMissingBiosFiles.Size = new System.Drawing.Size(141, 15);
             this.lblMissingBiosFiles.TabIndex = 31;
-            this.lblMissingBiosFiles.TabStop = true;
+            this.lblMissingBiosFiles.TabStop = false;
             this.lblMissingBiosFiles.Text = "Upload missing BIOS files";
             this.toolTip1.SetToolTip(this.lblMissingBiosFiles, "Bla");
             this.lblMissingBiosFiles.Visible = false;

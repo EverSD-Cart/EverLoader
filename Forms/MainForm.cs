@@ -298,26 +298,42 @@ namespace EverLoader
             var platform = _gamesManager.GetGamePlatform(_game);
             if (platform != null)
             {
-                toolTip1.SetToolTip(lblMissingBiosFiles, $"The '{platform.Name}' emulator\nrequires these missing BIOS files:\n - {string.Join("\n - ", missingBiosFiles) }");
+                string missingBiosText = null;
+                string missingBiosList = null;
+                if (missingBiosFiles.Any(b => b.Required))
+                {
+                    lblMissingBiosFiles.Text = "Upload required BIOS files";
+                    lblMissingBiosFiles.LinkColor = Color.Red;
+                    missingBiosList = string.Join("\n - ", missingBiosFiles.Where(b => b.Required).Select(b => b.FileName));
+                    missingBiosText = "requires\nthese missing";
+                } 
+                else
+                {
+                    lblMissingBiosFiles.Text = "Upload optional BIOS files";
+                    lblMissingBiosFiles.LinkColor = Color.Orange;
+                    missingBiosList = string.Join("\n - ", missingBiosFiles.Select(b => b.FileName));
+                    missingBiosText = "supports\nthese optional";
+                }
+                toolTip1.SetToolTip(lblMissingBiosFiles, $"The {platform.Name} emulator {missingBiosText} BIOS files:\n - {missingBiosList}");
             }
         }
 
-        private string[] GetMissingRomFiles()
+        private BiosFile[] GetMissingRomFiles()
         {
             var platform = _gamesManager.GetGamePlatform(_game);
             if (platform?.BiosFiles != null)
             {
-                List<string> missingBiosFiles = new List<string>();
+                List<BiosFile> missingBiosFiles = new List<BiosFile>();
                 foreach (var biosFile in platform.BiosFiles)
                 {
-                    if (!File.Exists($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile}"))
+                    if (!File.Exists($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile.FileName}"))
                     {
                         missingBiosFiles.Add(biosFile);
                     }
                 }
                 return missingBiosFiles.ToArray();
             }
-            return new string[0];
+            return new BiosFile[0];
         }
 
         private void LoadBoxArt()
@@ -792,7 +808,7 @@ namespace EverLoader
 
         private void lblMissingBiosFiles_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            var missingFileList = string.Join(";", GetMissingRomFiles());
+            var missingFileList = string.Join(";", GetMissingRomFiles().Select(b => b.FileName));
 
             //upload BIOS files for this platform
             OpenFileDialog dialog = new OpenFileDialog()

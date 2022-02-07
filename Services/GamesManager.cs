@@ -184,12 +184,12 @@ namespace EverLoader.Services
                         sourceFile.CopyToOverwriteIfNewer(destFilePath);
                     }
 
-                    //copy over BIOS files (if not exists)
-                    foreach (string biosFile in platform.BiosFiles)
+                    //copy over BIOS files
+                    foreach (var biosFile in platform.BiosFiles)
                     {
-                        var sourceBiosFile = new FileInfo($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile}");
+                        var sourceBiosFile = new FileInfo($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile.FileName}");
                         //bios files go into /sdcard/bios (for internal emulator) or /sdcard/retroarch/system (for RA cores)
-                        var destBiosFilePath = $"{sdDrive}{(game.RetroArchCore == null ? "bios" : "retroarch\\system")}\\{biosFile}";
+                        var destBiosFilePath = $"{sdDrive}{(game.RetroArchCore == null ? "bios" : "retroarch\\system")}\\{biosFile.FileName}";
                         if (sourceBiosFile.Exists)
                         {
                             if (!File.Exists(destBiosFilePath)) Directory.CreateDirectory(Path.GetDirectoryName(destBiosFilePath)); //ensure target dir exists

@@ -23,6 +23,12 @@ namespace EverLoader.Models
         public string TheGamesDBApi_ApiKey { get; set; }
     }
 
+    public class BiosFile
+    {
+        public string FileName { get; set; }
+        public bool Required { get; set; } = false;
+    }
+
     public class Platform
     {
         public int Id { get; set; }
@@ -32,7 +38,7 @@ namespace EverLoader.Models
         public int GroupItemSortOrder { get; set; } = 0; // 0 = not ordered
         public IdName[] TGDB_PlatformIds { get; set; } = new IdName[] { };
         public string[] RomFileExtensions { get; set; } = new string[] { };
-        public string[] BiosFiles { get; set; } = new string[] { };
+        public BiosFile[] BiosFiles { get; set; } = new BiosFile[] { };
         public Core BlastRetroCore { get; set; }
         public Core[] RetroArchCores { get; set; } = new Core[] { };
         public string GoogleSuffix { get; set; } //used for a future feature (Google image search)
