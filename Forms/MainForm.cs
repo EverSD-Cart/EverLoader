@@ -56,8 +56,7 @@ namespace EverLoader
             lvGames.Groups.Add(new ListViewGroup("ROMs", HorizontalAlignment.Center)); //group 0
             lvGames.Groups.Add(new ListViewGroup("Added Just Now", HorizontalAlignment.Center)); //group 1
 
-            //Visual Studio Forms Editor keeps setting these TabStops to true, so manually set to false again
-            rbInternalCore.TabStop = false;
+            //set TabStop for linklabels to false
             lblMissingBiosFiles.TabStop = false;
             llBannerNext.TabStop = false;
             llBannerPrev.TabStop = false;
