@@ -931,11 +931,14 @@ namespace EverLoader
             this.lvGames.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.lvGames.TabIndex = 0;
             this.lvGames.TabStop = false;
+            this.lvGames.AllowDrop = true;
             this.lvGames.UseCompatibleStateImageBehavior = false;
             this.lvGames.View = System.Windows.Forms.View.Details;
             this.lvGames.SelectedIndexChanged += new System.EventHandler(this.lvGames_SelectedIndexChanged);
             this.lvGames.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lvGames_KeyDown);
             this.lvGames.MouseClick += new System.Windows.Forms.MouseEventHandler(this.lvGames_MouseClick);
+            this.lvGames.DragEnter += new System.Windows.Forms.DragEventHandler(this.lvGames_DragEnter);
+            this.lvGames.DragDrop += new System.Windows.Forms.DragEventHandler(this.lvGames_DragDrop);
             // 
             // dummy
             // 

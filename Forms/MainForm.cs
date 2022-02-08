@@ -545,8 +545,6 @@ namespace EverLoader
 
         private async void btnAddGames_Click(object sender, EventArgs e)
         {
-            toolTip1.Hide(lvGames); //hide the welcome text
-
             var supportedExtensions = String.Join(";", _appSettings.Platforms
                 .SelectMany(p => p.RomFileExtensions).Distinct().Select(e => $"*{e}"));
 
@@ -559,50 +557,57 @@ namespace EverLoader
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                using (var progressForm = new ProgressForm(this))
+                await AddGames(dialog.FileNames);
+            }
+        }
+
+        private async Task AddGames(string[] fileNames)
+        {
+            toolTip1.Hide(lvGames); //hide the welcome text
+
+            using (var progressForm = new ProgressForm(this))
+            {
+                var newGames = await _gamesManager.ImportGamesByRom(fileNames, progressForm.Reporter);
+                if (!newGames.Any()) return; //nothing to import
+
+                try
                 {
-                    var newGames = await _gamesManager.ImportGamesByRom(dialog.FileNames, progressForm.Reporter);
-                    if (!newGames.Any()) return; //nothing to import
+                    await _gamesManager.EnrichGames(newGames, progressForm.Reporter);
+                }
+                catch {  /* suppress scraping errors during rom import */ }
 
-                    try
+                lvGames.BeginUpdate();
+                lvGames.ItemChecked -= new ItemCheckedEventHandler(lvGames_ItemChecked);
+
+                //add to current view as "Just added"
+                lvGames.Groups[0].Items.AddRange(lvGames.Groups[1].Items);
+                lvGames.Groups[1].Items.Clear();
+
+                foreach (var newGame in newGames)
+                {
+                    var lvi = new ListViewItem(_gamesManager.GetRomListTitle(newGame))
                     {
-                        await _gamesManager.EnrichGames(newGames, progressForm.Reporter);
-                    }
-                    catch {  /* suppress scraping errors during rom import */ }
-
-                    lvGames.BeginUpdate();
-                    lvGames.ItemChecked -= new ItemCheckedEventHandler(lvGames_ItemChecked);
-
-                    //add to current view as "Just added"
-                    lvGames.Groups[0].Items.AddRange(lvGames.Groups[1].Items);
-                    lvGames.Groups[1].Items.Clear();
-
-                    foreach (var newGame in newGames)
-                    {
-                        var lvi = new ListViewItem(_gamesManager.GetRomListTitle(newGame))
-                        {
-                            Name = newGame.Id
-                        };
-                        lvGames.Groups[1].Items.Add(lvi);
-                        lvGames.Items.Add(lvi);
-                    }
-
-                    lvGames.Groups[0].Header = $"{lvGames.Items.Count} ROMs";
-
-                    lvGames.ItemChecked += new ItemCheckedEventHandler(lvGames_ItemChecked);
-                    MainForm_Resize(null, null); //resize form to make long game names fit
-                    lvGames.EndUpdate();
+                        Name = newGame.Id
+                    };
+                    lvGames.Groups[1].Items.Add(lvi);
+                    lvGames.Items.Add(lvi);
                 }
 
-                if (lvGames.Groups[1].Items.Count > 0)
-                {
-                    lvGames.SelectedIndices.Clear();
-                    lvGames.Groups[1].Items[lvGames.Groups[1].Items.Count - 1].EnsureVisible();
-                    lvGames.Groups[1].Items[0].Focused = true;
-                    lvGames.Groups[1].Items[0].Selected = true;
-                    lvGames.Groups[1].Items[0].EnsureVisible();
-                    lvGames.Focus();
-                }
+                lvGames.Groups[0].Header = $"{lvGames.Items.Count} ROMs";
+
+                lvGames.ItemChecked += new ItemCheckedEventHandler(lvGames_ItemChecked);
+                MainForm_Resize(null, null); //resize form to make long game names fit
+                lvGames.EndUpdate();
+            }
+
+            if (lvGames.Groups[1].Items.Count > 0)
+            {
+                lvGames.SelectedIndices.Clear();
+                lvGames.Groups[1].Items[lvGames.Groups[1].Items.Count - 1].EnsureVisible();
+                lvGames.Groups[1].Items[0].Focused = true;
+                lvGames.Groups[1].Items[0].Selected = true;
+                lvGames.Groups[1].Items[0].EnsureVisible();
+                lvGames.Focus();
             }
         }
 
@@ -988,6 +993,30 @@ namespace EverLoader
                     llBannerPrev.Location = new Point(pbBanner.Location.X, pbBanner.Location.Y + (pbBanner.Height - llBannerPrev.Height) / 2);
                     llBannerNext.Location = new Point(pbBanner.Location.X + pbBanner.Width - llBannerNext.Width, pbBanner.Location.Y + (pbBanner.Height - llBannerNext.Height) / 2);
                     break;
+            }
+        }
+
+        private void lvGames_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                var allowedExtensions = _appSettings.Platforms.SelectMany(p => p.RomFileExtensions);
+                if (files.Any(f => allowedExtensions.Contains(Path.GetExtension(f)))) 
+                {
+                    e.Effect = DragDropEffects.Copy;
+                    return;
+                }
+            }
+        }
+
+        private async void lvGames_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                var allowedExtensions = _appSettings.Platforms.SelectMany(p => p.RomFileExtensions);
+                await AddGames(files.Where(f => allowedExtensions.Contains(Path.GetExtension(f))).ToArray());
             }
         }
 
