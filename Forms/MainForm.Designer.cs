@@ -610,8 +610,8 @@ namespace EverLoader
             this.pbBoxArtLarge.TabStop = false;
             this.pbBoxArtLarge.SizeChanged += new System.EventHandler(this.pbGameImage_SizeChanged);
             this.pbBoxArtLarge.Click += new System.EventHandler(this.pbGameImage_Click);
-            this.pbBoxArtLarge.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
             this.pbBoxArtLarge.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragDrop);
+            this.pbBoxArtLarge.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
             // 
             // btnClearLarge
             // 
@@ -668,8 +668,8 @@ namespace EverLoader
             this.pbBoxArtMedium.TabStop = false;
             this.pbBoxArtMedium.SizeChanged += new System.EventHandler(this.pbGameImage_SizeChanged);
             this.pbBoxArtMedium.Click += new System.EventHandler(this.pbGameImage_Click);
-            this.pbBoxArtMedium.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
             this.pbBoxArtMedium.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragDrop);
+            this.pbBoxArtMedium.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
             // 
             // btnClearMedium
             // 
@@ -726,8 +726,8 @@ namespace EverLoader
             this.pbBoxArtSmall.TabStop = false;
             this.pbBoxArtSmall.SizeChanged += new System.EventHandler(this.pbGameImage_SizeChanged);
             this.pbBoxArtSmall.Click += new System.EventHandler(this.pbGameImage_Click);
-            this.pbBoxArtSmall.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
             this.pbBoxArtSmall.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragDrop);
+            this.pbBoxArtSmall.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
             // 
             // btnClearSmall
             // 
@@ -859,8 +859,8 @@ namespace EverLoader
             this.pbBanner.TabStop = false;
             this.pbBanner.SizeChanged += new System.EventHandler(this.pbGameImage_SizeChanged);
             this.pbBanner.Click += new System.EventHandler(this.pbGameImage_Click);
-            this.pbBanner.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
             this.pbBanner.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragDrop);
+            this.pbBanner.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbGameImage_DragEnter);
             // 
             // label8
             // 
@@ -916,6 +916,7 @@ namespace EverLoader
             // 
             // lvGames
             // 
+            this.lvGames.AllowDrop = true;
             this.lvGames.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -931,14 +932,13 @@ namespace EverLoader
             this.lvGames.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.lvGames.TabIndex = 0;
             this.lvGames.TabStop = false;
-            this.lvGames.AllowDrop = true;
             this.lvGames.UseCompatibleStateImageBehavior = false;
             this.lvGames.View = System.Windows.Forms.View.Details;
             this.lvGames.SelectedIndexChanged += new System.EventHandler(this.lvGames_SelectedIndexChanged);
+            this.lvGames.DragDrop += new System.Windows.Forms.DragEventHandler(this.lvGames_DragDrop);
+            this.lvGames.DragEnter += new System.Windows.Forms.DragEventHandler(this.lvGames_DragEnter);
             this.lvGames.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lvGames_KeyDown);
             this.lvGames.MouseClick += new System.Windows.Forms.MouseEventHandler(this.lvGames_MouseClick);
-            this.lvGames.DragEnter += new System.Windows.Forms.DragEventHandler(this.lvGames_DragEnter);
-            this.lvGames.DragDrop += new System.Windows.Forms.DragEventHandler(this.lvGames_DragDrop);
             // 
             // dummy
             // 
