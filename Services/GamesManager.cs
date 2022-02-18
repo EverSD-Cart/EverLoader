@@ -126,7 +126,7 @@ namespace EverLoader.Services
             }
 
             var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
-            await File.WriteAllTextAsync($"{APP_GAMES_FOLDER}{game.Id}\\{game.Id}.json", gameJson);
+            await File.WriteAllTextAsync($"{APP_GAMES_FOLDER}{game.Id}\\{game.Id}.json", gameJson, System.Text.Encoding.UTF8);
         }
 
         public string RemoveInvalidChars(string filename)
@@ -232,6 +232,9 @@ namespace EverLoader.Services
                 var evercadeGameInfo = new EvercadeGameInfo(gameJson);
                 if (selectedCore?.AutoLaunch == false)
                 {
+                    //clean up any old-style 0-byte pointer file if it exists
+                    if (File.Exists($"{sdDrive}game\\{game.Id}")) File.Delete($"{sdDrive}game\\{game.Id}");
+
                     // for internal Arcade/MAME, we have special way of launching using .cue file
                     if (game.RetroArchCore == null && platform.Id == 1)
                     {
@@ -240,9 +243,10 @@ namespace EverLoader.Services
                     }
                     else
                     {
-                        //no auto launcher, so write out special script and 0-byte marker
-                        evercadeGameInfo.romFileName = Path.GetFileNameWithoutExtension(evercadeGameInfo.romFileName);
-                        File.Create($"{sdDrive}game\\{game.Id}").Dispose(); //0-byte marker
+                        //no auto launcher, so write out special script and 0-byte pointer file
+                        var pointerFileName = $"{game.Id}-";
+                        evercadeGameInfo.romFileName = pointerFileName;
+                        File.Create($"{sdDrive}game\\{pointerFileName}").Dispose(); //create 0-byte pointer file
 
                         //create m3u for multi-disc games
                         //RemoveInvalidChars
@@ -256,12 +260,12 @@ namespace EverLoader.Services
                             .Replace("{ROM_FILENAME}", scriptRomFileName)
                             .Replace("\r", ""); //remove possible windows CR
 
-                        await File.WriteAllTextAsync($"{sdDrive}special\\{game.Id}.sh", shScript, System.Text.Encoding.UTF8);
+                        await File.WriteAllTextAsync($"{sdDrive}special\\{pointerFileName}.sh", shScript, System.Text.Encoding.UTF8);
                     }
                 }
                 //now write out evercade game json
                 var evercadeGameJson = JsonConvert.SerializeObject(evercadeGameInfo, Formatting.Indented);
-                await File.WriteAllTextAsync($"{sdDrive}game\\{game.Id}.json", evercadeGameJson);
+                await File.WriteAllTextAsync($"{sdDrive}game\\{game.Id}.json", evercadeGameJson, System.Text.Encoding.UTF8);
             }
         }
 
@@ -404,11 +408,16 @@ namespace EverLoader.Services
             //TODO: figure out how to remove rom in /roms folder
 
             //remove special script
-            var specialScriptPath = $"{sdRootFolder}special\\{gameId}.sh";
+            var specialScriptPath = $"{sdRootFolder}special\\{gameId}-.sh";
             if (File.Exists(specialScriptPath)) File.Delete(specialScriptPath);
 
+            //delete screenshots
+            var screenshotDir = $"{sdRootFolder}game\\{gameId}";
+            if (Directory.Exists(screenshotDir)) Directory.Delete(screenshotDir, true);
+
             var sdGameDir = new DirectoryInfo($"{sdRootFolder}game");
-            sdGameDir.EnumerateFiles($"{gameId}.*") //json, rom, and possiblye cue file or 0-byte special marker
+            sdGameDir.EnumerateFiles($"{gameId}.*") //json, rom, saveslot files, and possiblye cue file or (old style) 0-byte special pointer file
+                .Concat(sdGameDir.EnumerateFiles($"{gameId}-.*")) //0-byte pointer file
                 .Concat(sdGameDir.EnumerateFiles($"{gameId}0*.png")) //artwork gfx
                 .Concat(sdGameDir.EnumerateFiles($"{gameId}1*.png")) //artwork gfx
                 .Concat(sdGameDir.EnumerateFiles($"{gameId}2*.png")) //artwork gfx
