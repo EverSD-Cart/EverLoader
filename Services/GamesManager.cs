@@ -511,7 +511,9 @@ namespace EverLoader.Services
             title = GetCleanedTitle(title).ToLowerInvariant();
 
             //only keep words
-            title = string.Join(" ", Regex.Replace(title, "[^A-Za-z0-9]", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries));
+            title = string.Join(" ", Regex.Replace(title, "[^A-Za-z0-9]", " ")
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s switch { "i" => "1", "ii" => "2", "iii" => "3", "iv" => "4", "v" => "5", _ => s })); //convert lower roman numbers
 
             title = title.Replace(" & ", " and ");
             title = title.Replace(" s ", " "); //probably this was a 's
