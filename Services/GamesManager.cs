@@ -15,6 +15,7 @@ using System.Threading;
 using System.Windows.Forms;
 using TheGamesDBApiWrapper.Domain;
 using EverLoader.Properties;
+using EverLoader.Forms;
 
 namespace EverLoader.Services
 {
@@ -111,10 +112,11 @@ namespace EverLoader.Services
             return game != null ? _appSettings.Platforms.First(p => p.Id == game.romPlatformId) : null;
         }
 
+        //this returns one or multiple platforms that support a specific ROM file extension
         public IEnumerable<Platform> GetGamePlatformsByRomExtesion(string extension)
         {
             if (extension == null) return null;
-            return _appSettings.Platforms.Where(p => p.RomFileExtensions.Contains(extension.ToLowerInvariant()));
+            return _appSettings.Platforms.Where(p => p.SupportedExtensions.Contains(extension));
         }
 
         public async Task SerializeGame(GameInfo game)
@@ -344,28 +346,23 @@ namespace EverLoader.Services
                     multiDiskGameId = multiDiskBaseTitle = null;
                 }
 
-                var platform = _appSettings.Platforms.OrderBy(p => p.BlastRetroCore?.AutoLaunch).FirstOrDefault(p => p.RomFileExtensions.Contains(ext));
-                if (platform == null) continue; //!!!! unmapped extension. This should not be possible
+                //set the platformId if the extension can be mapped to a single platform
+                var mappedPlatforms = _appSettings.Platforms.Where(p => p.SupportedExtensions.Contains(ext));
+                var mappedPlatform = mappedPlatforms.Count() == 1 ? mappedPlatforms.First() : null;
 
                 //create minimal GameInfo information
                 var newGame = new GameInfo()
                 {
                     Id = newId,
                     romTitle = title,
-                    romFileName = platform.Id == 1 ? originalRomFileName : newRomFileName, //for MAME rom zips, don't change the filename
-                    romPlatformId = platform.Id,
+                    romFileName = mappedPlatform?.Id == 1 ? originalRomFileName : newRomFileName, //stock emulator rom file name (for RA we use the original filename)
+                    romPlatformId = mappedPlatform?.Id ?? 0,
                     romCRC32 = romCRC32,
                     romMD5 = romMD5,
                     OriginalRomFileName = originalRomFileName,
                     IsRecentlyAdded = true,
                     IsMultiDisc = newId == multiDiskGameId
                 };
-
-                //if no internal core, preselect the first RA core
-                if (platform.BlastRetroCore == null && platform.RetroArchCores.Length > 0)
-                {
-                    newGame.RetroArchCore = platform.RetroArchCores[0].CoreFileName;
-                }
 
                 //4. create required folders
                 Directory.CreateDirectory($"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_IMAGES_SOURCE}"); //this also creates the images subfolder
@@ -380,6 +377,16 @@ namespace EverLoader.Services
 
                 newGames.Add(newGame);
             }
+
+            if (!newGames.Any()) return newGames;
+
+            try
+            {
+                await EnrichGames(newGames, progress);
+            }
+            catch {  /* suppress scraping errors during rom import */ }
+
+            await EnsurePlatform(newGames, progress);
 
             return newGames;
             //note: MainForm will take care of adding the new game to the UI
@@ -519,6 +526,53 @@ namespace EverLoader.Services
             title = title.Replace(" s ", " "); //probably this was a 's
 
             return title;
+        }
+
+        /// <summary>
+        /// This method makes ensures every imported game is mapped to a platform and core (either stock or RA)
+        /// If no platform is set, it will ask the user
+        /// </summary>
+        internal async Task EnsurePlatform(IEnumerable<GameInfo> games, IProgress<(string, int, int)> progress)
+        {
+            var useAsDefaultExtensions = new Dictionary<string, int>();
+            var processedGames = 0;
+            foreach (var game in games)
+            {
+                progress.Show(("Finalizing platforms", ++processedGames, games.Count()));
+
+                var ext = Path.GetExtension(game.romFileName);
+                var possiblePlatforms = _appSettings.Platforms.Where(p => p.SupportedExtensions.Contains(ext)).ToList();
+
+                if (game.romPlatformId == 0)
+                {
+                    if (useAsDefaultExtensions.ContainsKey(ext))
+                    {
+                        game.romPlatformId = useAsDefaultExtensions[ext];
+                    }
+                    else
+                    {
+                        using (var form = new SelectPlatform(possiblePlatforms, game))
+                        {
+                            form.ShowDialog();
+                            game.romPlatformId = form.SelectedPlatform.Id;
+                            if (form.UseAsDefault)
+                            {
+                                useAsDefaultExtensions.Add(ext, game.romPlatformId);
+                            }
+                        }
+                    }
+                }
+                var gamePlatform = _appSettings.Platforms.Single(p => p.Id == game.romPlatformId);
+
+                //depending on extension, select the first matching core (note: stock core first)
+                if (gamePlatform.BlastRetroCore == null || !gamePlatform.BlastRetroCore.SupportedExtensions.Contains(ext))
+                {
+                    game.RetroArchCore = gamePlatform.RetroArchCores.First(c => c.SupportedExtensions.Contains(ext)).CoreFileName;
+                }
+                await SerializeGame(game);
+
+                //TODO: core selection radiobutton needs more logic
+            }
         }
 
         internal async Task EnrichGames(IEnumerable<GameInfo> games, IProgress<(string, int, int)> progress)

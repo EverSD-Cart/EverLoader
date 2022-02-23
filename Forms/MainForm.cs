@@ -227,14 +227,16 @@ namespace EverLoader
             {
                 // Emulator Settings
                 var platform = _gamesManager.GetGamePlatform(_game);
+                var ext = Path.GetExtension(_game?.romFileName);
 #if RA_SUPPORTED
                 cbMultiDisc.Visible = _game?.IsMultiDisc == true;
 
-                rbInternalCore.Enabled = platform?.BlastRetroCore != null;
-                rbRetroArchCore.Enabled = cbRetroArchCore.Enabled = platform?.RetroArchCores.Length > 0;
+                rbInternalCore.Enabled = platform?.BlastRetroCore?.SupportedExtensions.Contains(ext) == true;
+                rbRetroArchCore.Enabled = cbRetroArchCore.Enabled = platform?.RetroArchCores?.Any(r => r.SupportedExtensions.Contains(ext)) == true;
 
-                cbRetroArchCore.DataSource = platform?.RetroArchCores.Length > 0
-                    ? platform.RetroArchCores.Select(c => new ComboboxItem(c.DisplayName, c.CoreFileName)).ToArray()
+                cbRetroArchCore.DataSource = rbRetroArchCore.Enabled
+                    ? platform.RetroArchCores.Where(r => r.SupportedExtensions.Contains(ext))
+                        .Select(c => new ComboboxItem(c.DisplayName, c.CoreFileName)).ToArray()
                     : null;
                 cbRetroArchCore.DataBindings.DefaultDataSourceUpdateMode = DataSourceUpdateMode.Never;
                 cbRetroArchCore.DataBindings.AddSingle("SelectedValue", _game, nameof(_game.RetroArchCore));
@@ -546,7 +548,7 @@ namespace EverLoader
         private async void btnAddGames_Click(object sender, EventArgs e)
         {
             var supportedExtensions = String.Join(";", _appSettings.Platforms
-                .SelectMany(p => p.RomFileExtensions).Distinct().Select(e => $"*{e}"));
+                .SelectMany(p => p.SupportedExtensions).Distinct().Select(e => $"*{e}"));
 
             OpenFileDialog dialog = new OpenFileDialog()
             {
@@ -569,12 +571,6 @@ namespace EverLoader
             {
                 var newGames = await _gamesManager.ImportGamesByRom(fileNames, progressForm.Reporter);
                 if (!newGames.Any()) return; //nothing to import
-
-                try
-                {
-                    await _gamesManager.EnrichGames(newGames, progressForm.Reporter);
-                }
-                catch {  /* suppress scraping errors during rom import */ }
 
                 lvGames.BeginUpdate();
                 lvGames.ItemChecked -= new ItemCheckedEventHandler(lvGames_ItemChecked);
@@ -1001,7 +997,7 @@ namespace EverLoader
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                var allowedExtensions = _appSettings.Platforms.SelectMany(p => p.RomFileExtensions);
+                var allowedExtensions = _appSettings.Platforms.SelectMany(p => p.SupportedExtensions);
                 if (files.Any(f => allowedExtensions.Contains(Path.GetExtension(f)))) 
                 {
                     e.Effect = DragDropEffects.Copy;
@@ -1015,7 +1011,7 @@ namespace EverLoader
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                var allowedExtensions = _appSettings.Platforms.SelectMany(p => p.RomFileExtensions);
+                var allowedExtensions = _appSettings.Platforms.SelectMany(p => p.SupportedExtensions);
                 await AddGames(files.Where(f => allowedExtensions.Contains(Path.GetExtension(f))).ToArray());
             }
         }

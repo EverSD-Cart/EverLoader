@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace EverLoader.Models
@@ -27,6 +28,7 @@ namespace EverLoader.Models
     {
         public string FileName { get; set; }
         public bool Required { get; set; } = false;
+        public string[] SupportedExtensions { get; set; } = new string[] { };
     }
 
     public class Platform
@@ -35,14 +37,12 @@ namespace EverLoader.Models
         public string Alias { get; set; }
         public string Name { get; set; }
         public string Group { get; set; }
+        public string[] SupportedExtensions { get; set; } = new string[] { };
         public int GroupItemSortOrder { get; set; } = 0; // 0 = not ordered
         public IdName[] TGDB_PlatformIds { get; set; } = new IdName[] { };
-        public string[] RomFileExtensions { get; set; } = new string[] { };
         public BiosFile[] BiosFiles { get; set; } = new BiosFile[] { };
         public Core BlastRetroCore { get; set; }
         public Core[] RetroArchCores { get; set; } = new Core[] { };
-        public string GoogleSuffix { get; set; } //used for a future feature (Google image search)
-        // GET /search?q=Kid+Icarus+(fds+%7c+nes+%7c+famicom)+(box%7ccover)+art&source=lnms&tbm=isch HTTP/1.1
     }
 
     public class IdName
@@ -55,6 +55,8 @@ namespace EverLoader.Models
     {
         public string CoreFileName { get; set; }
         public string DisplayName { get; set; }
+        //a core can have specific supported extensions
+        public string[] SupportedExtensions { get; set; } = new string[] { };
         public bool AutoLaunch { get; set; }
         public ExternalFile[] Files { get; set; } = new ExternalFile[] { };
     }
