@@ -231,7 +231,7 @@ namespace EverLoader
 #if RA_SUPPORTED
                 cbMultiDisc.Visible = _game?.IsMultiDisc == true;
 
-                rbInternalCore.Enabled = platform?.BlastRetroCore?.SupportedExtensions.Contains(ext) == true;
+                rbInternalCore.Enabled = platform?.InternalEmulator?.SupportedExtensions.Contains(ext) == true;
                 rbRetroArchCore.Enabled = cbRetroArchCore.Enabled = platform?.RetroArchCores?.Any(r => r.SupportedExtensions.Contains(ext)) == true;
 
                 cbRetroArchCore.DataSource = rbRetroArchCore.Enabled

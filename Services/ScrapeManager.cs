@@ -31,8 +31,8 @@ namespace EverLoader.Services
             {
                 foreach (var tgdbGame in resp.Data.Games)
                 {
-                    var tgdbPlatform = tgdbPlatformIds.FirstOrDefault(p => p.Id == tgdbGame.Platform)?.Name ?? "unknown platform";
-                    var tgdbYear = tgdbGame.ReleaseDate.HasValue ? $"{tgdbGame.ReleaseDate.Value.Year} - " : null;
+                    var tgdbPlatform = tgdbPlatformIds.FirstOrDefault(p => p.Id == tgdbGame.Platform)?.Name;
+                    var tgdbYear = tgdbGame.ReleaseDate.HasValue ? $"{tgdbGame.ReleaseDate.Value.Year}{(tgdbPlatform != null ? " - " : null)}" : null;
                     scrapeResult.Add(tgdbGame.Id, new TgdbScrapeResult()
                     {
                         GameId = tgdbGame.Id,

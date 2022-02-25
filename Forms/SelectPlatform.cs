@@ -17,7 +17,7 @@ namespace EverLoader.Forms
         {
             InitializeComponent();
 
-            cbPossiblePlatforms.DisplayMember = nameof(Platform.Name);
+            cbPossiblePlatforms.DisplayMember = nameof(Platform.GroupAndName);
             cbPossiblePlatforms.ValueMember = nameof(Platform.Id);
             cbPossiblePlatforms.DataSource = possiblePlatforms;
 

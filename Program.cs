@@ -111,15 +111,11 @@ namespace EverLoader
             // if a Core doesn't have SupportedExtensions specified, copy them from platform
             foreach (var platform in appSettings.Platforms)
             {
-                if (platform.BlastRetroCore?.SupportedExtensions.Length == 0)
+                foreach (var core in platform.RetroArchCores.Append(platform.InternalEmulator).Where(_ => _ != null))
                 {
-                    platform.BlastRetroCore.SupportedExtensions = platform.SupportedExtensions;
-                }
-                foreach (var raCore in platform.RetroArchCores)
-                {
-                    if (raCore.SupportedExtensions.Length == 0)
+                    if (core.SupportedExtensions.Length == 0)
                     {
-                        raCore.SupportedExtensions = platform.SupportedExtensions;
+                        core.SupportedExtensions = platform.SupportedExtensions;
                     }
                 }
             }

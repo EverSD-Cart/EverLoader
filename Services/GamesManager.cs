@@ -109,7 +109,7 @@ namespace EverLoader.Services
 
         public Platform GetGamePlatform(GameInfo game)
         {
-            return game != null ? _appSettings.Platforms.First(p => p.Id == game.romPlatformId) : null;
+            return game != null ? _appSettings.Platforms.FirstOrDefault(p => p.Id == game.romPlatformId) : null;
         }
 
         //this returns one or multiple platforms that support a specific ROM file extension
@@ -171,10 +171,10 @@ namespace EverLoader.Services
                 var platform = _appSettings.Platforms.Single(p => p.Id == game.romPlatformId);
 
                 // 4a. copy emulator core (only overwrite if newer) + bios files (only overwrite if newer)
-                //first select the right core (note: megadrive doesn't have a core)
+                //first select the right core (note: megadrive has an 'empty' BlastRetro core, as it uses BlastEm emulator)
                 var selectedCore = game.RetroArchCore == null
-                    ? platform.BlastRetroCore
-                    : platform.RetroArchCores.FirstOrDefault(c => c.CoreFileName == game.RetroArchCore);
+                    ? platform.InternalEmulator
+                    : platform.RetroArchCores.OrderBy(c => c.CoreFileName == game.RetroArchCore ? 0 : 1).FirstOrDefault();
 
                 if (selectedCore != null)
                 {
@@ -565,13 +565,11 @@ namespace EverLoader.Services
                 var gamePlatform = _appSettings.Platforms.Single(p => p.Id == game.romPlatformId);
 
                 //depending on extension, select the first matching core (note: stock core first)
-                if (gamePlatform.BlastRetroCore == null || !gamePlatform.BlastRetroCore.SupportedExtensions.Contains(ext))
+                if (gamePlatform.InternalEmulator == null || !gamePlatform.InternalEmulator.SupportedExtensions.Contains(ext))
                 {
-                    game.RetroArchCore = gamePlatform.RetroArchCores.First(c => c.SupportedExtensions.Contains(ext)).CoreFileName;
+                    game.RetroArchCore = gamePlatform.RetroArchCores.FirstOrDefault(c => c.SupportedExtensions.Contains(ext))?.CoreFileName;
                 }
                 await SerializeGame(game);
-
-                //TODO: core selection radiobutton needs more logic
             }
         }
 

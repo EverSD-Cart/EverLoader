@@ -41,8 +41,10 @@ namespace EverLoader.Models
         public int GroupItemSortOrder { get; set; } = 0; // 0 = not ordered
         public IdName[] TGDB_PlatformIds { get; set; } = new IdName[] { };
         public BiosFile[] BiosFiles { get; set; } = new BiosFile[] { };
-        public Core BlastRetroCore { get; set; }
+        public Core InternalEmulator { get; set; }
         public Core[] RetroArchCores { get; set; } = new Core[] { };
+
+        public string GroupAndName => $"{(Group != null ? Group + " " : null)}{Name}";
     }
 
     public class IdName
