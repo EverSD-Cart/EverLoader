@@ -133,7 +133,7 @@ namespace EverLoader.Services
 
         public string RemoveInvalidChars(string filename)
         {
-            return string.Concat(filename.Split(Path.GetInvalidFileNameChars()));
+            return string.Concat(filename.Trim().Split(Path.GetInvalidFileNameChars()));
         }
 
         public async Task SyncToSd(string sdDrive, string cartName, IProgress<(string, int, int)> progress)
@@ -151,14 +151,13 @@ namespace EverLoader.Services
             Directory.CreateDirectory($"{sdDrive}game");
 
             // 3. Remove games on SD which are known but not selected
-            //TODO: Remove games on SD which are known
             var sdGamesDir = new DirectoryInfo($"{sdDrive}game");
             foreach (var sdGameId in sdGamesDir.EnumerateFiles("*.json")
                 .Select(j => Path.GetFileNameWithoutExtension(j.Name)))
             {
                 if (_games.TryGetValue(sdGameId, out GameInfo foundGame) && !foundGame.IsSelected)
                 {
-                    DeleteGameFilesOnSD(sdGameId, sdDrive);
+                    await DeleteGameFilesOnSD(foundGame, sdDrive);
                 }
             }
 
@@ -168,7 +167,8 @@ namespace EverLoader.Services
             {
                 progress.Show(("Syncing Games", ++syncedGameIndex, selectedGameIds.Length));
 
-                var platform = _appSettings.Platforms.Single(p => p.Id == game.romPlatformId);
+                var platform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
+                if (platform == null) continue;
 
                 // 4a. copy emulator core (only overwrite if newer) + bios files (only overwrite if newer)
                 //first select the right core (note: megadrive has an 'empty' BlastRetro core, as it uses BlastEm emulator)
@@ -210,13 +210,13 @@ namespace EverLoader.Services
                 // 4c. copy over rom file (only overwrite if newer)
                 var targetRomDir = game.RetroArchCore != null
                         ? "roms"                                /* for RetroArch, put all roms under /sdcard/roms */
-                        : (platform.Id == 1 ? "mame" : "game"); /* special case for mame roms, otherwise use /sdcard/game */
+                        : (platform.Id == 1 ? "mame" : "game"); /* internal emulator: arcade roms to /sdcard/mame, otherwise use /sdcard/game */
                 Directory.CreateDirectory($"{sdDrive}{targetRomDir}"); //ensure target directory exists on MicroSD card
                 var sourceRomDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}");
                 if (sourceRomDir.Exists) sourceRomDir.GetFiles().ToList().ForEach(f =>
                 {
                     var targetRomFileName = game.RetroArchCore != null
-                        ? f.Name /* this allows multi-disks */
+                        ? f.Name /* for RA, use original filename */
                         : game.romFileName;
                     var targetFile = $"{sdDrive}{targetRomDir}\\{targetRomFileName}";
                     f.CopyToOverwriteIfNewer(targetFile);
@@ -307,8 +307,8 @@ namespace EverLoader.Services
             var newGames = new List<GameInfo>();
             int importedGames = 0;
 
-            string multiDiskGameId = null;
-            string multiDiskBaseTitle = null;
+            string multiDiscGameId = null;
+            string multiDiscBaseTitle = null;
 
             foreach (var romPath in romPaths)
             {
@@ -326,24 +326,24 @@ namespace EverLoader.Services
                 var newRomFileName = $"{newId}{ext}";
                 var originalRomFileName = $"{title}{ext}";
 
-                //handle multi-disk
-                if (Regex.IsMatch(title, @"\([Dd]isk [0-9]+ of [0-9]+\)"))
+                //handle multi-disc
+                if (Regex.IsMatch(title, @"\(dis[c|k] [0-9]+", RegexOptions.IgnoreCase))
                 {
-                    var isDisk1 = title.ToLower().IndexOf("(disk 1 of ");
-                    if (isDisk1 > 0)
+                    var disc1Match = Regex.Match(title, @"\(dis[c|k] 1[^0-9]", RegexOptions.IgnoreCase);
+                    if (disc1Match.Success)
                     {
-                        multiDiskGameId = newId;
-                        title = multiDiskBaseTitle = title.Substring(0, isDisk1); //update title so it won't display the "(disk 1 of ..."
+                        multiDiscGameId = newId;
+                        title = multiDiscBaseTitle = title.Substring(0, disc1Match.Index); //update title so it won't display the "(disk 1 of ..."
                     }
-                    else if (title.StartsWith(multiDiskBaseTitle))
+                    else if (title.StartsWith(multiDiscBaseTitle))
                     {
-                        File.Copy(romPath, $"{APP_GAMES_FOLDER}{multiDiskGameId}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite:true);
-                        continue; //after copying the rom, we are done
+                        File.Copy(romPath, $"{APP_GAMES_FOLDER}{multiDiscGameId}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite:true);
+                        continue; //after copying the disc file, we are done here
                     }
                 }
                 else
                 {
-                    multiDiskGameId = multiDiskBaseTitle = null;
+                    multiDiscGameId = multiDiscBaseTitle = null;
                 }
 
                 //set the platformId if the extension can be mapped to a single platform
@@ -361,7 +361,7 @@ namespace EverLoader.Services
                     romMD5 = romMD5,
                     OriginalRomFileName = originalRomFileName,
                     IsRecentlyAdded = true,
-                    IsMultiDisc = newId == multiDiskGameId
+                    IsMultiDisc = newId == multiDiscGameId
                 };
 
                 //4. create required folders
@@ -399,30 +399,50 @@ namespace EverLoader.Services
         /// <param name="gameId"></param>
         /// <param name="rootFolder"></param>
         /// <returns></returns>
-        public void DeleteGameFilesOnSD(string gameId, string sdRootFolder)
+        public async Task DeleteGameFilesOnSD(GameInfo game, string sdDrive)
         {
-            //return if /sdcard/game/[gameId].json not exists
-            if (!File.Exists($"{sdRootFolder}game\\{gameId}.json")) return;
+            var gameId = game.Id;
 
             //if there is a mame cue file, get info from it and delete the rom from /sdcard/mame dir
-            if (File.Exists($"{sdRootFolder}game\\{gameId}.cue"))
+            if (File.Exists($"{sdDrive}game\\{gameId}.cue"))
             {
-                var mameFileName = File.ReadAllText($"{sdRootFolder}game\\{gameId}.cue");
-                var mameFilePath = $"{sdRootFolder}mame\\{mameFileName}";
+                var mameFileName = File.ReadAllTextAsync($"{sdDrive}game\\{gameId}.cue");
+                var mameFilePath = $"{sdDrive}mame\\{mameFileName}";
                 if (File.Exists(mameFilePath)) File.Delete(mameFilePath);
             }
 
-            //TODO: figure out how to remove rom in /roms folder
+            //remove game files in /roms folder
+            if (Directory.Exists($"{sdDrive}roms"))
+            {
+                //delete multidisc files
+                if (game.IsMultiDisc)
+                {
+                    var m3uFilePath = $"{sdDrive}roms\\{RemoveInvalidChars(game.romTitle)}.m3u";
+                    if (File.Exists(m3uFilePath))
+                    {
+                        foreach (string gameFileName in await File.ReadAllLinesAsync(m3uFilePath))
+                        {
+                            File.Delete($"{sdDrive}roms\\{gameFileName}");
+                        }
+                        File.Delete(m3uFilePath);
+                    }
+                }
+                else
+                {
+                    //delete single rom file
+                    File.Delete($"{sdDrive}roms\\{game.OriginalRomFileName}");
+                }
+            }
 
             //remove special script
-            var specialScriptPath = $"{sdRootFolder}special\\{gameId}-.sh";
+            var specialScriptPath = $"{sdDrive}special\\{gameId}-.sh";
             if (File.Exists(specialScriptPath)) File.Delete(specialScriptPath);
 
             //delete screenshots
-            var screenshotDir = $"{sdRootFolder}game\\{gameId}";
+            var screenshotDir = $"{sdDrive}game\\{gameId}";
             if (Directory.Exists(screenshotDir)) Directory.Delete(screenshotDir, true);
 
-            var sdGameDir = new DirectoryInfo($"{sdRootFolder}game");
+            var sdGameDir = new DirectoryInfo($"{sdDrive}game");
             sdGameDir.EnumerateFiles($"{gameId}.*") //json, rom, saveslot files, and possiblye cue file or (old style) 0-byte special pointer file
                 .Concat(sdGameDir.EnumerateFiles($"{gameId}-.*")) //0-byte pointer file
                 .Concat(sdGameDir.EnumerateFiles($"{gameId}0*.png")) //artwork gfx
@@ -565,7 +585,7 @@ namespace EverLoader.Services
                 var gamePlatform = _appSettings.Platforms.Single(p => p.Id == game.romPlatformId);
 
                 //depending on extension, select the first matching core (note: stock core first)
-                if (gamePlatform.InternalEmulator == null || !gamePlatform.InternalEmulator.SupportedExtensions.Contains(ext))
+                if (game.IsMultiDisc || gamePlatform.InternalEmulator == null || !gamePlatform.InternalEmulator.SupportedExtensions.Contains(ext))
                 {
                     game.RetroArchCore = gamePlatform.RetroArchCores.FirstOrDefault(c => c.SupportedExtensions.Contains(ext))?.CoreFileName;
                 }

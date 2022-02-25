@@ -312,7 +312,7 @@ namespace EverLoader
             this.cbMultiDisc.Checked = true;
             this.cbMultiDisc.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbMultiDisc.Enabled = false;
-            this.cbMultiDisc.Location = new System.Drawing.Point(42, -1);
+            this.cbMultiDisc.Location = new System.Drawing.Point(250, -1);
             this.cbMultiDisc.Name = "cbMultiDisc";
             this.cbMultiDisc.Size = new System.Drawing.Size(80, 19);
             this.cbMultiDisc.TabIndex = 2;

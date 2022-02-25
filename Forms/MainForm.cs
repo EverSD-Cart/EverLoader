@@ -231,7 +231,7 @@ namespace EverLoader
 #if RA_SUPPORTED
                 cbMultiDisc.Visible = _game?.IsMultiDisc == true;
 
-                rbInternalCore.Enabled = platform?.InternalEmulator?.SupportedExtensions.Contains(ext) == true;
+                rbInternalCore.Enabled = !cbMultiDisc.Visible && platform?.InternalEmulator?.SupportedExtensions.Contains(ext) == true;
                 rbRetroArchCore.Enabled = cbRetroArchCore.Enabled = platform?.RetroArchCores?.Any(r => r.SupportedExtensions.Contains(ext)) == true;
 
                 cbRetroArchCore.DataSource = rbRetroArchCore.Enabled
@@ -251,8 +251,8 @@ namespace EverLoader
                 else
                 {
 #if RA_SUPPORTED
-                    rbInternalCore.Checked = _game?.RetroArchCore == null;
-                    rbRetroArchCore.Checked = _game?.RetroArchCore != null;
+                    rbInternalCore.Checked = !_game.IsMultiDisc && _game.RetroArchCore == null;
+                    rbRetroArchCore.Checked = _game.RetroArchCore != null;
 #else
                     rbInternalCore.Checked = true;
 #endif
@@ -447,7 +447,7 @@ namespace EverLoader
             cbRetroArchCore.Enabled = rbRetroArchCore.Checked;
             if (rbRetroArchCore.Checked)
             {
-                if (cbRetroArchCore.SelectedIndex == -1)
+                if (cbRetroArchCore.SelectedIndex == -1 && cbRetroArchCore.Items.Count > 0)
                 {
                     cbRetroArchCore.SelectedIndex = 0;
                     cbRetroArchCore.DataBindings["SelectedValue"].WriteValue();
