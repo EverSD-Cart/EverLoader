@@ -112,6 +112,12 @@ namespace EverLoader.Services
             return game != null ? _appSettings.Platforms.FirstOrDefault(p => p.Id == game.romPlatformId) : null;
         }
 
+        public IEnumerable<Platform> GetExistingGamePlatforms()
+        {
+            var platformIds = Games.Select(g => g.romPlatformId).Distinct();
+            return _appSettings.Platforms.Where(p => platformIds.Contains(p.Id));
+        }
+
         //this returns one or multiple platforms that support a specific ROM file extension
         public IEnumerable<Platform> GetGamePlatformsByRomExtesion(string extension)
         {

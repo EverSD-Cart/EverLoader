@@ -5,19 +5,19 @@ using System.Text;
 
 namespace EverLoader.Enums
 {
-    public enum RomListFilter
+    public enum RomFeatureFilter
     {
         [Description("Show all ROMs")]
         AllRoms = 0,
-        [Description("Show selected ROMs (for sync)")]
-        SelectedForSync = 1,
         [Description("Show recently added ROMs")]
-        RecentlyAdded = 2,
+        RecentlyAdded = 1,
         [Description("Show ROMs without description")]
-        RomsWithoutDescription = 3,
+        RomsWithoutDescription = 2,
         [Description("Show ROMs without boxart images")]
-        RomsWithoutBoxart = 4,
+        RomsWithoutBoxart = 3,
         [Description("Show ROMs without banner image")]
-        RomsWithoutBanner = 5
+        RomsWithoutBanner = 4,
+        [Description("Show selected ROMs (for sync)")]
+        SelectedForSync = 5,
     }
 }

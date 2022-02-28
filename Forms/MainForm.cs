@@ -52,7 +52,7 @@ namespace EverLoader
             this.MinimumSize = this.Size; //startup size is the minimum size
             this.CenterToScreen();
 
-            lvGames.Groups.Add(new ListViewGroup("ROMs", HorizontalAlignment.Center)); //group 0
+            lvGames.Groups.Add(new ListViewGroup("ROM(s)", HorizontalAlignment.Center)); //group 0
             lvGames.Groups.Add(new ListViewGroup("Added Just Now", HorizontalAlignment.Center)); //group 1
 
             //set TabStop for linklabels to false
@@ -68,13 +68,13 @@ namespace EverLoader
             pbBoxArtSmall.AllowDrop = true;
             pbBanner.AllowDrop = true;
 
-            PopulateComboboxes();
+            PopulatePlatformCombobox();
         }
 
         /// <summary>
         /// Populates the platform dropdown boxes
         /// </summary>
-        private void PopulateComboboxes()
+        private void PopulatePlatformCombobox()
         {
             //platform combobox
             cbPlatform.DisplayMember = "Text";
@@ -96,23 +96,56 @@ namespace EverLoader
             });
             cbPlatform.DataSource = items;
             cbPlatform.SelectedItem = null;
-
-            cbRomFilter.DisplayMember = "Description";
-            cbRomFilter.ValueMember = "Value";
-            cbRomFilter.DataSource = Enum.GetValues(typeof(RomListFilter))
-                .Cast<Enum>()
-                .Select(value => new
-                {
-                    (Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute)) as DescriptionAttribute).Description,
-                    value
-                })
-                .OrderBy(item => item.value)
-                .ToList();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            cbRomFilter.SelectedIndexChanged -= new EventHandler(this.cbRomFilter_SelectedIndexChanged);
+        }
+
+        private void PopulateRomFilterCombobox()
+        {
+            cbRomFilter.SelectedIndexChanged -= new EventHandler(this.cbRomFilter_SelectedIndexChanged);
+
+            var currSelectedValue = cbRomFilter.SelectedValue;
+
+            cbRomFilter.DataSource = null;
+            cbRomFilter.DisplayMember = "Text";
+            cbRomFilter.ValueMember = "Value";
+            cbRomFilter.GroupMember = "Group";
+            var dsRomFilter = Enum.GetValues(typeof(RomFeatureFilter))
+                .Cast<Enum>()
+                .Select(value => new
+                {
+                    Group = "Filter by Feature",
+                    Text = (Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute)) as DescriptionAttribute).Description,
+                    Value = value.ToString()
+                }).ToList();
+            //add platforms used by current collection of games
+            foreach (var platform in _gamesManager.GetExistingGamePlatforms())
+            {
+                dsRomFilter.Add(new 
+                {
+                    Group = "Filter by Platform",
+                    Text = platform.GroupAndName,
+                    Value = platform.Id.ToString()
+                });
+            }
+
+            cbRomFilter.DataSource = dsRomFilter;
+
+            if (currSelectedValue != null)
+            {
+                cbRomFilter.SelectedValue = currSelectedValue;
+            }
+
+            cbRomFilter.Enabled = true;
+            cbRomFilter.SelectedIndexChanged += new EventHandler(this.cbRomFilter_SelectedIndexChanged);
         }
 
         private async void MainForm_Shown(object sender, System.EventArgs e)
@@ -126,9 +159,8 @@ namespace EverLoader
             UpdateTotalSelectedGamesLabel();
 
             //after games read, select the 'all ROMs' filter, which will add all games to listview
+            PopulateRomFilterCombobox();
             cbRomFilter_SelectedIndexChanged(null, null);
-            cbRomFilter.Enabled = true;
-            cbRomFilter.SelectedIndexChanged += new EventHandler(this.cbRomFilter_SelectedIndexChanged);
 
             lvGames.ItemChecked += new ItemCheckedEventHandler(lvGames_ItemChecked);
 
@@ -136,7 +168,7 @@ namespace EverLoader
             {
                 toolTip1.Show("Welcome to EverLoader; the easiest way to sync your ROMs to the EverSD cart!\n\n" +
                     "It looks like your ROMs collection is still empty...\n\n" +
-                    "Click the 'Add New ROMs' button below to import your ROMs.", lvGames);
+                    "Click the 'Add New ROM(s)' button below to import your ROMs.", lvGames);
             }
 
             //run stuff in the background
@@ -489,7 +521,7 @@ namespace EverLoader
                 {
                     listViewItem.Remove();
                 }
-                lvGames.Groups[0].Header = $"{lvGames.Items.Count} ROMs";
+                lvGames.Groups[0].Header = $"{lvGames.Items.Count} ROM(s)";
                 lvGames.EndUpdate();
 
                 UpdateTotalSelectedGamesLabel();
@@ -554,7 +586,7 @@ namespace EverLoader
             {
                 Multiselect = true,
                 Filter = $"Game ROMs ({supportedExtensions})|{supportedExtensions}",
-                Title = "Select Game ROMs"
+                Title = "Select Game ROM(s)"
             };
 
             if (dialog.ShowDialog() == DialogResult.OK)
@@ -589,7 +621,7 @@ namespace EverLoader
                     lvGames.Items.Add(lvi);
                 }
 
-                lvGames.Groups[0].Header = $"{lvGames.Items.Count} ROMs";
+                lvGames.Groups[0].Header = $"{lvGames.Items.Count} ROM(s)";
 
                 lvGames.ItemChecked += new ItemCheckedEventHandler(lvGames_ItemChecked);
                 MainForm_Resize(null, null); //resize form to make long game names fit
@@ -605,6 +637,8 @@ namespace EverLoader
                 lvGames.Groups[1].Items[0].EnsureVisible();
                 lvGames.Focus();
             }
+
+            PopulateRomFilterCombobox();
         }
 
         private async void btnSyncToSD_Click(object sender, EventArgs e)
@@ -707,21 +741,30 @@ namespace EverLoader
 
         private void cbRomFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
-            IEnumerable<GameInfo> gameInfos;
-            switch (cbRomFilter.SelectedIndex)
+            IEnumerable<GameInfo> gameInfos = _gamesManager.Games; //default
+
+            var romFeatureFilters = Enum.GetNames(typeof(RomFeatureFilter));
+            if (romFeatureFilters.Contains(cbRomFilter.SelectedValue as string))
             {
-                case (int)RomListFilter.SelectedForSync: //selected
-                    gameInfos = _gamesManager.Games.Where(g => g.IsSelected); break;
-                case (int)RomListFilter.RecentlyAdded: //recent
-                    gameInfos = _gamesManager.Games.Where(g => g.IsRecentlyAdded); break;
-                case (int)RomListFilter.RomsWithoutBanner: //selected
-                    gameInfos = _gamesManager.Games.Where(g => g.ImageBanner == null); break;
-                case (int)RomListFilter.RomsWithoutBoxart: //selected
-                    gameInfos = _gamesManager.Games.Where(g => g.Image == null && g.Image1080 == null); break;
-                case (int)RomListFilter.RomsWithoutDescription: //selected
-                    gameInfos = _gamesManager.Games.Where(g => g.romDescription == string.Empty); break;
-                default: //all
-                    gameInfos = _gamesManager.Games; break;
+                switch (Enum.Parse(typeof(RomFeatureFilter), cbRomFilter.SelectedValue as string))
+                {
+                    case RomFeatureFilter.SelectedForSync: //selected
+                        gameInfos = _gamesManager.Games.Where(g => g.IsSelected); break;
+                    case RomFeatureFilter.RecentlyAdded: //recent
+                        gameInfos = _gamesManager.Games.Where(g => g.IsRecentlyAdded); break;
+                    case RomFeatureFilter.RomsWithoutBanner: //selected
+                        gameInfos = _gamesManager.Games.Where(g => g.ImageBanner == null); break;
+                    case RomFeatureFilter.RomsWithoutBoxart: //selected
+                        gameInfos = _gamesManager.Games.Where(g => g.Image == null && g.Image1080 == null); break;
+                    case RomFeatureFilter.RomsWithoutDescription: //selected
+                        gameInfos = _gamesManager.Games.Where(g => g.romDescription == string.Empty); break;
+                    //default
+                }
+            }
+            else if (int.TryParse(cbRomFilter.SelectedValue as string, out int platformId))
+            {
+                //filter on platform id
+                gameInfos = _gamesManager.Games.Where(g => g.romPlatformId == platformId);
             }
 
             lvGames.BeginUpdate();
@@ -733,7 +776,7 @@ namespace EverLoader
                 Name = g.Id,
                 Group = lvGames.Groups[0]
             }).ToArray());
-            lvGames.Groups[0].Header = $"{lvGames.Items.Count} ROMs";
+            lvGames.Groups[0].Header = $"{lvGames.Items.Count} ROM(s)";
             lvGames.EndUpdate();
 
             MainForm_Resize(null, null); //resize form to make long game names fit
@@ -784,7 +827,7 @@ namespace EverLoader
                 catch (Exception ex)
                 {
                     ShowScrapingErrorMessageBox(ex);
-                    //continue
+                    //show error, but don't break the flow
                 }
                 _game.GameInfoChanged += Game_GameInfoChanged;
                 SetDataBindings();
@@ -793,7 +836,7 @@ namespace EverLoader
 
         private void ShowScrapingErrorMessageBox(Exception ex)
         {
-            MessageBox.Show($"There were problems calling the Scraping API. Error message: \"{ex.Message}\".", "Scraping Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show($"There were problems calling the Scraping API.\nError message: \"{ex.Message}\".\nInner exception message: \"{ex.InnerException?.Message}\"", "Scraping Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private bool IdleHandlerSet { get; set; }

@@ -84,7 +84,7 @@ namespace EverLoader
             this.label8 = new System.Windows.Forms.Label();
             this.pbConnected = new System.Windows.Forms.PictureBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.cbRomFilter = new System.Windows.Forms.ComboBox();
+            this.cbRomFilter = new GroupedComboBox();
             this.lvGames = new System.Windows.Forms.ListView();
             this.dummy = new System.Windows.Forms.ColumnHeader();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -194,7 +194,7 @@ namespace EverLoader
             this.btnAddGames.Size = new System.Drawing.Size(331, 27);
             this.btnAddGames.TabIndex = 1;
             this.btnAddGames.TabStop = false;
-            this.btnAddGames.Text = "Add New ROMs";
+            this.btnAddGames.Text = "Add New ROM(s)";
             this.btnAddGames.UseVisualStyleBackColor = true;
             this.btnAddGames.Click += new System.EventHandler(this.btnAddGames_Click);
             // 
@@ -904,13 +904,14 @@ namespace EverLoader
             // 
             this.cbRomFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbRomFilter.DataSource = null;
             this.cbRomFilter.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbRomFilter.Enabled = false;
             this.cbRomFilter.FormattingEnabled = true;
             this.cbRomFilter.Location = new System.Drawing.Point(5, 17);
             this.cbRomFilter.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.cbRomFilter.Name = "cbRomFilter";
-            this.cbRomFilter.Size = new System.Drawing.Size(329, 23);
+            this.cbRomFilter.Size = new System.Drawing.Size(329, 24);
             this.cbRomFilter.TabIndex = 1;
             this.cbRomFilter.TabStop = false;
             // 
@@ -1662,6 +1663,7 @@ namespace EverLoader
             this.Margin = new System.Windows.Forms.Padding(2, 1, 2, 1);
             this.Name = "MainForm";
             this.Text = "EverLoader";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
@@ -1808,7 +1810,7 @@ namespace EverLoader
         private System.Windows.Forms.Button btnClearSmall;
         private System.Windows.Forms.Button btnClearMedium;
         private System.Windows.Forms.Button btnClearLarge;
-        private System.Windows.Forms.ComboBox cbRomFilter;
+        private GroupedComboBox cbRomFilter;
         private System.Windows.Forms.ToolStripMenuItem checkForUpdatesToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem scrapeToolStripMenuItem;
