@@ -163,7 +163,7 @@ namespace EverLoader.Services
             {
                 if (_games.TryGetValue(sdGameId, out GameInfo foundGame) && !foundGame.IsSelected)
                 {
-                    await DeleteGameFilesOnSD(foundGame, sdDrive);
+                    DeleteGameFilesOnSD(foundGame, sdDrive);
                 }
             }
 
@@ -215,7 +215,7 @@ namespace EverLoader.Services
 
                 // 4c. copy over rom file (only overwrite if newer)
                 var targetRomDir = game.RetroArchCore != null
-                        ? "roms"                                /* for RetroArch, put all roms under /sdcard/roms */
+                        ? $"roms\\{game.Id}"                    /* for RetroArch, put all roms under /sdcard/roms */
                         : (platform.Id == 1 ? "mame" : "game"); /* internal emulator: arcade roms to /sdcard/mame, otherwise use /sdcard/game */
                 Directory.CreateDirectory($"{sdDrive}{targetRomDir}"); //ensure target directory exists on MicroSD card
                 var sourceRomDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{game.Id}\\{SUBFOLDER_ROM}");
@@ -228,12 +228,12 @@ namespace EverLoader.Services
                     f.CopyToOverwriteIfNewer(targetFile);
                 });
 
-                string multiDiscFilePath = null;
-                if (game.IsMultiDisc)
-                {
-                    multiDiscFilePath = $"{sdDrive}{targetRomDir}\\{RemoveInvalidChars(game.romTitle)}.m3u";
-                    File.WriteAllLines(multiDiscFilePath, sourceRomDir.GetFiles().Select(f => f.Name));
-                }
+                //string multiDiscFilePath = null;
+                //if (game.IsMultiDisc)
+                //{
+                //    multiDiscFilePath = $"{sdDrive}{targetRomDir}\\{RemoveInvalidChars(game.romTitle)}.m3u";
+                //    File.WriteAllLines(multiDiscFilePath, sourceRomDir.GetFiles().Select(f => f.Name));
+                //}
 
                 //custom handling for cores without autolaunch
                 var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
@@ -256,16 +256,14 @@ namespace EverLoader.Services
                         evercadeGameInfo.romFileName = pointerFileName;
                         File.Create($"{sdDrive}game\\{pointerFileName}").Dispose(); //create 0-byte pointer file
 
-                        //create m3u for multi-disc games
-                        //RemoveInvalidChars
-
                         Directory.CreateDirectory($"{sdDrive}special"); //ensure special directory exists
 
                         string shScript = game.RetroArchCore != null ? Resources.special_bash_ra : Resources.special_bash;
-                        string scriptRomFileName = multiDiscFilePath != null ? Path.GetFileName(multiDiscFilePath) : game.PreferedRomFileName();
+                        //string scriptRomFileName = multiDiscFilePath != null ? Path.GetFileName(multiDiscFilePath) : game.PreferedRomFileName();
+                        string scriptRomFileName = game.PreferedRomFileName();
                         shScript = shScript
                             .Replace("{CORE_FILENAME}", selectedCore.CoreFileName)
-                            .Replace("{ROM_FILENAME}", scriptRomFileName)
+                            .Replace("{ROM_FILENAME}", $"{game.Id}/{scriptRomFileName}")
                             .Replace("\r", ""); //remove possible windows CR
 
                         await File.WriteAllTextAsync($"{sdDrive}special\\{pointerFileName}.sh", shScript, System.Text.Encoding.UTF8);
@@ -303,6 +301,17 @@ namespace EverLoader.Services
             return cleanTitle;
         }
 
+        private IEnumerable<string> GetFilesFromCueFile(string cueFilePath)
+        {
+            var catalogFiles = new List<string>();
+            foreach (var line in File.ReadAllLines(cueFilePath))
+            {
+                if (!line.StartsWith("FILE \"") || line.Split('"').Length != 3) continue;
+                catalogFiles.Add(line.Split('"')[1]);
+            }
+            return catalogFiles;
+        }
+
         /// <summary>
         /// Creates a new GameInfo and adds this to your local games database
         /// TODO: match CRC with local gamelist.xml and call out to TGB for game metadata
@@ -320,14 +329,29 @@ namespace EverLoader.Services
             {
                 progress.Show(("Importing game(s)", ++importedGames, romPaths.Length));
 
+                var title = Path.GetFileNameWithoutExtension(romPath);
+                var ext = Path.GetExtension(romPath).ToLower();
+
+                //0. if .cue file, then all listed files should exist
+                if (ext == ".cue")
+                {
+                    bool fileNotFound = false;
+                    foreach (var fileName in GetFilesFromCueFile(romPath))
+                    {
+                        if (!File.Exists(Path.Combine(Path.GetDirectoryName(romPath), fileName)))
+                        {
+                            fileNotFound = true; break;
+                        }
+                    }
+                    if (fileNotFound) continue; //skip this cue file, as not all catalog files found
+                }
+
                 //1. don't add rom if CRC is already in collection
                 (var romCRC32, var romMD5) = HashHelper.CalculateHashcodes(romPath);
                 var crc32 = uint.Parse(romCRC32, NumberStyles.HexNumber);
                 if (_gameCRCs.Contains(crc32)) continue;
                 
                 //2. calculate unique code
-                var title = Path.GetFileNameWithoutExtension(romPath);
-                var ext = Path.GetExtension(romPath).ToLower();
                 var newId = GenerateGameId(title);
                 var newRomFileName = $"{newId}{ext}";
                 var originalRomFileName = $"{title}{ext}";
@@ -344,6 +368,10 @@ namespace EverLoader.Services
                     else if (title.StartsWith(multiDiscBaseTitle))
                     {
                         File.Copy(romPath, $"{APP_GAMES_FOLDER}{multiDiscGameId}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite:true);
+                        if (ext == ".cue") foreach (var fileName in GetFilesFromCueFile(romPath))
+                        {
+                            File.Copy(Path.Combine(Path.GetDirectoryName(romPath), fileName), $"{APP_GAMES_FOLDER}{multiDiscGameId}\\{SUBFOLDER_ROM}{fileName}", overwrite: true);
+                        }
                         continue; //after copying the disc file, we are done here
                     }
                 }
@@ -374,8 +402,14 @@ namespace EverLoader.Services
                 Directory.CreateDirectory($"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_IMAGES_SOURCE}"); //this also creates the images subfolder
                 Directory.CreateDirectory($"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}");
 
-                //4. copy over the rom file
+                //5. copy over the rom file
                 File.Copy(romPath, $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite: true);
+                //5b. for cue files, copy over all catalog files
+                if (ext == ".cue") foreach (var fileName in GetFilesFromCueFile(romPath))
+                {
+                    File.Copy(Path.Combine(Path.GetDirectoryName(romPath), fileName), $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}{fileName}", overwrite: true);
+                }
+
                 await SerializeGame(newGame);
 
                 _games.Add(newId, newGame);
@@ -405,7 +439,7 @@ namespace EverLoader.Services
         /// <param name="gameId"></param>
         /// <param name="rootFolder"></param>
         /// <returns></returns>
-        public async Task DeleteGameFilesOnSD(GameInfo game, string sdDrive)
+        public void DeleteGameFilesOnSD(GameInfo game, string sdDrive)
         {
             var gameId = game.Id;
 
@@ -418,27 +452,7 @@ namespace EverLoader.Services
             }
 
             //remove game files in /roms folder
-            if (Directory.Exists($"{sdDrive}roms"))
-            {
-                //delete multidisc files
-                if (game.IsMultiDisc)
-                {
-                    var m3uFilePath = $"{sdDrive}roms\\{RemoveInvalidChars(game.romTitle)}.m3u";
-                    if (File.Exists(m3uFilePath))
-                    {
-                        foreach (string gameFileName in await File.ReadAllLinesAsync(m3uFilePath))
-                        {
-                            File.Delete($"{sdDrive}roms\\{gameFileName}");
-                        }
-                        File.Delete(m3uFilePath);
-                    }
-                }
-                else
-                {
-                    //delete single rom file
-                    File.Delete($"{sdDrive}roms\\{game.OriginalRomFileName}");
-                }
-            }
+            if (Directory.Exists($"{sdDrive}roms\\{gameId}")) Directory.Delete($"{sdDrive}roms\\{gameId}", true);
 
             //remove special script
             var specialScriptPath = $"{sdDrive}special\\{gameId}-.sh";
@@ -530,7 +544,7 @@ namespace EverLoader.Services
             if (string.IsNullOrWhiteSpace(title)) return null;
 
             //strip everything after brackets
-            int bracketsIndex = title.IndexOfAny(new[] { '(', '[' });
+            int bracketsIndex = title.IndexOfAny(new[] { '(', '[', ':', ';' });
             if (bracketsIndex > 1) title = title.Substring(0, bracketsIndex);
 
             //...and trim
