@@ -131,6 +131,8 @@ namespace EverLoader.Services
             {
                 var platform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
                 game.romPlatform = platform?.Name; //updating romPlatform won't trigger update events 
+
+                PreselectGameCore(game);
             }
 
             var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
@@ -140,6 +142,26 @@ namespace EverLoader.Services
         public string RemoveInvalidChars(string filename)
         {
             return string.Concat(filename.Trim().Split(Path.GetInvalidFileNameChars()));
+        }
+
+        public BiosFile[] GetMissingBiosFiles(GameInfo game, bool includeOptionalBios)
+        {
+            var platform = GetGamePlatform(game);
+            if (platform?.BiosFiles != null)
+            {
+                List<BiosFile> missingBiosFiles = new List<BiosFile>();
+                foreach (var biosFile in platform.BiosFiles.Where(b => b.Required || includeOptionalBios))
+                {
+                    if (biosFile.SupportedExtensions.Length > 0 && !biosFile.SupportedExtensions.Contains(Path.GetExtension(game.romFileName))) continue;
+
+                    if (!File.Exists($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile.FileName}"))
+                    {
+                        missingBiosFiles.Add(biosFile);
+                    }
+                }
+                return missingBiosFiles.ToArray();
+            }
+            return new BiosFile[0];
         }
 
         public async Task SyncToSd(string sdDrive, string cartName, IProgress<(string, int, int)> progress)
@@ -319,39 +341,38 @@ namespace EverLoader.Services
         /// <param name="romPath"></param>
         public async Task<IEnumerable<GameInfo>> ImportGamesByRom(string[] romPaths, IProgress<(string, int, int)> progress)
         {
+            var validRomPaths = romPaths.ToList();
+
+            //Step 0. first, we check all the .cue sheets to see if all embedded FILEs are available
+            foreach (var cueSheet in romPaths.Where(p => p.ToLower().EndsWith(".cue")))
+            {
+                bool cueSheetValid = true;
+                foreach (var fileName in GetFilesFromCueFile(cueSheet))
+                {
+                    var fullFilePath = Path.Combine(Path.GetDirectoryName(cueSheet), fileName);
+                    if (File.Exists(fullFilePath)) validRomPaths.Remove(fullFilePath); else cueSheetValid = false;
+                }
+                if (!cueSheetValid) validRomPaths.Remove(cueSheet);
+            }
+
             var newGames = new List<GameInfo>();
             int importedGames = 0;
 
             string multiDiscGameId = null;
             string multiDiscBaseTitle = null;
 
-            foreach (var romPath in romPaths)
+            foreach (var romPath in validRomPaths)
             {
-                progress.Show(("Importing game(s)", ++importedGames, romPaths.Length));
-
-                var title = Path.GetFileNameWithoutExtension(romPath);
-                var ext = Path.GetExtension(romPath).ToLower();
-
-                //0. if .cue file, then all listed files should exist
-                if (ext == ".cue")
-                {
-                    bool fileNotFound = false;
-                    foreach (var fileName in GetFilesFromCueFile(romPath))
-                    {
-                        if (!File.Exists(Path.Combine(Path.GetDirectoryName(romPath), fileName)))
-                        {
-                            fileNotFound = true; break;
-                        }
-                    }
-                    if (fileNotFound) continue; //skip this cue file, as not all catalog files found
-                }
+                progress.Show(("Importing game(s)", ++importedGames, validRomPaths.Count));
 
                 //1. don't add rom if CRC is already in collection
                 (var romCRC32, var romMD5) = HashHelper.CalculateHashcodes(romPath);
                 var crc32 = uint.Parse(romCRC32, NumberStyles.HexNumber);
                 if (_gameCRCs.Contains(crc32)) continue;
-                
+
                 //2. calculate unique code
+                var title = Path.GetFileNameWithoutExtension(romPath);
+                var ext = Path.GetExtension(romPath).ToLower();
                 var newId = GenerateGameId(title);
                 var newRomFileName = $"{newId}{ext}";
                 var originalRomFileName = $"{title}{ext}";
@@ -372,7 +393,7 @@ namespace EverLoader.Services
                         {
                             File.Copy(Path.Combine(Path.GetDirectoryName(romPath), fileName), $"{APP_GAMES_FOLDER}{multiDiscGameId}\\{SUBFOLDER_ROM}{fileName}", overwrite: true);
                         }
-                        continue; //after copying the disc file, we are done here
+                        continue; //after copying a consecutive disc, we are done here
                     }
                 }
                 else
@@ -404,7 +425,7 @@ namespace EverLoader.Services
 
                 //5. copy over the rom file
                 File.Copy(romPath, $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite: true);
-                //5b. for cue files, copy over all catalog files
+                //5b. for cue files, copy over all embedded FILEs
                 if (ext == ".cue") foreach (var fileName in GetFilesFromCueFile(romPath))
                 {
                     File.Copy(Path.Combine(Path.GetDirectoryName(romPath), fileName), $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}{fileName}", overwrite: true);
@@ -602,14 +623,25 @@ namespace EverLoader.Services
                         }
                     }
                 }
-                var gamePlatform = _appSettings.Platforms.Single(p => p.Id == game.romPlatformId);
+                
+                await SerializeGame(game); // this will internally call PreselectGameCore(game), as game.romPlatform is still null
+            }
+        }
 
-                //depending on extension, select the first matching core (note: stock core first)
-                if (game.IsMultiDisc || gamePlatform.InternalEmulator == null || !gamePlatform.InternalEmulator.SupportedExtensions.Contains(ext))
-                {
-                    game.RetroArchCore = gamePlatform.RetroArchCores.FirstOrDefault(c => c.SupportedExtensions.Contains(ext))?.CoreFileName;
-                }
-                await SerializeGame(game);
+        public void PreselectGameCore(GameInfo game)
+        {
+            var gamePlatform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
+            if (gamePlatform == null) return;
+
+            var ext = Path.GetExtension(game.romFileName);
+            //depending on extension, select the first matching core (note: try stock core first)
+            if (game.IsMultiDisc || gamePlatform.InternalEmulator == null || !gamePlatform.InternalEmulator.SupportedExtensions.Contains(ext))
+            {
+                game.RetroArchCore = gamePlatform.RetroArchCores.FirstOrDefault(c => c.SupportedExtensions.Contains(ext))?.CoreFileName;
+            }
+            else
+            {
+                game.RetroArchCore = null;
             }
         }
 

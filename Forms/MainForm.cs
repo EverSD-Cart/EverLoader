@@ -257,6 +257,9 @@ namespace EverLoader
 
             if (!refreshOnly) //refresh is done after clicking item in scrape results, or when shifting banner up/down
             {
+                //show original rom filenam when hovering gameid label
+                toolTip1.SetToolTip(lblGameId, _game != null ? $"'{_game.OriginalRomFileName}'" : null);
+
                 // Emulator Settings
                 var platform = _gamesManager.GetGamePlatform(_game);
                 var ext = Path.GetExtension(_game?.romFileName);
@@ -331,7 +334,7 @@ namespace EverLoader
         /// </summary>
         private void UpdateMissingBiosFilesLabel()
         {
-            var missingBiosFiles = GetMissingRomFiles();
+            var missingBiosFiles = _gamesManager.GetMissingBiosFiles(_game, includeOptionalBios:true);
             lblMissingBiosFiles.Visible = missingBiosFiles.Length > 0;
             var platform = _gamesManager.GetGamePlatform(_game);
             if (platform != null)
@@ -354,24 +357,6 @@ namespace EverLoader
                 }
                 toolTip1.SetToolTip(lblMissingBiosFiles, $"The {platform.Name} emulator {missingBiosText} BIOS files:\n - {missingBiosList}");
             }
-        }
-
-        private BiosFile[] GetMissingRomFiles()
-        {
-            var platform = _gamesManager.GetGamePlatform(_game);
-            if (platform?.BiosFiles != null)
-            {
-                List<BiosFile> missingBiosFiles = new List<BiosFile>();
-                foreach (var biosFile in platform.BiosFiles)
-                {
-                    if (!File.Exists($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile.FileName}"))
-                    {
-                        missingBiosFiles.Add(biosFile);
-                    }
-                }
-                return missingBiosFiles.ToArray();
-            }
-            return new BiosFile[0];
         }
 
         private void LoadBoxArt()
@@ -643,7 +628,7 @@ namespace EverLoader
 
         private async void btnSyncToSD_Click(object sender, EventArgs e)
         {
-            if (lvGames.CheckedItems.Count == 0)
+            if (!_gamesManager.Games.Any(g => g.IsSelected))
             {
                 MessageBox.Show(
                     "Please first select some game(s) by ticking their checkbox in the list view on the left.",
@@ -659,6 +644,21 @@ namespace EverLoader
                     "Please download RetroArch from https://eversd.com/downloads and extract it to the root folder of your MicroSD card.",
                     "No RetroArch found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
+            }
+
+            //show warning if one of the games selected for sync has missing BIOS file(s)
+            foreach (var game in _gamesManager.Games.Where(g => g.IsSelected))
+            {
+                var missingBiosFiles = _gamesManager.GetMissingBiosFiles(game, includeOptionalBios: false).Select(b => b.FileName);
+                if (missingBiosFiles.Any())
+                {
+                    MessageBox.Show(
+                        $"The game '{game.romTitle}' is missing these required BIOS files:\n\n" +
+                        " - " + string.Join("\n - ", missingBiosFiles) +
+                        "\n\nPlease select the game and upload the missing BIOS files.",
+                        "Required BIOS files missing", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
             }
 
             using (var progressForm = new ProgressForm(this))
@@ -748,17 +748,17 @@ namespace EverLoader
             {
                 switch (Enum.Parse(typeof(RomFeatureFilter), cbRomFilter.SelectedValue as string))
                 {
-                    case RomFeatureFilter.SelectedForSync: //selected
+                    case RomFeatureFilter.SelectedForSync:
                         gameInfos = _gamesManager.Games.Where(g => g.IsSelected); break;
-                    case RomFeatureFilter.RecentlyAdded: //recent
+                    case RomFeatureFilter.RecentlyAdded:
                         gameInfos = _gamesManager.Games.Where(g => g.IsRecentlyAdded); break;
-                    case RomFeatureFilter.RomsWithoutBanner: //selected
+                    case RomFeatureFilter.RomsWithoutBanner:
                         gameInfos = _gamesManager.Games.Where(g => g.ImageBanner == null); break;
-                    case RomFeatureFilter.RomsWithoutBoxart: //selected
+                    case RomFeatureFilter.RomsWithoutBoxart:
                         gameInfos = _gamesManager.Games.Where(g => g.Image == null && g.Image1080 == null); break;
-                    case RomFeatureFilter.RomsWithoutDescription: //selected
+                    case RomFeatureFilter.RomsWithoutDescription:
                         gameInfos = _gamesManager.Games.Where(g => g.romDescription == string.Empty); break;
-                    //default
+                        //default
                 }
             }
             else if (int.TryParse(cbRomFilter.SelectedValue as string, out int platformId))
@@ -852,7 +852,7 @@ namespace EverLoader
 
         private void lblMissingBiosFiles_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            var missingFileList = string.Join(";", GetMissingRomFiles().Select(b => b.FileName));
+            var missingFileList = string.Join(";", _gamesManager.GetMissingBiosFiles(_game, includeOptionalBios: true).Select(b => b.FileName));
 
             //upload BIOS files for this platform
             OpenFileDialog dialog = new OpenFileDialog()
