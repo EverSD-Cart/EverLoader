@@ -1041,7 +1041,7 @@ namespace EverLoader
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 var allowedExtensions = _appSettings.Platforms.SelectMany(p => p.SupportedExtensions);
-                if (files.Any(f => allowedExtensions.Contains(Path.GetExtension(f)))) 
+                if (files.Any(f => allowedExtensions.Contains(Path.GetExtension(f)?.ToLower()))) 
                 {
                     e.Effect = DragDropEffects.Copy;
                     return;
@@ -1055,7 +1055,7 @@ namespace EverLoader
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 var allowedExtensions = _appSettings.Platforms.SelectMany(p => p.SupportedExtensions);
-                await AddGames(files.Where(f => allowedExtensions.Contains(Path.GetExtension(f))).ToArray());
+                await AddGames(files.Where(f => allowedExtensions.Contains(Path.GetExtension(f)?.ToLower())).ToArray());
             }
         }
 
@@ -1066,7 +1066,7 @@ namespace EverLoader
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (files == null || files.Length > 1 || !Path.GetExtension(files[0]).In(".bmp", ".png", ".jpg", ".jpeg", ".gif")) return;
+                if (files == null || files.Length > 1 || !Path.GetExtension(files[0].ToLower()).In(".bmp", ".png", ".jpg", ".jpeg", ".gif")) return;
                 e.Effect = DragDropEffects.Copy;
             }
 
