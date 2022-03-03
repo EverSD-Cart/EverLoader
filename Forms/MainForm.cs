@@ -263,7 +263,7 @@ namespace EverLoader
                 // Emulator Settings
                 var platform = _gamesManager.GetGamePlatform(_game);
                 var ext = Path.GetExtension(_game?.romFileName);
-#if RA_SUPPORTED
+
                 cbMultiDisc.Visible = _game?.IsMultiDisc == true;
 
                 rbInternalCore.Enabled = !cbMultiDisc.Visible && platform?.InternalEmulator?.SupportedExtensions.Contains(ext) == true;
@@ -275,9 +275,6 @@ namespace EverLoader
                     : null;
                 cbRetroArchCore.DataBindings.DefaultDataSourceUpdateMode = DataSourceUpdateMode.Never;
                 cbRetroArchCore.DataBindings.AddSingle("SelectedValue", _game, nameof(_game.RetroArchCore));
-#else
-                rbInternalCore.Enabled = _game != null;
-#endif
 
                 if (_game == null)
                 {
@@ -285,12 +282,8 @@ namespace EverLoader
                 }
                 else
                 {
-#if RA_SUPPORTED
                     rbInternalCore.Checked = !_game.IsMultiDisc && _game.RetroArchCore == null;
                     rbRetroArchCore.Checked = _game.RetroArchCore != null;
-#else
-                    rbInternalCore.Checked = true;
-#endif
                 }
 
                 UpdateMissingBiosFilesLabel();

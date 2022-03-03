@@ -80,16 +80,15 @@ namespace EverLoader
         {
             AppSettings appSettings = null;
 
+            //read appsettings.json
             if (File.Exists($"{Constants.APP_ROOT_FOLDER}appsettings.json"))
             {
                 try
                 {
-                    var appSettingsJson = File.ReadAllText($"{Constants.APP_ROOT_FOLDER}appsettings.json");
-                    appSettings = JsonConvert.DeserializeObject<AppSettings>(appSettingsJson);
+                    appSettings = JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText($"{Constants.APP_ROOT_FOLDER}appsettings.json"));
                 }
                 catch (Exception) { /* ignore, because we will read embedded appsettings.json */ }
             }
-
             if (appSettings == null)
             {
                 using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EverLoader.appsettings.json"))
@@ -100,11 +99,23 @@ namespace EverLoader
                 }
             }
 
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EverLoader.secrets.json"))
-            using (StreamReader reader = new StreamReader(stream))
+            //read secrets.json
+            if (File.Exists($"{Constants.APP_ROOT_FOLDER}secrets.json"))
             {
-                var secretsJson = reader.ReadToEnd();
-                JsonConvert.PopulateObject(secretsJson, appSettings);
+                try
+                {
+                    JsonConvert.PopulateObject(File.ReadAllText($"{Constants.APP_ROOT_FOLDER}secrets.json"), appSettings);
+                }
+                catch (Exception) { /* ignore, because we will read embedded secrets.json */ }
+            }
+            if (appSettings.Secrets == null)
+            {
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EverLoader.secrets.json"))
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    var secretsJson = reader.ReadToEnd();
+                    JsonConvert.PopulateObject(secretsJson, appSettings);
+                }
             }
 
             // postprocess config
