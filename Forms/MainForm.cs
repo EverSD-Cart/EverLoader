@@ -845,7 +845,8 @@ namespace EverLoader
 
         private void lblMissingBiosFiles_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            var missingFileList = string.Join(";", _gamesManager.GetMissingBiosFiles(_game, includeOptionalBios: true).Select(b => b.FileName));
+            var missingBiosFiles = _gamesManager.GetMissingBiosFiles(_game, includeOptionalBios: true);
+            var missingFileList = string.Join(";", missingBiosFiles.Select(b => b.FileName));
 
             //upload BIOS files for this platform
             OpenFileDialog dialog = new OpenFileDialog()
@@ -860,8 +861,16 @@ namespace EverLoader
                 var platformRomsDir = $"{Constants.APP_ROOT_FOLDER}bios\\{_gamesManager.GetGamePlatform(_game).Alias}";
                 foreach (var romFilePath in dialog.FileNames)
                 {
-                    Directory.CreateDirectory(platformRomsDir);
-                    File.Copy(romFilePath, Path.Combine(platformRomsDir, Path.GetFileName(romFilePath)));
+                    Directory.CreateDirectory(platformRomsDir); //ensure directory exists
+                    var missingBiosFile = missingBiosFiles.FirstOrDefault(b => b.FileName.ToLower() == Path.GetFileName(romFilePath).ToLower());
+                    if (missingBiosFile?.MD5 != null && missingBiosFile.MD5 != HashHelper.CalculateHashcodes(romFilePath).Md5)
+                    {
+                        MessageBox.Show(
+                            $"MD5 hash mismatch for BIOS file '{missingBiosFile.FileName}'.\nPlease try a different file.",
+                            "BIOS file mismatch", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        continue;
+                    }
+                    File.Copy(romFilePath, Path.Combine(platformRomsDir, Path.GetFileName(romFilePath)), overwrite:true);
                 }
 
                 UpdateMissingBiosFilesLabel();

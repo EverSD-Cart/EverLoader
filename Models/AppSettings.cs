@@ -27,6 +27,7 @@ namespace EverLoader.Models
     public class BiosFile
     {
         public string FileName { get; set; }
+        public string MD5 { get; set; }
         public bool Required { get; set; } = false;
         public string[] SupportedExtensions { get; set; } = new string[] { };
     }

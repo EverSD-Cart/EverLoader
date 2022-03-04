@@ -250,12 +250,16 @@ namespace EverLoader.Services
                     f.CopyToOverwriteIfNewer(targetFile);
                 });
 
-                //string multiDiscFilePath = null;
-                //if (game.IsMultiDisc)
-                //{
-                //    multiDiscFilePath = $"{sdDrive}{targetRomDir}\\{RemoveInvalidChars(game.romTitle)}.m3u";
-                //    File.WriteAllLines(multiDiscFilePath, sourceRomDir.GetFiles().Select(f => f.Name));
-                //}
+                // multidisc without a m3u? => create a m3u
+                string multiDiscFilePath = null;
+                if (game.IsMultiDisc && !game.romFileName.EndsWith(".m3u"))
+                {
+                    multiDiscFilePath = $"{sdDrive}{targetRomDir}\\{RemoveInvalidChars(game.romTitle)}.m3u";
+                    var cueFileFound = sourceRomDir.GetFiles().Any(f => f.Extension?.ToLower() == ".cue");
+                    File.WriteAllLines(multiDiscFilePath, cueFileFound
+                        ? sourceRomDir.GetFiles().Where(f => f.Extension?.ToLower() == ".cue").Select(f => f.Name)
+                        : sourceRomDir.GetFiles().Select(f => f.Name));
+                }
 
                 //custom handling for cores without autolaunch
                 var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
@@ -281,8 +285,7 @@ namespace EverLoader.Services
                         Directory.CreateDirectory($"{sdDrive}special"); //ensure special directory exists
 
                         string shScript = game.RetroArchCore != null ? Resources.special_bash_ra : Resources.special_bash;
-                        //string scriptRomFileName = multiDiscFilePath != null ? Path.GetFileName(multiDiscFilePath) : game.PreferedRomFileName();
-                        string scriptRomFileName = game.PreferedRomFileName();
+                        string scriptRomFileName = multiDiscFilePath != null ? Path.GetFileName(multiDiscFilePath) : game.PreferedRomFileName();
                         shScript = shScript
                             .Replace("{CORE_FILENAME}", selectedCore.CoreFileName)
                             .Replace("{ROM_FILENAME}", $"{game.Id}/{scriptRomFileName}")
@@ -299,10 +302,12 @@ namespace EverLoader.Services
 
         private string GenerateGameId(string title)
         {
-            //filter out stopwords
-            var cleanTitle = string.Join(" ", title.Trim().ToLower()
+            //remove text within parenthesis
+            var cleanTitle = Regex.Replace(title, @"\([^)]*\)", "");
+
+            //filter out stopwords "the", "and" and "a"
+            cleanTitle = string.Join(" ", cleanTitle.Trim().ToLower()
                 .Split(" ", StringSplitOptions.RemoveEmptyEntries)
-                .Where(s => !(s.StartsWith("(") && s.EndsWith(")"))) //remove words in parentesis
                 .Where(s => !s.In("the", "and", "a")));
 
             //filter out non-alphanumeric and maximum 16 chars
@@ -323,15 +328,26 @@ namespace EverLoader.Services
             return cleanTitle;
         }
 
-        private IEnumerable<string> GetFilesFromCueFile(string cueFilePath)
+        private IEnumerable<string> GetFilesFromCue(string cueFilePath)
         {
-            var catalogFiles = new List<string>();
+            var metaFiles = new List<string>();
             foreach (var line in File.ReadAllLines(cueFilePath))
             {
                 if (!line.StartsWith("FILE \"") || line.Split('"').Length != 3) continue;
-                catalogFiles.Add(line.Split('"')[1]);
+                metaFiles.Add(Path.Combine(Path.GetDirectoryName(cueFilePath), line.Split('"')[1]));
             }
-            return catalogFiles;
+            return metaFiles;
+        }
+
+        private IEnumerable<string> GetFilesFromM3u(string m3uFilePath)
+        {
+            var metaFiles = new List<string>();
+            foreach (var line in File.ReadAllLines(m3uFilePath))
+            {
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+                metaFiles.Add(Path.Combine(Path.GetDirectoryName(m3uFilePath), line));
+            }
+            return metaFiles;
         }
 
         /// <summary>
@@ -343,16 +359,36 @@ namespace EverLoader.Services
         {
             var validRomPaths = romPaths.ToList();
 
-            //Step 0. first, we check all the .cue sheets to see if all embedded FILEs are available
-            foreach (var cueSheet in romPaths.Where(p => p.ToLower().EndsWith(".cue")))
+            bool IsValidCue(string cueFilePath)
             {
                 bool cueSheetValid = true;
-                foreach (var fileName in GetFilesFromCueFile(cueSheet))
+                foreach (var filePath in GetFilesFromCue(cueFilePath))
                 {
-                    var fullFilePath = Path.Combine(Path.GetDirectoryName(cueSheet), fileName);
-                    if (File.Exists(fullFilePath)) validRomPaths.Remove(fullFilePath); else cueSheetValid = false;
+                    validRomPaths.Remove(filePath);
+                    cueSheetValid &= File.Exists(filePath);
                 }
-                if (!cueSheetValid) validRomPaths.Remove(cueSheet);
+                return cueSheetValid;
+            }
+
+            bool IsValidM3u(string m3uFilePath)
+            {
+                bool m3uValid = true;
+                foreach (var filePath in GetFilesFromM3u(m3uFilePath))
+                {
+                    validRomPaths.Remove(filePath);
+                    m3uValid &= File.Exists(filePath) && (filePath.ToLower().EndsWith(".cue") || IsValidCue(filePath));
+                }
+                return m3uValid;
+            }
+
+            //Validation: check all the .m3u and .cue metadata files to see if all included files are available
+            foreach (var m3uFilePath in romPaths.Where(p => p.ToLower().EndsWith(".m3u")))
+            {
+                if (!IsValidM3u(m3uFilePath)) validRomPaths.Remove(m3uFilePath);
+            }
+            foreach (var cueFilePath in romPaths.Where(p => p.ToLower().EndsWith(".cue")))
+            {
+                if (!IsValidCue(cueFilePath)) validRomPaths.Remove(cueFilePath);
             }
 
             var newGames = new List<GameInfo>();
@@ -389,9 +425,9 @@ namespace EverLoader.Services
                     else if (title.StartsWith(multiDiscBaseTitle))
                     {
                         File.Copy(romPath, $"{APP_GAMES_FOLDER}{multiDiscGameId}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite:true);
-                        if (ext == ".cue") foreach (var fileName in GetFilesFromCueFile(romPath))
+                        if (ext == ".cue")
                         {
-                            File.Copy(Path.Combine(Path.GetDirectoryName(romPath), fileName), $"{APP_GAMES_FOLDER}{multiDiscGameId}\\{SUBFOLDER_ROM}{fileName}", overwrite: true);
+                            CopyFilesFromCue(cueFilePath: romPath, $"{APP_GAMES_FOLDER}{multiDiscGameId}\\{SUBFOLDER_ROM}");
                         }
                         continue; //after copying a consecutive disc, we are done here
                     }
@@ -416,7 +452,7 @@ namespace EverLoader.Services
                     romMD5 = romMD5,
                     OriginalRomFileName = originalRomFileName,
                     IsRecentlyAdded = true,
-                    IsMultiDisc = newId == multiDiscGameId
+                    IsMultiDisc = (newId == multiDiscGameId) || ext == ".m3u"
                 };
 
                 //4. create required folders
@@ -425,10 +461,14 @@ namespace EverLoader.Services
 
                 //5. copy over the rom file
                 File.Copy(romPath, $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite: true);
-                //5b. for cue files, copy over all embedded FILEs
-                if (ext == ".cue") foreach (var fileName in GetFilesFromCueFile(romPath))
+                //5b. for cue or m3u files, copy over all contained FILEs
+                if (ext == ".m3u")
                 {
-                    File.Copy(Path.Combine(Path.GetDirectoryName(romPath), fileName), $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}{fileName}", overwrite: true);
+                    CopyFilesFromM3u(m3uFilePath: romPath, $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}");
+                }
+                if (ext == ".cue")
+                {
+                    CopyFilesFromCue(cueFilePath: romPath, $"{APP_GAMES_FOLDER}{newGame.Id}\\{SUBFOLDER_ROM}");
                 }
 
                 await SerializeGame(newGame);
@@ -451,6 +491,26 @@ namespace EverLoader.Services
 
             return newGames;
             //note: MainForm will take care of adding the new game to the UI
+        }
+
+        void CopyFilesFromCue(string cueFilePath, string targetFolder)
+        {
+            foreach (var filePath in GetFilesFromCue(cueFilePath))
+            {
+                File.Copy(filePath, Path.Combine(targetFolder, Path.GetFileName(filePath)), overwrite: true);
+            }
+        }
+
+        void CopyFilesFromM3u(string m3uFilePath, string targetFolder)
+        {
+            foreach (var filePath in GetFilesFromM3u(m3uFilePath))
+            {
+                File.Copy(filePath, Path.Combine(targetFolder, Path.GetFileName(filePath)), overwrite: true);
+                if (Path.GetExtension(filePath).ToLower() == ".cue")
+                {
+                    CopyFilesFromCue(cueFilePath: filePath, targetFolder);
+                }
+            }
         }
 
         /// <summary>
