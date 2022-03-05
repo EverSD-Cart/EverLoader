@@ -66,8 +66,11 @@ namespace EverLoader
         public void UpdateProgress(string action, int itemNumber, int totalNumberOfItems)
         {
             lblAction.Text = action;
-            progressBar1.Value = 100 * itemNumber / totalNumberOfItems;
-            progressBar1.Update();
+            if (progressBar1.Style == ProgressBarStyle.Blocks)
+            {
+                progressBar1.Value = 100 * itemNumber / totalNumberOfItems;
+                progressBar1.Update();
+            }
             Application.DoEvents();
         }
     }

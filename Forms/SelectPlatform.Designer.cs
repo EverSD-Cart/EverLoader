@@ -32,10 +32,8 @@ namespace EverLoader.Forms
             this.label1 = new System.Windows.Forms.Label();
             this.cbPossiblePlatforms = new System.Windows.Forms.ComboBox();
             this.btnSelectPlatformOK = new System.Windows.Forms.Button();
-            this.cbUseAsDefault = new System.Windows.Forms.CheckBox();
             this.lblGame = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.lblExtension = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -53,28 +51,18 @@ namespace EverLoader.Forms
             this.cbPossiblePlatforms.FormattingEnabled = true;
             this.cbPossiblePlatforms.Location = new System.Drawing.Point(206, 35);
             this.cbPossiblePlatforms.Name = "cbPossiblePlatforms";
-            this.cbPossiblePlatforms.Size = new System.Drawing.Size(211, 23);
+            this.cbPossiblePlatforms.Size = new System.Drawing.Size(218, 23);
             this.cbPossiblePlatforms.TabIndex = 1;
             // 
             // btnSelectPlatformOK
             // 
-            this.btnSelectPlatformOK.Location = new System.Drawing.Point(342, 64);
+            this.btnSelectPlatformOK.Location = new System.Drawing.Point(430, 35);
             this.btnSelectPlatformOK.Name = "btnSelectPlatformOK";
             this.btnSelectPlatformOK.Size = new System.Drawing.Size(75, 23);
             this.btnSelectPlatformOK.TabIndex = 2;
             this.btnSelectPlatformOK.Text = "OK";
             this.btnSelectPlatformOK.UseVisualStyleBackColor = true;
             this.btnSelectPlatformOK.Click += new System.EventHandler(this.btnSelectPlatformOK_Click);
-            // 
-            // cbUseAsDefault
-            // 
-            this.cbUseAsDefault.AutoSize = true;
-            this.cbUseAsDefault.Location = new System.Drawing.Point(13, 64);
-            this.cbUseAsDefault.Name = "cbUseAsDefault";
-            this.cbUseAsDefault.Size = new System.Drawing.Size(215, 19);
-            this.cbUseAsDefault.TabIndex = 3;
-            this.cbUseAsDefault.Text = "Do this for all ROMs with extionsion";
-            this.cbUseAsDefault.UseVisualStyleBackColor = true;
             // 
             // lblGame
             // 
@@ -95,25 +83,14 @@ namespace EverLoader.Forms
             this.label2.TabIndex = 5;
             this.label2.Text = "Please select platform:";
             // 
-            // lblExtension
-            // 
-            this.lblExtension.AutoSize = true;
-            this.lblExtension.Location = new System.Drawing.Point(224, 65);
-            this.lblExtension.Name = "lblExtension";
-            this.lblExtension.Size = new System.Drawing.Size(71, 15);
-            this.lblExtension.TabIndex = 6;
-            this.lblExtension.Text = "lblExtension";
-            // 
             // SelectPlatform
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(428, 93);
+            this.ClientSize = new System.Drawing.Size(512, 66);
             this.ControlBox = false;
-            this.Controls.Add(this.lblExtension);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.lblGame);
-            this.Controls.Add(this.cbUseAsDefault);
             this.Controls.Add(this.btnSelectPlatformOK);
             this.Controls.Add(this.cbPossiblePlatforms);
             this.Controls.Add(this.label1);
@@ -133,9 +110,7 @@ namespace EverLoader.Forms
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox cbPossiblePlatforms;
         private System.Windows.Forms.Button btnSelectPlatformOK;
-        private System.Windows.Forms.CheckBox cbUseAsDefault;
         private System.Windows.Forms.Label lblGame;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label lblExtension;
     }
 }

@@ -11,10 +11,16 @@ namespace EverLoader.Helpers
     {
         public static (string Crc32, string Md5) CalculateHashcodes(string filePath)
         {
+            //if filesize > 10MB, use the filename for calculating hashes
+            var fileInfo = new FileInfo(filePath);
+            var gameBytes = fileInfo.Length < 10 * 1024 * 1024 
+                ? File.ReadAllBytes(filePath) 
+                : Encoding.UTF8.GetBytes(Path.GetFileName(filePath));
+
             using var md5 = MD5.Create(); //TODO: make this helper non-static and create MD5 object during construction
-            var gameBytes = File.ReadAllBytes(filePath);
             var fileCrc32 = Crc32Algorithm.Compute(gameBytes).ToString("X8");
             var fileMd5 = BitConverter.ToString(md5.ComputeHash(gameBytes)).ToLower().Replace("-", "");
+            gameBytes = null;
             return (fileCrc32, fileMd5);
         }
     }

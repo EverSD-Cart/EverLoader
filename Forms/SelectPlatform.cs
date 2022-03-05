@@ -22,7 +22,7 @@ namespace EverLoader.Forms
             cbPossiblePlatforms.DataSource = possiblePlatforms;
 
             lblGame.Text = game.OriginalRomFileName;
-            lblExtension.Text = $"\"{ Path.GetExtension(game.romFileName) }\"";
+            //lblExtension.Text = $"\"{ Path.GetExtension(game.romFileName) }\"";
         }
 
         public Platform SelectedPlatform { get; private set; }
@@ -31,7 +31,7 @@ namespace EverLoader.Forms
         private void btnSelectPlatformOK_Click(object sender, EventArgs e)
         {
             SelectedPlatform = cbPossiblePlatforms.SelectedItem as Platform;
-            UseAsDefault = cbUseAsDefault.Checked;
+            //UseAsDefault = cbUseAsDefault.Checked;
             this.Close();
         }
     }

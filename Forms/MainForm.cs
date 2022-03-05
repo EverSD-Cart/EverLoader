@@ -621,7 +621,7 @@ namespace EverLoader
 
         private async void btnSyncToSD_Click(object sender, EventArgs e)
         {
-            if (!_gamesManager.Games.Any(g => g.IsSelected))
+            if (!_gamesManager.Games.Any(g => g.IsSelected) && !_gamesManager.SdContainsKnownGames(SDDrive))
             {
                 MessageBox.Show(
                     "Please first select some game(s) by ticking their checkbox in the list view on the left.",
@@ -654,7 +654,7 @@ namespace EverLoader
                 }
             }
 
-            using (var progressForm = new ProgressForm(this))
+            using (var progressForm = new ProgressForm(this)) //, progressStyle:ProgressBarStyle.Marquee))
             {
                 try
                 {
@@ -863,10 +863,10 @@ namespace EverLoader
                 {
                     Directory.CreateDirectory(platformRomsDir); //ensure directory exists
                     var missingBiosFile = missingBiosFiles.FirstOrDefault(b => b.FileName.ToLower() == Path.GetFileName(romFilePath).ToLower());
-                    if (missingBiosFile?.MD5 != null && missingBiosFile.MD5 != HashHelper.CalculateHashcodes(romFilePath).Md5)
+                    if (missingBiosFile?.MD5.Length > 0 && !missingBiosFile.MD5.Contains(HashHelper.CalculateHashcodes(romFilePath).Md5))
                     {
                         MessageBox.Show(
-                            $"MD5 hash mismatch for BIOS file '{missingBiosFile.FileName}'.\nPlease try a different file.",
+                            $"BIOS file '{missingBiosFile.FileName}' doesn't have the expected MD5 hash.\nPlease try a different file.",
                             "BIOS file mismatch", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         continue;
                     }
