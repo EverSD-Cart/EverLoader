@@ -16,6 +16,7 @@ using System.Windows.Forms;
 using TheGamesDBApiWrapper.Domain;
 using EverLoader.Properties;
 using EverLoader.Forms;
+using System.Text;
 
 namespace EverLoader.Services
 {
@@ -129,14 +130,12 @@ namespace EverLoader.Services
         {
             if (string.IsNullOrEmpty(game.romPlatform))
             {
-                var platform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
-                game.romPlatform = platform?.Name; //updating romPlatform won't trigger update events 
-
+                game.romPlatform = GetGamePlatform(game)?.GroupAndName; //updating romPlatform won't trigger update events
                 PreselectGameCore(game);
             }
 
             var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
-            await File.WriteAllTextAsync($"{APP_GAMES_FOLDER}{game.Id}\\{game.Id}.json", gameJson, System.Text.Encoding.UTF8);
+            await File.WriteAllTextAsync($"{APP_GAMES_FOLDER}{game.Id}\\{game.Id}.json", gameJson, new UTF8Encoding(false));
         }
 
         public string RemoveInvalidChars(string filename)
@@ -303,12 +302,12 @@ namespace EverLoader.Services
                             .Replace("{ROM_FILENAME}", romFileRelativePath)
                             .Replace("\r", ""); //remove possible windows CR
 
-                        await File.WriteAllTextAsync($"{sdDrive}special\\{pointerFileName}.sh", shScript, System.Text.Encoding.UTF8);
+                        await File.WriteAllTextAsync($"{sdDrive}special\\{pointerFileName}.sh", shScript, new UTF8Encoding(false));
                     }
                 }
                 //now write out evercade game json
                 var evercadeGameJson = JsonConvert.SerializeObject(evercadeGameInfo, Formatting.Indented);
-                await File.WriteAllTextAsync($"{sdDrive}game\\{game.Id}.json", evercadeGameJson, System.Text.Encoding.UTF8);
+                await File.WriteAllTextAsync($"{sdDrive}game\\{game.Id}.json", evercadeGameJson, new UTF8Encoding(false));
             }
         }
 
