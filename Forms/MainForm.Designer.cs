@@ -1625,13 +1625,14 @@ namespace EverLoader
             this.toolStripSeparator1,
             this.deleteSelectedGamesToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(221, 54);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(221, 76);
+            this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // scrapeToolStripMenuItem
             // 
             this.scrapeToolStripMenuItem.Name = "scrapeToolStripMenuItem";
             this.scrapeToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
-            this.scrapeToolStripMenuItem.Text = "Auto-scrape selected ROMs";
+            this.scrapeToolStripMenuItem.Text = "Auto-scrape selected ROM(s)";
             this.scrapeToolStripMenuItem.Click += new System.EventHandler(this.scrapeToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
@@ -1643,7 +1644,7 @@ namespace EverLoader
             // 
             this.deleteSelectedGamesToolStripMenuItem.Name = "deleteSelectedGamesToolStripMenuItem";
             this.deleteSelectedGamesToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
-            this.deleteSelectedGamesToolStripMenuItem.Text = "Delete selected ROMs";
+            this.deleteSelectedGamesToolStripMenuItem.Text = "Delete selected ROM(s)";
             this.deleteSelectedGamesToolStripMenuItem.Click += new System.EventHandler(this.deleteSelectedGamesToolStripMenuItem_Click);
             // 
             // toolTip1

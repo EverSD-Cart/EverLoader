@@ -113,6 +113,11 @@ namespace EverLoader.Services
             return game != null ? _appSettings.Platforms.FirstOrDefault(p => p.Id == game.romPlatformId) : null;
         }
 
+        public Platform GetGamePlatform(string gameId)
+        {
+            return GetGamePlatform(GetGameById(gameId));
+        }
+
         public IEnumerable<Platform> GetExistingGamePlatforms()
         {
             var platformIds = Games.Select(g => g.romPlatformId).Distinct();
@@ -462,6 +467,12 @@ namespace EverLoader.Services
                 //set the platformId if the extension can be mapped to a single platform
                 var mappedPlatforms = _appSettings.Platforms.Where(p => p.SupportedExtensions.Contains(ext));
                 var mappedPlatform = mappedPlatforms.Count() == 1 ? mappedPlatforms.First() : null;
+
+                //if platform is MAME/Arcade, replace mame-name with real name
+                if (mappedPlatform?.Id == 1 && _romManager.MameNames.ContainsKey(title))
+                {
+                    title = _romManager.MameNames[title];
+                }
 
                 //create minimal GameInfo information
                 var newGame = new GameInfo()

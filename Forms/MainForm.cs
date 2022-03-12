@@ -791,11 +791,6 @@ namespace EverLoader
             }
         }
 
-        private void deleteSelectedGamesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            DeleteSelectedGames();
-        }
-
         private void lvGames_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -805,25 +800,6 @@ namespace EverLoader
                 {
                     contextMenuStrip1.Show(Cursor.Position);
                 }
-            }
-        }
-
-        private async void scrapeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (var progressForm = new ProgressForm(this))
-            {
-                _game.GameInfoChanged -= Game_GameInfoChanged;
-                try
-                {
-                    await _gamesManager.EnrichGames(lvGames.SelectedItems.Cast<ListViewItem>().Select(s => s.Name), progressForm.Reporter);
-                }
-                catch (Exception ex)
-                {
-                    ShowScrapingErrorMessageBox(ex);
-                    //show error, but don't break the flow
-                }
-                _game.GameInfoChanged += Game_GameInfoChanged;
-                SetDataBindings();
             }
         }
 
@@ -1112,5 +1088,83 @@ namespace EverLoader
                 }
             }
         }
+
+        #region toolstrip menu
+        private void deleteSelectedGamesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DeleteSelectedGames();
+        }
+
+        private async void scrapeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var progressForm = new ProgressForm(this))
+            {
+                _game.GameInfoChanged -= Game_GameInfoChanged;
+                try
+                {
+                    await _gamesManager.EnrichGames(lvGames.SelectedItems.Cast<ListViewItem>().Select(s => s.Name), progressForm.Reporter);
+                }
+                catch (Exception ex)
+                {
+                    ShowScrapingErrorMessageBox(ex);
+                    //show error, but don't break the flow
+                }
+                _game.GameInfoChanged += Game_GameInfoChanged;
+                SetDataBindings();
+            }
+        }
+
+        private async void setCoreMenuItem_Click(object sender, EventArgs e)
+        {
+            var toolStripItem = sender as ToolStripItem;
+
+            var firstGamePlatform = _gamesManager.GetGamePlatform((lvGames.SelectedItems[0] as ListViewItem).Name);
+            List<GameInfo> selectedGames = new List<GameInfo>(lvGames.SelectedItems.Cast<ListViewItem>().Select(s => _gamesManager.GetGameById(s.Name)).Where(g => g != null));
+
+            string retroArchCore = null; //null = internal emulator
+            if (toolStripItem.Text.Contains(":"))
+            {
+                retroArchCore = firstGamePlatform.RetroArchCores.FirstOrDefault(c => c.DisplayName == toolStripItem.Text.Split(":")[1].Trim())?.CoreFileName;
+            }
+
+            //now set the internal/external core for all selected games
+            foreach (var game in selectedGames)
+            {
+                if (game.RetroArchCore != retroArchCore)
+                {
+                    game.RetroArchCore = retroArchCore;
+                    await _gamesManager.SerializeGame(game);
+                }
+            }
+            SetDataBindings(); //update form UI
+        }
+
+        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
+        {
+            //clean previously dynamically added items
+            for (int i = contextMenuStrip1.Items.Count; i > 3; i--) contextMenuStrip1.Items.RemoveAt(i - 1);
+            if (lvGames.SelectedItems.Count == 0) return;
+
+            //if all selectedItems share the same platform, show additional contextMenuItem to choose internal/external core
+            var firstGamePlatform = _gamesManager.GetGamePlatform((lvGames.SelectedItems[0] as ListViewItem).Name);
+            if (firstGamePlatform == null) return;
+            HashSet<GameInfo> selectedGames = new HashSet<GameInfo>(lvGames.SelectedItems.Cast<ListViewItem>().Select(s => _gamesManager.GetGameById(s.Name)).Where(g => g != null));
+            if (selectedGames.Any(g => g.romPlatformId != firstGamePlatform.Id)) return;
+
+            if (firstGamePlatform.InternalEmulator != null)
+            {
+                contextMenuStrip1.Items.Add(new ToolStripSeparator());
+                contextMenuStrip1.Items.Add("Use Internal Emulator", null, setCoreMenuItem_Click);
+            }
+            if (firstGamePlatform.RetroArchCores.Length > 0)
+            {
+                contextMenuStrip1.Items.Add(new ToolStripSeparator());
+                foreach (var core in firstGamePlatform.RetroArchCores)
+                {
+                    contextMenuStrip1.Items.Add("Use RetroArch Core: " + core.DisplayName, null, setCoreMenuItem_Click);
+                }
+            }
+        }
+        #endregion toolstrip menu
     }
 }

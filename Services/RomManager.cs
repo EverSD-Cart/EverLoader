@@ -20,6 +20,7 @@ namespace EverLoader.Services
         private readonly AppSettings _appSettings;
 
         public Dictionary<uint, int> RomMappings { get; internal set; } //note: the int values (=tgdb Ids) are not unique
+        public Dictionary<string, string> MameNames { get; internal set; }
         private Dictionary<int, int> _platformMapping = null;
         private Dictionary<int, string> _genreMapping = null;
 
@@ -78,6 +79,20 @@ namespace EverLoader.Services
             {
                 var romFilesJson = await reader.ReadToEndAsync();
                 RomMappings = JsonConvert.DeserializeObject<Dictionary<uint, int>>(romFilesJson);
+            }
+
+            using (var ms = new MemoryStream(Properties.Resources.mamenames))
+            using (var archive = new ZipArchive(ms))
+            using (var entryStream = archive.Entries[0].Open())
+            using (var reader = new StreamReader(entryStream, Encoding.UTF8))
+            {
+                string line;
+                MameNames = new Dictionary<string, string>();
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    var lineSplit = line.Split('\t');
+                    MameNames.Add(lineSplit[0], lineSplit[1]);
+                }
             }
         }
 

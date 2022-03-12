@@ -111,6 +111,16 @@ namespace EverLoader.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] mamenames {
+            get {
+                object obj = ResourceManager.GetObject("mamenames", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap NoBannerArt {
@@ -177,18 +187,23 @@ namespace EverLoader.Properties {
         ///   Looks up a localized string similar to #!/bin/bash -x
         ///
         ///SCRIPT_DIR=$(dirname &quot;$BASH_SOURCE&quot;)
+        ///cd &quot;${SCRIPT_DIR}/../retroarch&quot;
         ///
         ///RA_PATH=/usr/bin/retroarch2
-        ///if [ -f &quot;${SCRIPT_DIR}/../retroarch/retroarch&quot; ]; then
-        ///  cp -u &quot;${SCRIPT_DIR}/../retroarch/retroarch&quot; /tmp
+        ///if [ -f retroarch ]; then
+        ///  cp -u retroarch /tmp
         ///  chmod +x /tmp/retroarch
         ///  RA_PATH=/tmp/retroarch
         ///fi
         ///
         ///RA_CONFIG=
-        ///if [ &quot;${SCRIPT_DIR}&quot; == &quot;/sdcard2/special&quot; ] &amp;&amp; [ -f &quot;${SCRIPT_DIR}/../retroarch/config/retroarch_vs_sd2.cfg&quot; ]; then
-        ///  RA_CONFIG=retroarch_vs_sd2.cfg
-        ///elif [ &quot;$(cat /etc/rootfs_version | grep -i VS)&quot; ] &amp;&amp; [ -f &quot;${SCRIPT_DIR}/../retroarch/confi [rest of string was truncated]&quot;;.
+        ///if [ &quot;$(cat /etc/rootfs_version | grep -i VS)&quot; ]; then
+        ///  RA_CONFIG=retroarch_vs.cfg
+        ///else
+        ///  RA_CONFIG=retroarch.cfg
+        ///fi
+        ///
+        ///${RA_PATH} -c &quot;./config/${RA_CONFIG}&quot; -L &quot;./cores/{CORE_FILENAME}&quot; &quot;../roms/{ROM_FILENAME}&quot;.
         /// </summary>
         internal static string special_bash_ra {
             get {
