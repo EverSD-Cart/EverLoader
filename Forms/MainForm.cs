@@ -1154,14 +1154,14 @@ namespace EverLoader
             if (firstGamePlatform.InternalEmulator != null)
             {
                 contextMenuStrip1.Items.Add(new ToolStripSeparator());
-                contextMenuStrip1.Items.Add("Use Internal Emulator", null, setCoreMenuItem_Click);
+                contextMenuStrip1.Items.Add("Selected ROM(s) -> Use Internal Emulator", null, setCoreMenuItem_Click);
             }
             if (firstGamePlatform.RetroArchCores.Length > 0)
             {
                 contextMenuStrip1.Items.Add(new ToolStripSeparator());
                 foreach (var core in firstGamePlatform.RetroArchCores)
                 {
-                    contextMenuStrip1.Items.Add("Use RetroArch Core: " + core.DisplayName, null, setCoreMenuItem_Click);
+                    contextMenuStrip1.Items.Add("Selected ROM(s) -> Use RetroArch Core: " + core.DisplayName, null, setCoreMenuItem_Click);
                 }
             }
         }
