@@ -634,7 +634,7 @@ namespace EverLoader.Services
         /// <summary>
         /// Reads games from app games filder
         /// </summary>
-        public void ReadGames(IProgress<(string, int, int)> progress)
+        public async Task ReadGames(IProgress<(string, int, int)> progress)
         {
             //reads games from database folder
             if (!Directory.Exists(APP_GAMES_FOLDER)) return;
@@ -652,6 +652,8 @@ namespace EverLoader.Services
 
                 try
                 {
+                    //TODO: before skipping invalid game folder, maybe clean it up first
+
                     var gameInfo = JsonConvert.DeserializeObject<GameInfo>(File.ReadAllText(jsonFilePath));
                     if (gameInfo.Id != gameDir.Name) continue; //skip 
 
@@ -659,7 +661,13 @@ namespace EverLoader.Services
                     var romsDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{gameInfo.Id}\\{SUBFOLDER_ROM}");
                     if (!romsDir.Exists || romsDir.GetFiles().Length == 0) continue; //skip 
 
-                    //TODO: before skipping invalid game folder, maybe clean it up first
+                    //data fix: Genesis games in EverLoader 2.0 were mapped to platform-id 61, while Genesis/MegaDrive is now combined into platform-id 6
+                    if (gameInfo.romPlatformId == 61 && gameInfo.romPlatform == "Genesis")
+                    {
+                        gameInfo.romPlatformId = 6;
+                        gameInfo.romPlatform = _appSettings.Platforms.First(p => p.Id == 6).Name;
+                        await SerializeGame(gameInfo); //and update
+                    }
 
                     //ensure image folders exist
                     Directory.CreateDirectory($"{APP_GAMES_FOLDER}{gameInfo.Id}\\{SUBFOLDER_IMAGES_SOURCE}"); //this also creates the images subfolder

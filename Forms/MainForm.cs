@@ -153,7 +153,7 @@ namespace EverLoader
             //create GamesManager and read local database
             using (var progressForm = new ProgressForm(this))
             {
-                _gamesManager.ReadGames(progressForm.Reporter);
+                await _gamesManager.ReadGames(progressForm.Reporter);
             }
 
             UpdateTotalSelectedGamesLabel();
