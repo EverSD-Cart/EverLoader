@@ -841,9 +841,14 @@ namespace EverLoader
                     var missingBiosFile = missingBiosFiles.FirstOrDefault(b => b.FileName.ToLower() == Path.GetFileName(romFilePath).ToLower());
                     if (missingBiosFile?.MD5.Length > 0 && !missingBiosFile.MD5.Contains(HashHelper.CalculateHashcodes(romFilePath).Md5))
                     {
-                        MessageBox.Show(
-                            $"BIOS file '{missingBiosFile.FileName}' doesn't have the expected MD5 hash.\nPlease try a different file.",
-                            "BIOS file mismatch", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        if (MessageBox.Show(
+                            $"Uploaded BIOS file '{missingBiosFile.FileName}' doesn't have the expected MD5 hash { string.Join(" or ", missingBiosFile.MD5) }." +
+                            "\nPlease try a different file.\n\n" +
+                            "Clicking 'OK' will copy the required MD5 hash(es) to your clipboard.",
+                            "BIOS file MD5 mismatch", MessageBoxButtons.OKCancel, MessageBoxIcon.Error) == DialogResult.OK)
+                        {
+                            Clipboard.SetText(string.Join(" ", missingBiosFile.MD5));
+                        }     
                         continue;
                     }
                     File.Copy(romFilePath, Path.Combine(platformRomsDir, Path.GetFileName(romFilePath)), overwrite:true);

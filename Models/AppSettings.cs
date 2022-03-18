@@ -8,9 +8,17 @@ namespace EverLoader.Models
     public class AppSettings
     {
         public Platform[] Platforms { get; set; }
+        public PlatformRemapping[] PlatformRemappings { get; set; }
         public Genre[] Genres { get; set; }
         public Secrets Secrets { get; set; }
         public string ReleasesEndpoint { get; set; }
+    }
+
+    public class PlatformRemapping
+    {
+        public int OldPlatformId { get; set; }
+        public string OldPlatformName { get; set; }
+        public int NewPlatformId { get; set; }
     }
 
     public class Genre

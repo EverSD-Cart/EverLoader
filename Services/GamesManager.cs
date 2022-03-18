@@ -661,12 +661,15 @@ namespace EverLoader.Services
                     var romsDir = new DirectoryInfo($"{APP_GAMES_FOLDER}{gameInfo.Id}\\{SUBFOLDER_ROM}");
                     if (!romsDir.Exists || romsDir.GetFiles().Length == 0) continue; //skip 
 
-                    //data fix: Genesis games in EverLoader 2.0 were mapped to platform-id 61, while Genesis/MegaDrive is now combined into platform-id 6
-                    if (gameInfo.romPlatformId == 61 && gameInfo.romPlatform == "Genesis")
+                    //fix changed platform mappings
+                    foreach (var remap in _appSettings.PlatformRemappings)
                     {
-                        gameInfo.romPlatformId = 6;
-                        gameInfo.romPlatform = _appSettings.Platforms.First(p => p.Id == 6).Name;
-                        await SerializeGame(gameInfo); //and update
+                        if (gameInfo.romPlatformId == remap.OldPlatformId && gameInfo.romPlatform == remap.OldPlatformName)
+                        {
+                            gameInfo.romPlatformId = remap.NewPlatformId;
+                            gameInfo.romPlatform = _appSettings.Platforms.First(p => p.Id == remap.NewPlatformId).Name;
+                            await SerializeGame(gameInfo); //and update
+                        }
                     }
 
                     //ensure image folders exist
