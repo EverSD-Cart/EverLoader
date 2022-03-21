@@ -425,8 +425,9 @@ namespace EverLoader.Services
 
                 //2. calculate unique code
                 var title = Path.GetFileNameWithoutExtension(romPath).Trim();
-                title = Regex.Replace(title, @"\s+", " "); //replace multiple whitespace chars by a single space
                 var ext = Path.GetExtension(romPath).ToLower();
+                if (ext != ".zip") title = title.Replace("_", " "); //for non-MAME roms, get rid of underscores
+                title = Regex.Replace(title, @"\s+", " "); //replace multiple whitespace chars by a single space
                 var newId = GenerateGameId(title);
                 var newRomFileName = $"{newId}{ext}";
                 var originalRomFileName = $"{Path.GetFileNameWithoutExtension(romPath)}{ext}";
