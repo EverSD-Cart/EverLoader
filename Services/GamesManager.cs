@@ -223,10 +223,17 @@ namespace EverLoader.Services
                 {
                     foreach (var file in selectedCore.Files)
                     {
-                        var sourceFile = new FileInfo(await _downloadManager.GetDownloadedFilePath(new Uri(file.SourceUrl), file.SourcePath));
-                        var destFilePath = $"{sdDrive}{file.TargetPath}";
+                        var destFilePath = $"{sdDrive}{file.TargetPath}".Replace("[game.Id]", game.Id);
                         if (!File.Exists(destFilePath)) Directory.CreateDirectory(Path.GetDirectoryName(destFilePath)); //ensure target dir exists
-                        sourceFile.CopyToOverwriteIfNewer(destFilePath);
+                        if (file.SourceContent != null)
+                        {
+                            await File.WriteAllLinesAsync(destFilePath, file.SourceContent);
+                        }
+                        else
+                        {
+                            var sourceFile = new FileInfo(await _downloadManager.GetDownloadedFilePath(new Uri(file.SourceUrl), file.SourcePath));
+                            sourceFile.CopyToOverwriteIfNewer(destFilePath);
+                        }
                     }
 
                     //copy over BIOS files
