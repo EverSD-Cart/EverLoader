@@ -22,6 +22,8 @@ namespace EverLoader.Models
 
         public string Id { get; set; }
 
+        public string AppVersion { get; set; }
+
         // additional json fields
         public int romPlatformId
         {

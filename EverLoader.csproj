@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
+    <PackageReference Include="nQuant" Version="1.0.3" />
     <PackageReference Include="TheGamesDBApiWrapper" Version="1.1.1" />
   </ItemGroup>
 

@@ -91,7 +91,7 @@ namespace EverLoader
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectSDDriveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.optimizeImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkForUpdatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -976,17 +976,18 @@ namespace EverLoader
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.importToolStripMenuItem});
+            this.optimizeImagesToolStripMenuItem});
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(46, 20);
-            this.toolStripMenuItem1.Text = "Tools";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(61, 20);
+            this.toolStripMenuItem1.Text = "Settings";
             // 
-            // importToolStripMenuItem
+            // optimizeImagesToolStripMenuItem
             // 
-            this.importToolStripMenuItem.Enabled = false;
-            this.importToolStripMenuItem.Name = "importToolStripMenuItem";
-            this.importToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
-            this.importToolStripMenuItem.Text = "Import games from MicroSD";
+            this.optimizeImagesToolStripMenuItem.Checked = true;
+            this.optimizeImagesToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.optimizeImagesToolStripMenuItem.Name = "optimizeImagesToolStripMenuItem";
+            this.optimizeImagesToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.optimizeImagesToolStripMenuItem.Text = "Use optimzed image sizes";
             // 
             // helpToolStripMenuItem
             // 
@@ -1625,25 +1626,25 @@ namespace EverLoader
             this.toolStripSeparator1,
             this.deleteSelectedGamesToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(221, 76);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(229, 54);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // scrapeToolStripMenuItem
             // 
             this.scrapeToolStripMenuItem.Name = "scrapeToolStripMenuItem";
-            this.scrapeToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            this.scrapeToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.scrapeToolStripMenuItem.Text = "Auto-scrape selected ROM(s)";
             this.scrapeToolStripMenuItem.Click += new System.EventHandler(this.scrapeToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(217, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(225, 6);
             // 
             // deleteSelectedGamesToolStripMenuItem
             // 
             this.deleteSelectedGamesToolStripMenuItem.Name = "deleteSelectedGamesToolStripMenuItem";
-            this.deleteSelectedGamesToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            this.deleteSelectedGamesToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.deleteSelectedGamesToolStripMenuItem.Text = "Delete selected ROM(s)";
             this.deleteSelectedGamesToolStripMenuItem.Click += new System.EventHandler(this.deleteSelectedGamesToolStripMenuItem_Click);
             // 
@@ -1738,7 +1739,7 @@ namespace EverLoader
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem selectSDDriveToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem optimizeImagesToolStripMenuItem;
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.TextBox tbTitle;
         private System.Windows.Forms.PictureBox pbConnected;

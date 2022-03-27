@@ -139,6 +139,8 @@ namespace EverLoader.Services
                 PreselectGameCore(game);
             }
 
+            game.AppVersion = Application.ProductVersion;
+
             var gameJson = JsonConvert.SerializeObject(game, Formatting.Indented);
             await File.WriteAllTextAsync($"{APP_GAMES_FOLDER}{game.Id}\\{game.Id}.json", gameJson, new UTF8Encoding(false));
         }

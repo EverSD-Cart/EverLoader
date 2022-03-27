@@ -38,6 +38,7 @@ namespace EverLoader.Services
 
         public void ResizeImage(byte[] fileBytes, GameInfo game, IEnumerable<ImageInfo> targets, bool saveOriginal = true)
         {
+            var q = new nQuant.WuQuantizer();
             using (var source = new ImageConverter().ConvertFrom(fileBytes) as Image)
             {
                 foreach (var target in targets)
@@ -116,7 +117,11 @@ namespace EverLoader.Services
                                     srcUnit: GraphicsUnit.Pixel);
                             }
                         }
-                        targetImg.Save(target.LocalPath, ImageFormat.Png);
+                        
+                        using (var quantized = q.QuantizeImage(targetImg))
+                        {
+                            quantized.Save(target.LocalPath, ImageFormat.Png);
+                        }
                     }
                 }
             }
