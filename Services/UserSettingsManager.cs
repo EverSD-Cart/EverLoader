@@ -20,6 +20,7 @@ namespace EverLoader.Services
                 {
                     try
                     {
+                        //if not exists, will throw exception
                         _userSettings = JsonConvert.DeserializeObject<UserSettings>(File.ReadAllText(USERSETTINGS_PATH));
                     }
                     catch (Exception)

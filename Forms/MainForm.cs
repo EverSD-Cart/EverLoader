@@ -29,7 +29,7 @@ namespace EverLoader
         private readonly ImageManager _imageManager;
         private readonly AppUpdateManager _appUpdateManager;
         private readonly AppSettings _appSettings;
-
+        private readonly UserSettingsManager _userSettingsManager;
         public string SDDrive { get; set; }
 
         public MainForm(GamesManager gamesManager,
@@ -37,7 +37,8 @@ namespace EverLoader
             RomManager romManager,
             ImageManager imageManager,
             AppUpdateManager appUpdateManager,
-            AppSettings appSettings)
+            AppSettings appSettings,
+            UserSettingsManager userSettingsManager)
         {
             _gamesManager = gamesManager;
             _scrapeManager = scrapeManager;
@@ -45,6 +46,7 @@ namespace EverLoader
             _imageManager = imageManager;
             _appUpdateManager = appUpdateManager;
             _appSettings = appSettings;
+            _userSettingsManager = userSettingsManager;
 
             InitializeComponent();
 
@@ -68,7 +70,19 @@ namespace EverLoader
             pbBoxArtSmall.AllowDrop = true;
             pbBanner.AllowDrop = true;
 
+            CheckUserSettings();
             PopulatePlatformCombobox();
+        }
+
+        private void CheckUserSettings()
+        {
+            optimizeImagesToolStripMenuItem.Checked = _userSettingsManager.UserSettings.OptimizeImageSizes;
+            optimizeImagesToolStripMenuItem.CheckedChanged += OptimizeImagesToolStripMenuItem_CheckedChanged;
+        }
+
+        private void OptimizeImagesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            _userSettingsManager.UserSettings.OptimizeImageSizes = optimizeImagesToolStripMenuItem.Checked;
         }
 
         /// <summary>
@@ -1171,5 +1185,6 @@ namespace EverLoader
             }
         }
         #endregion toolstrip menu
+
     }
 }

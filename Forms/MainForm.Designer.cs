@@ -983,11 +983,10 @@ namespace EverLoader
             // 
             // optimizeImagesToolStripMenuItem
             // 
-            this.optimizeImagesToolStripMenuItem.Checked = true;
-            this.optimizeImagesToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.optimizeImagesToolStripMenuItem.CheckOnClick = true;
             this.optimizeImagesToolStripMenuItem.Name = "optimizeImagesToolStripMenuItem";
-            this.optimizeImagesToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
-            this.optimizeImagesToolStripMenuItem.Text = "Use optimzed image sizes";
+            this.optimizeImagesToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            this.optimizeImagesToolStripMenuItem.Text = "Optimize/compress images";
             // 
             // helpToolStripMenuItem
             // 

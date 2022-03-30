@@ -11,11 +11,11 @@ namespace EverLoader.Models
     public class UserSettings
     {
         #region private properties
-        private ImageResizeMode _boxArtResizeMode = ImageResizeMode.Cropping;
+        private bool _optimizeImageSizes = true;
         #endregion
 
         #region public properties
-        public ImageResizeMode BoxArtResizeMode { get => _boxArtResizeMode; set => NotifyChange(ref _boxArtResizeMode, value); }
+        public bool OptimizeImageSizes { get => _optimizeImageSizes; set => NotifyChange(ref _optimizeImageSizes, value); }
         #endregion
 
         public event EventHandler UserSettingsChanged;

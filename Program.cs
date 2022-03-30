@@ -64,7 +64,6 @@ namespace EverLoader
             services.AddSingleton<DownloadManager>();
             services.AddSingleton<UserSettingsManager>();
 
-
             services.AddTheGamesDBApiWrapper(new TheGamesDBApiConfigModel()
             {
                 BaseUrl = "https://api.thegamesdb.net/",

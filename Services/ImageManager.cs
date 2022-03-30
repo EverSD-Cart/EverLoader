@@ -13,6 +13,13 @@ namespace EverLoader.Services
 {
     public class ImageManager
     {
+        private readonly UserSettingsManager _userSettingsManager;
+
+        public ImageManager(UserSettingsManager userSettingsManager)
+        {
+            _userSettingsManager = userSettingsManager;
+        }
+
         /// <summary>
         /// Resizes a source image and stores into target image paths
         /// </summary>
@@ -38,7 +45,7 @@ namespace EverLoader.Services
 
         public void ResizeImage(byte[] fileBytes, GameInfo game, IEnumerable<ImageInfo> targets, bool saveOriginal = true)
         {
-            var q = new nQuant.WuQuantizer();
+            var q = _userSettingsManager.UserSettings.OptimizeImageSizes ? new nQuant.WuQuantizer() : null;
             using (var source = new ImageConverter().ConvertFrom(fileBytes) as Image)
             {
                 foreach (var target in targets)
@@ -117,10 +124,17 @@ namespace EverLoader.Services
                                     srcUnit: GraphicsUnit.Pixel);
                             }
                         }
-                        
-                        using (var quantized = q.QuantizeImage(targetImg))
+
+                        if (_userSettingsManager.UserSettings.OptimizeImageSizes)
                         {
-                            quantized.Save(target.LocalPath, ImageFormat.Png);
+                            using (var quantized = q.QuantizeImage(targetImg))
+                            {
+                                quantized.Save(target.LocalPath, ImageFormat.Png);
+                            }
+                        }
+                        else
+                        {
+                            targetImg.Save(target.LocalPath, ImageFormat.Png);
                         }
                     }
                 }
