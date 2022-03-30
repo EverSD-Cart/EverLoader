@@ -439,6 +439,22 @@ namespace EverLoader.Services
                 var newRomFileName = $"{newId}{ext}";
                 var originalRomFileName = $"{Path.GetFileNameWithoutExtension(romPath)}{ext}";
 
+                //fix for Quake .pak files
+                if (ext == ".pak")
+                {
+                    title = "Quake";
+                    newId = "tyrquake";
+                    originalRomFileName = originalRomFileName.ToLower();
+                    if (originalRomFileName != "pak0.pak")
+                    {
+                        if (Directory.Exists($"{APP_GAMES_FOLDER}{newId}\\{SUBFOLDER_ROM}"))
+                        {
+                            File.Copy(romPath, $"{APP_GAMES_FOLDER}{newId}\\{SUBFOLDER_ROM}{originalRomFileName}", overwrite: true);
+                        }
+                        continue;
+                    }
+                }
+
                 //handle multi-disc files:
                 // ... (Disc 1)
                 // ... - disk 2
@@ -865,6 +881,12 @@ namespace EverLoader.Services
                 var tgdbPlatformIds = GetGamePlatformsByRomExtesion(Path.GetExtension(nonMappedGame.romFileName))
                     .SelectMany(p => p.TGDB_PlatformIds)
                     .Select(p => p.Id).ToArray();
+
+                if (tgdbPlatformIds.Length == 0)
+                {
+                    tgdbPlatformIds = new[] { 1 }; //use PC as fallback plaform for Doom and Quake
+                }
+
                 //
                 var resp = await _tgdbApi.Games.ByGameName(GetCleanedTitle(nonMappedGame.romTitle), 1, tgdbPlatformIds
                     , new[] { GameFieldIncludes.BoxArt },
