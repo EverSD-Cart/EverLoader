@@ -75,6 +75,7 @@ namespace EverLoader.Models
     public class ExternalFile
     {
         public string SourceUrl { get; set; }
+        public string[] SourceContent { get; set; }
         public string SourcePath { get; set; }
         public string TargetPath { get; set; }
     }

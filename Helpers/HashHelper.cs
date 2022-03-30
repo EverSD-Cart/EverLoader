@@ -15,7 +15,7 @@ namespace EverLoader.Helpers
             var fileInfo = new FileInfo(filePath);
             var gameBytes = fileInfo.Length < 10 * 1024 * 1024 
                 ? File.ReadAllBytes(filePath) 
-                : Encoding.UTF8.GetBytes(Path.GetFileName(filePath));
+                : Encoding.UTF8.GetBytes(Path.GetFileName(filePath).ToLowerInvariant());
 
             using var md5 = MD5.Create(); //TODO: make this helper non-static and create MD5 object during construction
             var fileCrc32 = Crc32Algorithm.Compute(gameBytes).ToString("X8");
