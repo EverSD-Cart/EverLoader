@@ -28,19 +28,19 @@ Most existing Libretro cores are written in C++, so you'll need to have a specif
 
 Luckily for us, someone already did the hard work and provided [instructions on how to build a C and C++ cross-compilation toolchain for the Evercade](https://github.com/strager/evercade-hacking/blob/master/toolchain.md). You'll need to build the toolchain from a Linux machine. If you're on Windows, you can use WSL. Or - if you're lazy like me - use the pre-configured Docker container.
 
-Most Libretro cores contain a Makefile which supports the `classic_armv7_a7` platform with some predefined flags and options, specifically targeting ARM-based retro console emulators. This is used to build for mini-consoles like the (S)NES mini and C64 mini. And these builds are compatible with the Evercade, which also uses the ARMv7 + Neon GPU.
+The sources of most Libretro cores contain a Makefile which supports the `classic_armv7_a7` platform that uses some predefined flags and options to targeting ARM-based retro console emulators like the (S)NES mini and C64 mini. Good news: these specific builds are compatible with the Evercade, which also uses the ARMv7 + Neon GPU!
 
-### Example: Building the Vice Libretro core
+### Example: Building the Vice Libretro core to run on the Evercade
 
  * I'm assuming you have the cross-compilation toolchain binaries already available, for example in the directory `/git/evercade-hacking/build/usr/bin`
  * Get the sources of the Vice Libretro core (without git history):\
  `git clone --depth 1 https://github.com/libretro/vice-libretro.git`
- * Now go into the vice-libretro directory (command `cd vice-libretro`) and run make, passing `platform`, `CC`, `CXX` and `AR` as environment variables:
+ * Now `cd` into the vice-libretro directory and run `make`, passing `platform`, `CC`, `CXX` and `AR` as environment variables like this:
 
  ```make EMUTYPE=x64 platform=classic_armv7_a7 CC=/git/evercade-hacking/build/usr/bin/arm-linux-gnueabihf-gcc CXX=/git/evercade-hacking/build/usr/bin/arm-linux-gnueabihf-g++ AR=/git/evercade-hacking/build/usr/bin/arm-linux-gnueabihf-ar```
 
   * Note the additional `EMUTYPE=x64` parameter, which is specific for the Vice makefile to compile the (faster) x64 emulator, which works best on the Evercade.
-  * Now wait for the build process to complete and then copy the resulting binary `vice_x64_libretro.so` to the RetroArch /cores subdirectory on your MicroSD card to be able to test your freshly built Vice x64 Libretro core!
+  * Now wait for the build process to complete and then copy the resulting binary `vice_x64_libretro.so` to the RetroArch /cores subdirectory on your MicroSD card to test your freshly built Vice x64 Libretro core!
 
 
 
