@@ -7,7 +7,7 @@ EverSD does not support or condone piracy.**
 
 # Downloading and Installing EverLoader
 
-You can get the latest version of EverLoader from the [Releases](releases) page.
+You can get the latest version of EverLoader from the [Releases](https://github.com/EverSD-Cart/EverLoader/releases) page.
 
 ### EverLoader is Portable
 EverLoader is a portable Windows app, which means that after unzipping, you can run it from any drive or directory to which you have read/write access.
@@ -53,11 +53,6 @@ This is a short description of the main settings inside `appsettings.json`:
 ### `ReleasesEndpoint`
 This is the URL where EverLoader checks for new versions. No need to change it.
 
-### `Genres`
-An array of genres shown in the Genre dropdown list. 
-* `Name` - Name of the genre, e.g. "Action"
-* `TGDB_GenreIds` - Array of mapped genre Ids from TheGamesDB. This will select the right genre for scraped games.
-
 ### `Platforms` array 
 The Platforms array within `appsettings.json` contains the list of supported gaming platforms with their rom file extensions, BIOS files, emulator names and their source locations, etc. The `Platforms` array is where you need to make changes if you want EverLoader to:
 * Support a new platform
@@ -98,11 +93,16 @@ Detailed description of Platform-JSON properties:
         * `SourceContent` [optional] - Instead of a SourceUrl, you can optionally provide an array of text content lines. This can be used to do some game-specific settings in an RetroArch .opt file. For example the Atari 5200 platform uses this.
         * `TargetPath` - Target path of the file on the MicroSD card. For RetroArch core files, this will be `retroarch/cores/[name of core].so`. Note that if the target path contains the literal string "[game.Id]", it will be replaced by the game id. This is used to create some specific Atari 5200 emulator setting files.
 
+### `Genres`
+An array of genres shown in the Genre dropdown list. 
+* `Name` - Name of the genre, e.g. "Action"
+* `TGDB_GenreIds` - Array of mapped genre Ids from TheGamesDB. This will select the right genre for scraped games.
+
 ## Structure of the `everloader_data` directory
 
 The `everloader_data` directory holds all the loaded game files, including artork images and game metadata. You can easily create a backup of EverLoader by just copying `EverLoader.exe` and the complete `everloader_data` directory.
 
-* `usersettings.json` - Contains optional user preferences (e.g. for optimized images yes/no)
+* `usersettings.json` [file] - Contains optional user preferences (e.g. for optimized images yes/no)
 * `bios` [dir] - Contains the BIOS files uploaded by the user for each platform
 * `cache` [dir] - Contains the downloaded emulator cores, which will be cached locally for 24 hours.
 * `games` [dir] - Contains a list of game subdirectories. Each game subdirectory has a unique name, which is also the EverLoader game-Id.
