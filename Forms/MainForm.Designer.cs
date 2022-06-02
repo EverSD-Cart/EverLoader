@@ -45,6 +45,8 @@ namespace EverLoader
             this.panel8 = new System.Windows.Forms.Panel();
             this.cbMultiDisc = new System.Windows.Forms.CheckBox();
             this.tbTitle = new System.Windows.Forms.TextBox();
+            this.tbCore = new System.Windows.Forms.TextBox();
+            this.tbType = new System.Windows.Forms.TextBox();
             this.lblTitle = new System.Windows.Forms.Label();
             this.panel9 = new System.Windows.Forms.Panel();
             this.cbPlatform = new GroupedComboBox();
@@ -296,6 +298,8 @@ namespace EverLoader
             // 
             this.tableLayoutPanel4.SetColumnSpan(this.panel8, 2);
             this.panel8.Controls.Add(this.cbMultiDisc);
+            this.panel8.Controls.Add(this.tbCore);
+            this.panel8.Controls.Add(this.tbType);
             this.panel8.Controls.Add(this.tbTitle);
             this.panel8.Controls.Add(this.lblTitle);
             this.panel8.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -320,9 +324,33 @@ namespace EverLoader
             this.cbMultiDisc.UseVisualStyleBackColor = true;
             this.cbMultiDisc.Visible = false;
             // 
+            // tbCore
+            // 
+            this.tbCore.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbCore.Enabled = false;
+            this.tbCore.Location = new System.Drawing.Point(4, 18);
+            this.tbCore.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.tbCore.Name = "tbTitle";
+            this.tbCore.Size = new System.Drawing.Size(325, 23);
+            this.tbCore.TabIndex = 1;
+            this.tbCore.TabStop = false;
+            // 
+            // tbType
+            // 
+            this.tbType.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbType.Enabled = false;
+            this.tbType.Location = new System.Drawing.Point(4, 18);
+            this.tbType.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.tbType.Name = "tbTitle";
+            this.tbType.Size = new System.Drawing.Size(325, 23);
+            this.tbType.TabIndex = 1;
+            this.tbType.TabStop = false;
+            // 
             // tbTitle
             // 
-            this.tbTitle.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.tbTitle.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbTitle.Enabled = false;
             this.tbTitle.Location = new System.Drawing.Point(4, 18);
@@ -1741,6 +1769,8 @@ namespace EverLoader
         private System.Windows.Forms.ToolStripMenuItem optimizeImagesToolStripMenuItem;
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.TextBox tbTitle;
+        private System.Windows.Forms.TextBox tbCore;
+        private System.Windows.Forms.TextBox tbType;
         private System.Windows.Forms.PictureBox pbConnected;
         private System.Windows.Forms.TextBox tbDescription;
         private System.Windows.Forms.Label lblDescription;
