@@ -44,10 +44,10 @@ namespace EverLoader
             this.lblGameId = new System.Windows.Forms.Label();
             this.panel8 = new System.Windows.Forms.Panel();
             this.cbMultiDisc = new System.Windows.Forms.CheckBox();
-            this.tbCore = new System.Windows.Forms.TextBox();
-            this.tbType = new System.Windows.Forms.TextBox();
             this.tbTitle = new System.Windows.Forms.TextBox();
             this.lblTitle = new System.Windows.Forms.Label();
+            this.tbCore = new System.Windows.Forms.TextBox();
+            this.tbType = new System.Windows.Forms.TextBox();
             this.panel9 = new System.Windows.Forms.Panel();
             this.cbPlatform = new GroupedComboBox();
             this.tbReleaseDate = new System.Windows.Forms.TextBox();
@@ -64,15 +64,19 @@ namespace EverLoader
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
+            this.panel7 = new EverLoader.Controls.AspectRatioPanel();
             this.label4 = new System.Windows.Forms.Label();
             this.pbBoxArtLarge = new System.Windows.Forms.PictureBox();
             this.btnClearLarge = new System.Windows.Forms.Button();
+            this.panel12 = new EverLoader.Controls.AspectRatioPanel();
             this.label5 = new System.Windows.Forms.Label();
             this.pbBoxArtMedium = new System.Windows.Forms.PictureBox();
             this.btnClearMedium = new System.Windows.Forms.Button();
+            this.panel13 = new EverLoader.Controls.AspectRatioPanel();
             this.label6 = new System.Windows.Forms.Label();
             this.pbBoxArtSmall = new System.Windows.Forms.PictureBox();
             this.btnClearSmall = new System.Windows.Forms.Button();
+            this.panel14 = new EverLoader.Controls.AspectRatioPanel();
             this.llBannerDown = new System.Windows.Forms.LinkLabel();
             this.llBannerUp = new System.Windows.Forms.LinkLabel();
             this.btnClearBanner = new System.Windows.Forms.Button();
@@ -129,7 +133,9 @@ namespace EverLoader
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.cbRetroArchCore = new System.Windows.Forms.ComboBox();
+            this.rbInternalCore = new EverLoader.Controls.NonTabStopRadioButton();
             this.lblMissingBiosFiles = new System.Windows.Forms.LinkLabel();
+            this.rbRetroArchCore = new EverLoader.Controls.NonTabStopRadioButton();
             this.gbScrapeByName = new System.Windows.Forms.GroupBox();
             this.lbScrapeResults = new System.Windows.Forms.ListBox();
             this.btnScrape = new System.Windows.Forms.Button();
@@ -154,9 +160,14 @@ namespace EverLoader
             this.panel11.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.tableLayoutPanel5.SuspendLayout();
+            this.tableLayoutPanel6.SuspendLayout();
+            this.panel7.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbBoxArtLarge)).BeginInit();
+            this.panel12.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbBoxArtMedium)).BeginInit();
+            this.panel13.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbBoxArtSmall)).BeginInit();
+            this.panel14.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbBanner)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbConnected)).BeginInit();
             this.groupBox3.SuspendLayout();
@@ -313,6 +324,29 @@ namespace EverLoader
             this.cbMultiDisc.UseVisualStyleBackColor = true;
             this.cbMultiDisc.Visible = false;
             // 
+            // tbTitle
+            // 
+            this.tbTitle.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbTitle.Enabled = false;
+            this.tbTitle.Location = new System.Drawing.Point(4, 18);
+            this.tbTitle.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.tbTitle.Name = "tbTitle";
+            this.tbTitle.Size = new System.Drawing.Size(325, 23);
+            this.tbTitle.TabIndex = 1;
+            this.tbTitle.TabStop = false;
+            // 
+            // lblTitle
+            // 
+            this.lblTitle.AutoSize = true;
+            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lblTitle.Location = new System.Drawing.Point(5, 0);
+            this.lblTitle.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Size = new System.Drawing.Size(32, 15);
+            this.lblTitle.TabIndex = 0;
+            this.lblTitle.Text = "Title";
+            // 
             // tbCore
             // 
             this.tbCore.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -336,29 +370,6 @@ namespace EverLoader
             this.tbType.Size = new System.Drawing.Size(325, 23);
             this.tbType.TabIndex = 1;
             this.tbType.TabStop = false;
-            // 
-            // tbTitle
-            // 
-            this.tbTitle.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbTitle.Enabled = false;
-            this.tbTitle.Location = new System.Drawing.Point(4, 18);
-            this.tbTitle.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tbTitle.Name = "tbTitle";
-            this.tbTitle.Size = new System.Drawing.Size(325, 23);
-            this.tbTitle.TabIndex = 1;
-            this.tbTitle.TabStop = false;
-            // 
-            // lblTitle
-            // 
-            this.lblTitle.AutoSize = true;
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblTitle.Location = new System.Drawing.Point(5, 0);
-            this.lblTitle.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(32, 15);
-            this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "Title";
             // 
             // panel9
             // 
@@ -560,6 +571,7 @@ namespace EverLoader
             this.tableLayoutPanel5.ColumnCount = 1;
             this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel5.Controls.Add(this.tableLayoutPanel6, 0, 0);
+            this.tableLayoutPanel5.Controls.Add(this.panel14, 0, 1);
             this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel5.Location = new System.Drawing.Point(3, 18);
             this.tableLayoutPanel5.Margin = new System.Windows.Forms.Padding(0);
@@ -576,6 +588,9 @@ namespace EverLoader
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40.54054F));
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 34.53454F));
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 24.92493F));
+            this.tableLayoutPanel6.Controls.Add(this.panel7, 0, 0);
+            this.tableLayoutPanel6.Controls.Add(this.panel12, 1, 0);
+            this.tableLayoutPanel6.Controls.Add(this.panel13, 2, 0);
             this.tableLayoutPanel6.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel6.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel6.Margin = new System.Windows.Forms.Padding(0);
@@ -584,6 +599,18 @@ namespace EverLoader
             this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel6.Size = new System.Drawing.Size(334, 184);
             this.tableLayoutPanel6.TabIndex = 0;
+            // 
+            // panel7
+            // 
+            this.panel7.Controls.Add(this.label4);
+            this.panel7.Controls.Add(this.pbBoxArtLarge);
+            this.panel7.Controls.Add(this.btnClearLarge);
+            this.panel7.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel7.Location = new System.Drawing.Point(0, 0);
+            this.panel7.Margin = new System.Windows.Forms.Padding(0);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(135, 184);
+            this.panel7.TabIndex = 0;
             // 
             // label4
             // 
@@ -631,6 +658,18 @@ namespace EverLoader
             this.btnClearLarge.UseVisualStyleBackColor = true;
             this.btnClearLarge.MouseClick += new System.Windows.Forms.MouseEventHandler(this.btnImageClear_Click);
             // 
+            // panel12
+            // 
+            this.panel12.Controls.Add(this.label5);
+            this.panel12.Controls.Add(this.pbBoxArtMedium);
+            this.panel12.Controls.Add(this.btnClearMedium);
+            this.panel12.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel12.Location = new System.Drawing.Point(135, 0);
+            this.panel12.Margin = new System.Windows.Forms.Padding(0);
+            this.panel12.Name = "panel12";
+            this.panel12.Size = new System.Drawing.Size(115, 184);
+            this.panel12.TabIndex = 1;
+            // 
             // label5
             // 
             this.label5.AutoSize = true;
@@ -677,6 +716,18 @@ namespace EverLoader
             this.btnClearMedium.UseVisualStyleBackColor = true;
             this.btnClearMedium.MouseClick += new System.Windows.Forms.MouseEventHandler(this.btnImageClear_Click);
             // 
+            // panel13
+            // 
+            this.panel13.Controls.Add(this.label6);
+            this.panel13.Controls.Add(this.pbBoxArtSmall);
+            this.panel13.Controls.Add(this.btnClearSmall);
+            this.panel13.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel13.Location = new System.Drawing.Point(250, 0);
+            this.panel13.Margin = new System.Windows.Forms.Padding(0);
+            this.panel13.Name = "panel13";
+            this.panel13.Size = new System.Drawing.Size(84, 184);
+            this.panel13.TabIndex = 2;
+            // 
             // label6
             // 
             this.label6.AutoSize = true;
@@ -722,6 +773,22 @@ namespace EverLoader
             this.btnClearSmall.Tag = "Small";
             this.btnClearSmall.UseVisualStyleBackColor = true;
             this.btnClearSmall.MouseClick += new System.Windows.Forms.MouseEventHandler(this.btnImageClear_Click);
+            // 
+            // panel14
+            // 
+            this.panel14.Controls.Add(this.llBannerDown);
+            this.panel14.Controls.Add(this.llBannerUp);
+            this.panel14.Controls.Add(this.btnClearBanner);
+            this.panel14.Controls.Add(this.llBannerNext);
+            this.panel14.Controls.Add(this.llBannerPrev);
+            this.panel14.Controls.Add(this.pbBanner);
+            this.panel14.Controls.Add(this.label8);
+            this.panel14.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel14.Location = new System.Drawing.Point(0, 184);
+            this.panel14.Margin = new System.Windows.Forms.Padding(0);
+            this.panel14.Name = "panel14";
+            this.panel14.Size = new System.Drawing.Size(334, 114);
+            this.panel14.TabIndex = 1;
             // 
             // llBannerDown
             // 
@@ -1415,7 +1482,9 @@ namespace EverLoader
             // groupBox5
             // 
             this.groupBox5.Controls.Add(this.cbRetroArchCore);
+            this.groupBox5.Controls.Add(this.rbInternalCore);
             this.groupBox5.Controls.Add(this.lblMissingBiosFiles);
+            this.groupBox5.Controls.Add(this.rbRetroArchCore);
             this.groupBox5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox5.Location = new System.Drawing.Point(2, 3);
             this.groupBox5.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
@@ -1443,6 +1512,19 @@ namespace EverLoader
             this.cbRetroArchCore.ValueMember = "Value";
             this.cbRetroArchCore.SelectionChangeCommitted += new System.EventHandler(this.ComboBox_SelectionChangeCommitted);
             // 
+            // rbInternalCore
+            // 
+            this.rbInternalCore.AutoSize = true;
+            this.rbInternalCore.Checked = true;
+            this.rbInternalCore.Enabled = false;
+            this.rbInternalCore.Location = new System.Drawing.Point(6, 17);
+            this.rbInternalCore.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.rbInternalCore.Name = "rbInternalCore";
+            this.rbInternalCore.Size = new System.Drawing.Size(65, 19);
+            this.rbInternalCore.TabIndex = 26;
+            this.rbInternalCore.Text = "Internal";
+            this.rbInternalCore.UseVisualStyleBackColor = true;
+            // 
             // lblMissingBiosFiles
             // 
             this.lblMissingBiosFiles.AutoSize = true;
@@ -1456,6 +1538,19 @@ namespace EverLoader
             this.toolTip1.SetToolTip(this.lblMissingBiosFiles, "Bla");
             this.lblMissingBiosFiles.Visible = false;
             this.lblMissingBiosFiles.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lblMissingBiosFiles_LinkClicked);
+            // 
+            // rbRetroArchCore
+            // 
+            this.rbRetroArchCore.AutoSize = true;
+            this.rbRetroArchCore.Enabled = false;
+            this.rbRetroArchCore.Location = new System.Drawing.Point(6, 40);
+            this.rbRetroArchCore.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.rbRetroArchCore.Name = "rbRetroArchCore";
+            this.rbRetroArchCore.Size = new System.Drawing.Size(151, 19);
+            this.rbRetroArchCore.TabIndex = 29;
+            this.rbRetroArchCore.Text = "External RetroArch Core";
+            this.rbRetroArchCore.UseVisualStyleBackColor = true;
+            this.rbRetroArchCore.CheckedChanged += new System.EventHandler(this.rbRetroArchCore_CheckedChanged);
             // 
             // gbScrapeByName
             // 
@@ -1617,9 +1712,18 @@ namespace EverLoader
             this.panel11.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.tableLayoutPanel5.ResumeLayout(false);
+            this.tableLayoutPanel6.ResumeLayout(false);
+            this.panel7.ResumeLayout(false);
+            this.panel7.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbBoxArtLarge)).EndInit();
+            this.panel12.ResumeLayout(false);
+            this.panel12.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbBoxArtMedium)).EndInit();
+            this.panel13.ResumeLayout(false);
+            this.panel13.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbBoxArtSmall)).EndInit();
+            this.panel14.ResumeLayout(false);
+            this.panel14.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbBanner)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbConnected)).EndInit();
             this.groupBox3.ResumeLayout(false);
