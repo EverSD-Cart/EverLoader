@@ -31,9 +31,12 @@ After you're done editing the game information, you can tick the checkboxes of t
 EverLoader is an Open-Source project. You can have a look at the sources,  compile it locally, or even contribute to it by forking the project and sending us a pull request.
 
 ## Building EverLoader
-To build EverLoader, you need Visual Studio 2019 or higher. The [Community Edition of Visual Studio](https://visualstudio.microsoft.com/vs/community/) will do and is free for open-source and individual developers.
+To build EverLoader, you need Visual Studio 2022 or higher. The [Community Edition of Visual Studio](https://visualstudio.microsoft.com/vs/community/) will do and is free for open-source and individual developers. Be sure to select at least the '.NET desktop development' workload when installing.
 
-When opening the solution file, you will notice the file `secrets.json` is missing. This is because it contains our key for the TheGamesDB API, which we don't want to share publicly. You can get the key by asking around on the EverSD discord server, or use your own TheGamesDB API key.
+After opening the solution (`EverLoader.sln`) in Visual Studio, you might see a notification that you need to install .NET Core 3.1 runtime, if you didn't already had it installed. Clicking this notification should help you to install the .NET Core 3.1 runtime for you.
+
+When opening the solution file, you will notice the file `secrets.json` is missing. This is because it contains our API key for the TheGamesDB API, which we don't want to share publicly. You can get the API key by asking around on the EverSD discord server, or use your own TheGamesDB API key. Then you'll have to add the secrets.json file manually, containing the following json:
+
 
 ```
 {
@@ -43,6 +46,46 @@ When opening the solution file, you will notice the file `secrets.json` is missi
     }
 }
 ```
+Note: replace [API key here] with a valid TheGamesDB API key.
+
+## Creating a new version of EverLoader (for an official release)
+Note: this is something that can only be done by EverLoader team members.
+
+### Preparing
+To prepare an official EverLoader release, follow these steps:
+
+1) Create a new git branch `releases/[VERSION-NUMBER]` to work on new features or bug-fixes. Note that you'll need to replace `[VERSION-NUMBER]` with the next (upcoming) version of EverLoader. Note that you can create a new branch (and automatically checkout the new branch) directly from Visual Studio by opening the EverLoader solution and from the top menu select `Git -> New Branch...`
+
+2) Now checkout this branch on your local machine if you hadn't done that already in step 1.
+
+3) In the EverLoader project file, increment the version. There are two ways you can do this:
+   * In Visual Studio from the Solution Explorer window, right-click the EverLoader project (not the solution) and select `Properties`. Now search for the `Package Version` property and increment it.
+   * or... close Visual Studio, open `EverLoader.csproj` in a text editor and increment the version found between the `<Version>` tags.
+
+4) Now work on your new features and/or bug fixes.
+
+5) Commit your changes and push them to the git branch you've created in step 1.
+
+### Publishing
+To publish an official Everloader release, follow these steps:
+
+1) First you need to build the `EverLoader.exe` executable file: In Visual Studio, you need to right-click the "EverLoader" project (not the solution) and select "Publish". Note that this does not actually publish EverLoader, but just brings you to a screen that allows you to build & create the `EverLoader.exe` file on your local machine.
+   * [In case you didn't create a publish profile before, you will need to create one]: \
+   In the new publish profile, select the `Folder` target, click `Next` and select `Folder` again as specific target and click `Next` again. The folder location will show as `bin\Release\netcoreapp3.1\publish\`. Now click `Finish`. In the publish window under Settings, click `Show all settings` and select Deployment mode `Self-Contained`, target runtime `win-x86` and under File publish options, check `Produce single file`. Then `Save` the profile.
+   * Click the `Publish` button on the top-right of the publish window and wait for the packaging/publishing to finish its work.
+   * The target folder `bin\Release\netcoreapp3.1\publish\win-x86\` should now contain the file `EverLoader.exe`
+
+2) In the target folder `bin\Release\netcoreapp3.1\publish\win-x86\`, double-click EverLoader.exe and verify that the "About EverLoader" window contains the correct new version number. Also verify that your new features still work correctly and check if the normal flow still works. Once you're happy with this version, zip the `EverLoader.exe` and name it `EverLoader-v[VERSION-NUMBER]-portable.zip`, where you should replace `[VERSION-NUMBER]` with the version number in step 1.
+
+3) Go to the EverLoader github releases page and [Draft a new release](https://github.com/EverSD-Cart/EverLoader/releases/new). 
+   * Under dropdown 'Choose a tag' create a new tag `[VERSION-NUMBER]`
+   * Under dropdown 'Target' select the corresponding branch `releases/[VERSION-NUMBER]`
+   * Release title should be `EverLoader v[VERSION-NUMBER]` (this is not really required, but just the convention)
+   * Create a description the new features/bugfixes in this release
+   * Attach the `EverLoader-v[VERSION-NUMBER]-portable.zip` binary which you created in step 2.
+   * Publish the release (or save it as draft if you want to publish it later)
+
+4) After the release was published, you should merge your changes back to the main branch.
 
 ## Description of `appsettings.json`
 
