@@ -997,8 +997,8 @@ namespace EverLoader
             // selectSDDriveToolStripMenuItem
             // 
             this.selectSDDriveToolStripMenuItem.Name = "selectSDDriveToolStripMenuItem";
-            this.selectSDDriveToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
-            this.selectSDDriveToolStripMenuItem.Text = "Select MicroSD drive";
+            this.selectSDDriveToolStripMenuItem.Size = new System.Drawing.Size(218, 22);
+            this.selectSDDriveToolStripMenuItem.Text = "Select MicroSD drive/folder";
             this.selectSDDriveToolStripMenuItem.DropDownOpening += new System.EventHandler(this.selectSDDriveToolStripMenuItem_DropDownOpening);
             // 
             // toolStripMenuItem1
@@ -1076,7 +1076,7 @@ namespace EverLoader
             this.btnSelectSD.Size = new System.Drawing.Size(331, 27);
             this.btnSelectSD.TabIndex = 5;
             this.btnSelectSD.TabStop = false;
-            this.btnSelectSD.Text = "Select MicroSD drive";
+            this.btnSelectSD.Text = "Select MicroSD";
             this.btnSelectSD.UseVisualStyleBackColor = true;
             this.btnSelectSD.Click += new System.EventHandler(this.btnSelectSD_Click);
             // 

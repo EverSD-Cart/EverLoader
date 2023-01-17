@@ -215,6 +215,9 @@ namespace EverLoader.Services
                 var platform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
                 if (platform == null) continue;
 
+                // RA cores should go to the SD root path, not to subfolders
+                var targetCorePath = game.RetroArchCore == null ? sdDrive : Path.GetPathRoot(sdDrive);
+
                 // 4a. copy emulator core (only overwrite if newer) + bios files (only overwrite if newer)
                 //first select the right core (note: megadrive has an 'empty' BlastRetro core, as it uses BlastEm emulator)
                 var selectedCore = game.RetroArchCore == null
@@ -225,7 +228,7 @@ namespace EverLoader.Services
                 {
                     foreach (var file in selectedCore.Files)
                     {
-                        var destFilePath = $"{sdDrive}{file.TargetPath}".Replace("[game.Id]", game.Id);
+                        var destFilePath = $"{targetCorePath}{file.TargetPath}".Replace("[game.Id]", game.Id);
                         if (!File.Exists(destFilePath)) Directory.CreateDirectory(Path.GetDirectoryName(destFilePath)); //ensure target dir exists
                         if (file.SourceContent != null)
                         {
@@ -243,7 +246,7 @@ namespace EverLoader.Services
                     {
                         var sourceBiosFile = new FileInfo($"{Constants.APP_ROOT_FOLDER}bios\\{platform.Alias}\\{biosFile.FileName}");
                         //bios files go into /sdcard/bios (for internal emulator) or /sdcard/retroarch/system (for RA cores)
-                        var destBiosFilePath = $"{sdDrive}{(game.RetroArchCore == null ? "bios" : "retroarch\\system")}\\{biosFile.FileName}";
+                        var destBiosFilePath = $"{targetCorePath}{(game.RetroArchCore == null ? "bios" : "retroarch\\system")}\\{biosFile.FileName}";
                         if (sourceBiosFile.Exists)
                         {
                             if (!File.Exists(destBiosFilePath)) Directory.CreateDirectory(Path.GetDirectoryName(destBiosFilePath)); //ensure target dir exists

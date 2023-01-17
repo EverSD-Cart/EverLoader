@@ -414,11 +414,11 @@ namespace EverLoader
 
             if (validDrive)
             {
-                btnSelectSD.Text = $"Selected MicroSD drive = {driveName}";
+                btnSelectSD.Text = $"MicroSD = {driveName}";
             }
             else
             {
-                btnSelectSD.Text = "Select MicroSD drive";
+                btnSelectSD.Text = "Select MicroSD";
             }
 
             if (!validDrive) return;
@@ -646,10 +646,10 @@ namespace EverLoader
             }
 
             //show warning if there are any games using RetroArch, but no /sdcard/retroarch directory
-            if (_gamesManager.Games.Any(g => g.IsSelected && g.RetroArchCore != null) && !Directory.Exists($"{SDDrive}retroarch"))
+            if (_gamesManager.Games.Any(g => g.IsSelected && g.RetroArchCore != null) && !Directory.Exists($"{Path.GetPathRoot(SDDrive)}retroarch"))
             {
                 MessageBox.Show(
-                    "You've selected some games to run with RetroArch, but no RetroArch directory was found on your MicroSD card.\n" +
+                    "You've selected some games to run with RetroArch, but no RetroArch directory was found in the root of your MicroSD card.\n" +
                     "Please download RetroArch from https://eversd.com/downloads and extract it to the root folder of your MicroSD card.",
                     "No RetroArch found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -700,6 +700,7 @@ namespace EverLoader
 
         private async void selectSDDriveToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {
+            bool itemWasChecked = false;
             var drives = SDCardHelper.FindRemovableDrives();
             if (drives.Length == 0)
             {
@@ -716,18 +717,32 @@ namespace EverLoader
             else
             {
                 selectSDDriveToolStripMenuItem.DropDownItems.Clear();
-                bool itemWasChecked = false;
+                
                 foreach (var drive in drives)
                 {
-                    var item = new ToolStripMenuItem($"{drive.Name} - Total size: {drive.TotalSize.ToSize()}", null, driveToolStripMenuItem_Click, drive.Name);
-                    item.Checked = SDDrive != null && item.Name.StartsWith(SDDrive);
-                    itemWasChecked |= item.Checked;
-                    selectSDDriveToolStripMenuItem.DropDownItems.Add(item);
+                    var item = new ToolStripMenuItem($"{drive.Name} {string.Empty.PadLeft(30)} [Total size: {drive.TotalSize.ToSize()}]", null, driveToolStripMenuItem_Click, drive.Name);
+                    AddDrivePathItem(item);
+
+                    //check for subfolders of the /folders directory
+                    var folders = new DirectoryInfo($"{drive.Name}folders");
+                    if (folders.Exists)
+                    foreach (var dir in folders.GetDirectories())
+                    {
+                        var subitem = new ToolStripMenuItem($"{dir.FullName}\\", null, driveToolStripMenuItem_Click, dir.FullName + "\\");
+                        AddDrivePathItem(subitem);
+                    }
                 }
                 if (!itemWasChecked)
                 {
                     await SelectSDDrive(null);
                 }
+            }
+
+            void AddDrivePathItem(ToolStripMenuItem item)
+            {
+                item.Checked = SDDrive != null && item.Name == SDDrive;
+                itemWasChecked |= item.Checked;
+                selectSDDriveToolStripMenuItem.DropDownItems.Add(item);
             }
         }
 
