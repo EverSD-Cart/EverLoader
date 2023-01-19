@@ -35,6 +35,8 @@ To build EverLoader, you need Visual Studio 2022 or higher. The [Community Editi
 
 After opening the solution (`EverLoader.sln`) in Visual Studio, you might see a notification that you need to install .NET Core 3.1 runtime, if you didn't already had it installed. Clicking this notification should help you to install the .NET Core 3.1 runtime for you.
 
+Note: when opening one of the EverLoader forms (e.g. `MainForm.cs`) in Visual Studio, you could get a message about the scaling of your display not being more than 100%. In that case choose to Restart Visual Studio with 100% scaling.
+
 When opening the solution file, you will notice the file `secrets.json` is missing. This is because it contains our API key for the TheGamesDB API, which we don't want to share publicly. You can get the API key by asking around on the EverSD discord server, or use your own TheGamesDB API key. Then you'll have to add the secrets.json file manually, containing the following json:
 
 
