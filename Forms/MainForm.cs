@@ -433,32 +433,19 @@ namespace EverLoader
                     tbCartName.Text = cart.cartridgeName;
                 }
 
-                //if any of the existing games on the SD card are known, pre-select those games and de-select the others
+                /* pre-select games which are found on the SD card */
                 var cartGamesDir = new DirectoryInfo($"{driveName}game");
-                if (cartGamesDir.Exists)
+                HashSet<string> cartGameIds = new HashSet<string>((cartGamesDir.Exists ? cartGamesDir.GetFiles("*.json") : new FileInfo[0])
+                    .Select(j => Path.GetFileNameWithoutExtension(j.Name))
+                    .Where(g => _gamesManager.GamesDictionary.ContainsKey(g)));
+
+                foreach (var game in _gamesManager.Games)
                 {
-                    HashSet<string> cartGameIds = new HashSet<string>(cartGamesDir.GetFiles("*.json")
-                        .Select(j => Path.GetFileNameWithoutExtension(j.Name))
-                        .Where(g => _gamesManager.GamesDictionary.ContainsKey(g)));
-
-                    if (cartGameIds.Count > 0)
-                    {
-                        foreach (var game in _gamesManager.Games)
-                        {
-                            game.IsSelected = cartGameIds.Contains(game.Id);
-                        }
-
-                        //TODO: in case 'selected games' filter is active, code below doesn't work
-                        lvGames.ItemChecked -= new ItemCheckedEventHandler(lvGames_ItemChecked);
-                        foreach (ListViewItem lvi in lvGames.Items)
-                        {
-                            lvi.Checked = cartGameIds.Contains(lvi.Name);
-                        }
-                        lvGames.ItemChecked += new ItemCheckedEventHandler(lvGames_ItemChecked);
-
-                        UpdateTotalSelectedGamesLabel();
-                    }
+                    game.IsSelected = cartGameIds.Contains(game.Id);
                 }
+                cbRomFilter_SelectedIndexChanged(null, null); //update checked games in current UI view
+                UpdateTotalSelectedGamesLabel();
+                /* end of pre-select code */
             }
         }
 
