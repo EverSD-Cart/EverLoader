@@ -246,8 +246,6 @@ namespace EverLoader
             // Game Info
             lblGameId.Text = _game?.Id;
             lblGameCRC.Text = _game?.romCRC32;
-            tbCore.DataBindings.AddSingle("Text", _game, nameof(_game.romCore));
-            tbType.DataBindings.AddSingle("Text", _game, nameof(_game.romLaunchType));
             tbTitle.DataBindings.AddSingle("Text", _game, nameof(_game.romTitle));
             cbPlatform.DataBindings.AddSingle("SelectedValue", _game, nameof(_game.romPlatformId));
             cbGenre.DataBindings.AddSingle("Text", _game, nameof(_game.romGenre));
