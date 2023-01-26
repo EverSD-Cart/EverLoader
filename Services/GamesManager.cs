@@ -215,6 +215,8 @@ namespace EverLoader.Services
                 var platform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
                 if (platform == null) continue;
 
+                game.FixRomLaunchType(); //fix old romLaunchType values
+
                 // RA cores should go to the SD root path, not to subfolders
                 var targetCorePath = game.RetroArchCore == null ? sdDrive : Path.GetPathRoot(sdDrive);
 

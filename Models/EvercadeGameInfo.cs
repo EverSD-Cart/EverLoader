@@ -40,7 +40,7 @@ namespace EverLoader.Models
         public string romFileName { get; set; }
         public string romTitle { get => _romTitle; set => NotifyChange(ref _romTitle, value, isTitle: true); }
         public string romCore { get => "NULL"; } //required field for fw 2.1.1
-        public string romLaunchType { get => "NATIVE"; } //required field for fw 2.1.1
+        public string romLaunchType { get; set; } //required field for fw 2.1.1
         public string romPlatform { get => _romPlatform ?? ""; set => _romPlatform = value; } //don't notify change, as this value is derived
         public string romGenre { get => _romGenre ?? ""; set => NotifyChange(ref _romGenre, value); }
         public string romReleaseDate { get => _romReleaseDate ?? ""; set => NotifyChange(ref _romReleaseDate, value); }
