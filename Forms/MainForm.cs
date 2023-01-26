@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
+using TheGamesDBApiWrapper.Data.ApiClasses;
 
 namespace EverLoader
 {
@@ -407,6 +408,7 @@ namespace EverLoader
             var validDrive = driveName != null;
             pbConnected.Image = validDrive ? Properties.Resources.green : Properties.Resources.red;
             btnSyncToSD.Enabled = validDrive;
+            btnNewSDFolder.Enabled = validDrive;
             lblCartName.Enabled = validDrive;
             tbCartName.Enabled = validDrive;
 
@@ -1188,5 +1190,16 @@ namespace EverLoader
         }
         #endregion toolstrip menu
 
+        private async void btnNewSDFolder_Click(object sender, EventArgs e)
+        {
+            using (var form = new CreateNewFolder(SDDrive))
+            {
+                form.ShowDialog();
+                if (form.JustCreatedFolderName != null && Directory.Exists(Path.Combine(Path.GetPathRoot(SDDrive), "folders", form.JustCreatedFolderName)))
+                {
+                    await SelectSDDrive(Path.Combine(Path.GetPathRoot(SDDrive), "folders", form.JustCreatedFolderName) + "\\");
+                }
+            }
+        }
     }
 }
