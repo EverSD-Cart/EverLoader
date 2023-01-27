@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.IO.Compression;
 using System.Diagnostics;
+using VB = Microsoft.VisualBasic.FileIO.FileSystem;
 
 namespace EverLoader.Forms
 {
@@ -22,7 +23,6 @@ namespace EverLoader.Forms
         {
             _sdDriveRoot = Path.GetPathRoot(sdDrive);
             InitializeComponent();
-            openFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
         }
 
         public string JustCreatedFolderName { get; set; }
@@ -41,9 +41,8 @@ namespace EverLoader.Forms
             this.UseWaitCursor = true;
             Application.DoEvents();
 
-            int mkdosfsExitCode = 0;
-            string mkdosfsError = null;
-            
+            int scriptExitCode = 0;
+            string scriptError = null;
             await Task.Run(() =>
             {
                 //create temp dir for scripts etc
@@ -52,9 +51,11 @@ namespace EverLoader.Forms
 
                 //copy png to temp and rename
                 var pngSourcePath = this.tbPictureFile.Text;
+                var pngWPSourcePath = this.tbWallpaperFile.Text;
                 var pngTargetPath = Path.Combine(tempDir, $"{newSDFolder}.png");
-                string buildFoldersCmdFile = Path.Combine(tempDir, "Build Folders.cmd");
+                var pngWPTargetPath = Path.Combine(tempDir, $"{newSDFolder}@.png"); // additional @ will be filtered out
                 File.Copy(pngSourcePath, pngTargetPath, overwrite:true);
+                if (!string.IsNullOrEmpty(pngWPSourcePath)) File.Copy(pngWPSourcePath, pngWPTargetPath, overwrite: true);
 
                 //extract scripts
                 using (var memStream = new MemoryStream(Properties.Resources.Build_EverSD_Folders))
@@ -63,10 +64,14 @@ namespace EverLoader.Forms
                     archive.ExtractToDirectory(tempDir, overwriteFiles: true);
                 }
 
-                //remove all 'pause' statements from '"Build Folders.cmd' script, or WaitForExit will hang
-                File.WriteAllLines(buildFoldersCmdFile, File.ReadAllLines(buildFoldersCmdFile).Where(l => l != "pause"));
+                string buildFoldersCmdFile = Path.Combine(tempDir, "Build Folders.cmd");
+                string makeWallpapersCmdFile = Path.Combine(tempDir, "Make Wallpapers.cmd");
 
-                //execute scripts
+                //remove all 'pause' statements from the command scripts, or else process.WaitForExit() will wait forever
+                File.WriteAllLines(buildFoldersCmdFile, File.ReadAllLines(buildFoldersCmdFile).Where(l => l != "pause"));
+                File.WriteAllLines(makeWallpapersCmdFile, File.ReadAllLines(makeWallpapersCmdFile).Where(l => l != "pause"));
+
+                //execute 'Build Folders.cmd' script
                 var process = new Process()
                 {
                     StartInfo = new ProcessStartInfo
@@ -79,31 +84,58 @@ namespace EverLoader.Forms
                     }
                 };
                 process.Start();
-                mkdosfsError = process.StandardError.ReadToEnd();
+                scriptError = process.StandardError.ReadToEnd();
                 process.WaitForExit();
-                mkdosfsExitCode = process.ExitCode;
-                if (mkdosfsExitCode == 0)
+                scriptExitCode = process.ExitCode;
+                process.Close();
+                if (scriptExitCode != 0) goto cleanup;
+
+                if (!string.IsNullOrEmpty(this.tbWallpaperFile.Text))
                 {
-                    //copy folders to SD drive
-                    CopyFilesRecursively(Path.Combine(tempDir, "folders"), Path.Combine(_sdDriveRoot, "folders"));
-                    CopyFilesRecursively(Path.Combine(tempDir, "game"), Path.Combine(_sdDriveRoot, "game"));
-                    CopyFilesRecursively(Path.Combine(tempDir, "retroarch"), Path.Combine(_sdDriveRoot, "retroarch"));
-                    CopyFilesRecursively(Path.Combine(tempDir, "special"), Path.Combine(_sdDriveRoot, "special"));
-                    if (!File.Exists(Path.Combine(_sdDriveRoot, "cartridge.json"))) File.Copy(Path.Combine(tempDir, "cartridge.json"), Path.Combine(_sdDriveRoot, "cartridge.json"));
+                    var wallpaperTempDir = Path.Combine(tempDir, "wallpaper");
+                    Directory.CreateDirectory(wallpaperTempDir);
+                    pngTargetPath = Path.Combine(wallpaperTempDir, $"{newSDFolder}.png");
+                    File.Copy(this.tbWallpaperFile.Text, pngTargetPath, overwrite: true);
+
+                    //execute 'Make Wallpapers.cmd' script
+                    process = new Process()
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = makeWallpapersCmdFile,
+                            Arguments = $"\"{pngTargetPath}\"",
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                            RedirectStandardError = true
+                        }
+                    };
+                    process.Start();
+                    scriptError = process.StandardError.ReadToEnd();
+                    process.WaitForExit();
+                    scriptExitCode = process.ExitCode;
+                    process.Close();
+                    if (scriptExitCode != 0) goto cleanup;
                 }
 
-                //clean up temp folder 
-                Directory.Delete(tempDir, true);
+                //copy folders to SD drive
+                VB.CopyDirectory(Path.Combine(tempDir, "folders"), Path.Combine(_sdDriveRoot, "folders"));
+                VB.CopyDirectory(Path.Combine(tempDir, "game"), Path.Combine(_sdDriveRoot, "game"));
+                VB.CopyDirectory(Path.Combine(tempDir, "retroarch"), Path.Combine(_sdDriveRoot, "retroarch"));
+                VB.CopyDirectory(Path.Combine(tempDir, "special"), Path.Combine(_sdDriveRoot, "special"));
+                if (!File.Exists(Path.Combine(_sdDriveRoot, "cartridge.json"))) File.Copy(Path.Combine(tempDir, "cartridge.json"), Path.Combine(_sdDriveRoot, "cartridge.json"));
+
+                cleanup:
+                Directory.Delete(tempDir, true); //clean up temp folder
             });
 
             //enable form
             this.UseWaitCursor = false;
             this.Enabled = true;
 
-            if (mkdosfsExitCode != 0)
+            if (scriptExitCode != 0)
             {
                 MessageBox.Show($"Problem found when running script to create folder.\n" +
-                    $"Message: \"{mkdosfsError?.Trim()}\".",
+                    $"Message: \"{scriptError?.Trim()}\".",
                     "Error found", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
@@ -130,9 +162,7 @@ namespace EverLoader.Forms
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
-            DialogResult result = this.openFileDialog1.ShowDialog();
-            // if a file is selected
-            if (result == DialogResult.OK)
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 this.tbPictureFile.Text = this.openFileDialog1.FileName;
             }
@@ -145,9 +175,12 @@ namespace EverLoader.Forms
             btnOK.ForeColor = btnOK.Enabled ? SystemColors.ActiveCaptionText : SystemColors.ControlText;
         }
 
-        private static void CopyFilesRecursively(string sourcePath, string targetPath)
+        private void btnBrowseWallpaper_Click(object sender, EventArgs e)
         {
-            Microsoft.VisualBasic.FileIO.FileSystem.CopyDirectory(sourcePath, targetPath, true);
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                this.tbWallpaperFile.Text = this.openFileDialog1.FileName;
+            }
         }
     }
 }

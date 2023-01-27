@@ -37,6 +37,9 @@ namespace EverLoader.Forms
             this.tbFolderName = new System.Windows.Forms.TextBox();
             this.tbPictureFile = new System.Windows.Forms.TextBox();
             this.btnBrowse = new System.Windows.Forms.Button();
+            this.btnBrowseWallpaper = new System.Windows.Forms.Button();
+            this.tbWallpaperFile = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -53,7 +56,7 @@ namespace EverLoader.Forms
             this.btnOK.BackColor = System.Drawing.SystemColors.Control;
             this.btnOK.Enabled = false;
             this.btnOK.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btnOK.Location = new System.Drawing.Point(314, 79);
+            this.btnOK.Location = new System.Drawing.Point(314, 108);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(133, 23);
             this.btnOK.TabIndex = 2;
@@ -73,7 +76,7 @@ namespace EverLoader.Forms
             // btnCancel
             // 
             this.btnCancel.BackColor = System.Drawing.SystemColors.Control;
-            this.btnCancel.Location = new System.Drawing.Point(176, 79);
+            this.btnCancel.Location = new System.Drawing.Point(176, 108);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 6;
@@ -112,12 +115,42 @@ namespace EverLoader.Forms
             this.btnBrowse.UseVisualStyleBackColor = true;
             this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
+            // btnBrowseWallpaper
+            // 
+            this.btnBrowseWallpaper.Location = new System.Drawing.Point(372, 68);
+            this.btnBrowseWallpaper.Name = "btnBrowseWallpaper";
+            this.btnBrowseWallpaper.Size = new System.Drawing.Size(75, 23);
+            this.btnBrowseWallpaper.TabIndex = 12;
+            this.btnBrowseWallpaper.Text = "Browse";
+            this.btnBrowseWallpaper.UseVisualStyleBackColor = true;
+            this.btnBrowseWallpaper.Click += new System.EventHandler(this.btnBrowseWallpaper_Click);
+            // 
+            // tbWallpaperFile
+            // 
+            this.tbWallpaperFile.Location = new System.Drawing.Point(176, 68);
+            this.tbWallpaperFile.Name = "tbWallpaperFile";
+            this.tbWallpaperFile.ReadOnly = true;
+            this.tbWallpaperFile.Size = new System.Drawing.Size(190, 23);
+            this.tbWallpaperFile.TabIndex = 11;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(12, 71);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(150, 15);
+            this.label3.TabIndex = 10;
+            this.label3.Text = "Select wallpaper (optional):";
+            // 
             // CreateNewFolder
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(459, 114);
+            this.ClientSize = new System.Drawing.Size(459, 143);
             this.ControlBox = false;
+            this.Controls.Add(this.btnBrowseWallpaper);
+            this.Controls.Add(this.tbWallpaperFile);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.btnBrowse);
             this.Controls.Add(this.tbPictureFile);
             this.Controls.Add(this.tbFolderName);
@@ -147,5 +180,8 @@ namespace EverLoader.Forms
         private System.Windows.Forms.TextBox tbFolderName;
         private System.Windows.Forms.TextBox tbPictureFile;
         private System.Windows.Forms.Button btnBrowse;
+        private System.Windows.Forms.Button btnBrowseWallpaper;
+        private System.Windows.Forms.TextBox tbWallpaperFile;
+        private System.Windows.Forms.Label label3;
     }
 }
