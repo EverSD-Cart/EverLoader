@@ -47,7 +47,7 @@ namespace EverLoader.Forms
             {
                 //create temp dir for scripts etc
                 var tempDir = $"{Path.GetTempPath()}everfolders";
-                Directory.Delete(tempDir, true); //clean up temp folder
+                if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true); //clean up temp folder from previous time
                 Directory.CreateDirectory(tempDir);
 
                 //copy png to temp and rename

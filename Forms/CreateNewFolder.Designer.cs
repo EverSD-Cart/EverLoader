@@ -69,9 +69,9 @@ namespace EverLoader.Forms
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(11, 43);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(159, 15);
+            this.label2.Size = new System.Drawing.Size(155, 15);
             this.label2.TabIndex = 5;
-            this.label2.Text = "Select picture for folder icon:";
+            this.label2.Text = "Select image for folder icon:";
             // 
             // btnCancel
             // 
@@ -86,7 +86,7 @@ namespace EverLoader.Forms
             // 
             // openFileDialog1
             // 
-            this.openFileDialog1.Filter = "PNG image files|*.png";
+            this.openFileDialog1.Filter = "Images (*.bmp;*.png;*.jpg;*.jpeg;*.gif)|*.bmp;*.png;*.jpg;*.jpeg;*.gif";
             // 
             // tbFolderName
             // 
