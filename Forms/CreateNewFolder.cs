@@ -47,15 +47,13 @@ namespace EverLoader.Forms
             {
                 //create temp dir for scripts etc
                 var tempDir = $"{Path.GetTempPath()}everfolders";
+                Directory.Delete(tempDir, true); //clean up temp folder
                 Directory.CreateDirectory(tempDir);
 
                 //copy png to temp and rename
                 var pngSourcePath = this.tbPictureFile.Text;
-                var pngWPSourcePath = this.tbWallpaperFile.Text;
                 var pngTargetPath = Path.Combine(tempDir, $"{newSDFolder}.png");
-                var pngWPTargetPath = Path.Combine(tempDir, $"{newSDFolder}@.png"); // additional @ will be filtered out
                 File.Copy(pngSourcePath, pngTargetPath, overwrite:true);
-                if (!string.IsNullOrEmpty(pngWPSourcePath)) File.Copy(pngWPSourcePath, pngWPTargetPath, overwrite: true);
 
                 //extract scripts
                 using (var memStream = new MemoryStream(Properties.Resources.Build_EverSD_Folders))
@@ -88,7 +86,7 @@ namespace EverLoader.Forms
                 process.WaitForExit();
                 scriptExitCode = process.ExitCode;
                 process.Close();
-                if (scriptExitCode != 0) goto cleanup;
+                if (scriptExitCode != 0) return;
 
                 if (!string.IsNullOrEmpty(this.tbWallpaperFile.Text))
                 {
@@ -114,18 +112,15 @@ namespace EverLoader.Forms
                     process.WaitForExit();
                     scriptExitCode = process.ExitCode;
                     process.Close();
-                    if (scriptExitCode != 0) goto cleanup;
+                    if (scriptExitCode != 0) return;
                 }
 
                 //copy folders to SD drive
-                VB.CopyDirectory(Path.Combine(tempDir, "folders"), Path.Combine(_sdDriveRoot, "folders"));
-                VB.CopyDirectory(Path.Combine(tempDir, "game"), Path.Combine(_sdDriveRoot, "game"));
-                VB.CopyDirectory(Path.Combine(tempDir, "retroarch"), Path.Combine(_sdDriveRoot, "retroarch"));
-                VB.CopyDirectory(Path.Combine(tempDir, "special"), Path.Combine(_sdDriveRoot, "special"));
+                VB.CopyDirectory(Path.Combine(tempDir, "folders"), Path.Combine(_sdDriveRoot, "folders"), overwrite:true);
+                VB.CopyDirectory(Path.Combine(tempDir, "game"), Path.Combine(_sdDriveRoot, "game"), overwrite: true);
+                VB.CopyDirectory(Path.Combine(tempDir, "retroarch"), Path.Combine(_sdDriveRoot, "retroarch"), overwrite: true);
+                VB.CopyDirectory(Path.Combine(tempDir, "special"), Path.Combine(_sdDriveRoot, "special"), overwrite: true);
                 if (!File.Exists(Path.Combine(_sdDriveRoot, "cartridge.json"))) File.Copy(Path.Combine(tempDir, "cartridge.json"), Path.Combine(_sdDriveRoot, "cartridge.json"));
-
-                cleanup:
-                Directory.Delete(tempDir, true); //clean up temp folder
             });
 
             //enable form
