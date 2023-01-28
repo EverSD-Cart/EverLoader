@@ -28,8 +28,6 @@ namespace EverLoader.Models
 
         #region private vars
         private string _romTitle;
-        private string _romCore;
-        private string _romLaunchType;
         private string _romGenre;
         private string _romPlatform;
         private string _romReleaseDate;
@@ -41,8 +39,8 @@ namespace EverLoader.Models
         // all properties that can be changed in UI use NotifyChange
         public string romFileName { get; set; }
         public string romTitle { get => _romTitle; set => NotifyChange(ref _romTitle, value, isTitle: true); }
-        public string romCore { get => _romGenre ?? ""; set => NotifyChange(ref _romCore, value); }
-        public string romLaunchType { get => _romGenre ?? ""; set => NotifyChange(ref _romLaunchType, value); }
+        public string romCore { get => "NULL"; } //required field for fw 2.1.1
+        public string romLaunchType { get; set; } //required field for fw 2.1.1
         public string romPlatform { get => _romPlatform ?? ""; set => _romPlatform = value; } //don't notify change, as this value is derived
         public string romGenre { get => _romGenre ?? ""; set => NotifyChange(ref _romGenre, value); }
         public string romReleaseDate { get => _romReleaseDate ?? ""; set => NotifyChange(ref _romReleaseDate, value); }

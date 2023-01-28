@@ -61,7 +61,16 @@ namespace EverLoader.Models
 
         public string RetroArchCore {
             get => _retroArchCore;
-            set => base.NotifyChange(ref _retroArchCore, value); 
+            set
+            {
+                base.NotifyChange(ref _retroArchCore, value);
+                FixRomLaunchType();
+            }
+        }
+
+        public void FixRomLaunchType()
+        {
+            romLaunchType = _retroArchCore != null ? "NATIVE" : "NULL";
         }
 
         public int ImageBannerVerticalOffset { get; set; }

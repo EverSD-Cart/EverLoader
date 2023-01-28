@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
+using TheGamesDBApiWrapper.Data.ApiClasses;
 
 namespace EverLoader
 {
@@ -246,8 +247,6 @@ namespace EverLoader
             // Game Info
             lblGameId.Text = _game?.Id;
             lblGameCRC.Text = _game?.romCRC32;
-            tbCore.DataBindings.AddSingle("Text", _game, nameof(_game.romCore));
-            tbType.DataBindings.AddSingle("Text", _game, nameof(_game.romLaunchType));
             tbTitle.DataBindings.AddSingle("Text", _game, nameof(_game.romTitle));
             cbPlatform.DataBindings.AddSingle("SelectedValue", _game, nameof(_game.romPlatformId));
             cbGenre.DataBindings.AddSingle("Text", _game, nameof(_game.romGenre));
@@ -409,16 +408,17 @@ namespace EverLoader
             var validDrive = driveName != null;
             pbConnected.Image = validDrive ? Properties.Resources.green : Properties.Resources.red;
             btnSyncToSD.Enabled = validDrive;
+            btnNewSDFolder.Enabled = validDrive;
             lblCartName.Enabled = validDrive;
             tbCartName.Enabled = validDrive;
 
             if (validDrive)
             {
-                btnSelectSD.Text = $"Selected MicroSD drive = {driveName}";
+                btnSelectSD.Text = $"MicroSD = {driveName}";
             }
             else
             {
-                btnSelectSD.Text = "Select MicroSD drive";
+                btnSelectSD.Text = "Select MicroSD";
             }
 
             if (!validDrive) return;
@@ -433,32 +433,19 @@ namespace EverLoader
                     tbCartName.Text = cart.cartridgeName;
                 }
 
-                //if any of the existing games on the SD card are known, pre-select those games and de-select the others
+                /* pre-select games which are found on the SD card */
                 var cartGamesDir = new DirectoryInfo($"{driveName}game");
-                if (cartGamesDir.Exists)
+                HashSet<string> cartGameIds = new HashSet<string>((cartGamesDir.Exists ? cartGamesDir.GetFiles("*.json") : new FileInfo[0])
+                    .Select(j => Path.GetFileNameWithoutExtension(j.Name))
+                    .Where(g => _gamesManager.GamesDictionary.ContainsKey(g)));
+
+                foreach (var game in _gamesManager.Games)
                 {
-                    HashSet<string> cartGameIds = new HashSet<string>(cartGamesDir.GetFiles("*.json")
-                        .Select(j => Path.GetFileNameWithoutExtension(j.Name))
-                        .Where(g => _gamesManager.GamesDictionary.ContainsKey(g)));
-
-                    if (cartGameIds.Count > 0)
-                    {
-                        foreach (var game in _gamesManager.Games)
-                        {
-                            game.IsSelected = cartGameIds.Contains(game.Id);
-                        }
-
-                        //TODO: in case 'selected games' filter is active, code below doesn't work
-                        lvGames.ItemChecked -= new ItemCheckedEventHandler(lvGames_ItemChecked);
-                        foreach (ListViewItem lvi in lvGames.Items)
-                        {
-                            lvi.Checked = cartGameIds.Contains(lvi.Name);
-                        }
-                        lvGames.ItemChecked += new ItemCheckedEventHandler(lvGames_ItemChecked);
-
-                        UpdateTotalSelectedGamesLabel();
-                    }
+                    game.IsSelected = cartGameIds.Contains(game.Id);
                 }
+                cbRomFilter_SelectedIndexChanged(null, null); //update checked games in current UI view
+                UpdateTotalSelectedGamesLabel();
+                /* end of pre-select code */
             }
         }
 
@@ -646,10 +633,10 @@ namespace EverLoader
             }
 
             //show warning if there are any games using RetroArch, but no /sdcard/retroarch directory
-            if (_gamesManager.Games.Any(g => g.IsSelected && g.RetroArchCore != null) && !Directory.Exists($"{SDDrive}retroarch"))
+            if (_gamesManager.Games.Any(g => g.IsSelected && g.RetroArchCore != null) && !Directory.Exists($"{Path.GetPathRoot(SDDrive)}retroarch"))
             {
                 MessageBox.Show(
-                    "You've selected some games to run with RetroArch, but no RetroArch directory was found on your MicroSD card.\n" +
+                    "You've selected some games to run with RetroArch, but no RetroArch directory was found in the root of your MicroSD card.\n" +
                     "Please download RetroArch from https://eversd.com/downloads and extract it to the root folder of your MicroSD card.",
                     "No RetroArch found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -700,6 +687,7 @@ namespace EverLoader
 
         private async void selectSDDriveToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {
+            bool itemWasChecked = false;
             var drives = SDCardHelper.FindRemovableDrives();
             if (drives.Length == 0)
             {
@@ -716,18 +704,32 @@ namespace EverLoader
             else
             {
                 selectSDDriveToolStripMenuItem.DropDownItems.Clear();
-                bool itemWasChecked = false;
+                
                 foreach (var drive in drives)
                 {
-                    var item = new ToolStripMenuItem($"{drive.Name} - Total size: {drive.TotalSize.ToSize()}", null, driveToolStripMenuItem_Click, drive.Name);
-                    item.Checked = SDDrive != null && item.Name.StartsWith(SDDrive);
-                    itemWasChecked |= item.Checked;
-                    selectSDDriveToolStripMenuItem.DropDownItems.Add(item);
+                    var item = new ToolStripMenuItem($"{drive.Name} {string.Empty.PadLeft(30)} [Total size: {drive.TotalSize.ToSize()}]", null, driveToolStripMenuItem_Click, drive.Name);
+                    AddDrivePathItem(item);
+
+                    //check for subfolders of the /folders directory
+                    var folders = new DirectoryInfo($"{drive.Name}folders");
+                    if (folders.Exists)
+                    foreach (var dir in folders.GetDirectories())
+                    {
+                        var subitem = new ToolStripMenuItem($"{dir.FullName}\\", null, driveToolStripMenuItem_Click, dir.FullName + "\\");
+                        AddDrivePathItem(subitem);
+                    }
                 }
                 if (!itemWasChecked)
                 {
                     await SelectSDDrive(null);
                 }
+            }
+
+            void AddDrivePathItem(ToolStripMenuItem item)
+            {
+                item.Checked = SDDrive != null && item.Name == SDDrive;
+                itemWasChecked |= item.Checked;
+                selectSDDriveToolStripMenuItem.DropDownItems.Add(item);
             }
         }
 
@@ -1188,5 +1190,16 @@ namespace EverLoader
         }
         #endregion toolstrip menu
 
+        private async void btnNewSDFolder_Click(object sender, EventArgs e)
+        {
+            using (var form = new CreateNewFolder(SDDrive))
+            {
+                form.ShowDialog();
+                if (form.JustCreatedFolderName != null && Directory.Exists(Path.Combine(Path.GetPathRoot(SDDrive), "folders", form.JustCreatedFolderName)))
+                {
+                    await SelectSDDrive(Path.Combine(Path.GetPathRoot(SDDrive), "folders", form.JustCreatedFolderName) + "\\");
+                }
+            }
+        }
     }
 }

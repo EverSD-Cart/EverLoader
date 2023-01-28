@@ -46,8 +46,6 @@ namespace EverLoader
             this.cbMultiDisc = new System.Windows.Forms.CheckBox();
             this.tbTitle = new System.Windows.Forms.TextBox();
             this.lblTitle = new System.Windows.Forms.Label();
-            this.tbCore = new System.Windows.Forms.TextBox();
-            this.tbType = new System.Windows.Forms.TextBox();
             this.panel9 = new System.Windows.Forms.Panel();
             this.cbPlatform = new GroupedComboBox();
             this.tbReleaseDate = new System.Windows.Forms.TextBox();
@@ -143,6 +141,8 @@ namespace EverLoader
             this.pbEverSD = new System.Windows.Forms.PictureBox();
             this.panel6 = new System.Windows.Forms.Panel();
             this.lblNumberOfGamesSelected = new System.Windows.Forms.Label();
+            this.tableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnNewSDFolder = new System.Windows.Forms.Button();
             this.openGameImage = new System.Windows.Forms.OpenFileDialog();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.scrapeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -184,16 +184,17 @@ namespace EverLoader
             this.gbScrapeByName.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbEverSD)).BeginInit();
             this.panel6.SuspendLayout();
+            this.tableLayoutPanel7.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnAddGames
             // 
             this.btnAddGames.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnAddGames.Location = new System.Drawing.Point(7, 543);
+            this.btnAddGames.Location = new System.Drawing.Point(7, 7);
             this.btnAddGames.Margin = new System.Windows.Forms.Padding(7);
             this.btnAddGames.Name = "btnAddGames";
-            this.btnAddGames.Size = new System.Drawing.Size(331, 27);
+            this.btnAddGames.Size = new System.Drawing.Size(124, 27);
             this.btnAddGames.TabIndex = 1;
             this.btnAddGames.TabStop = false;
             this.btnAddGames.Text = "Add New ROM(s)";
@@ -300,8 +301,6 @@ namespace EverLoader
             this.panel8.Controls.Add(this.cbMultiDisc);
             this.panel8.Controls.Add(this.tbTitle);
             this.panel8.Controls.Add(this.lblTitle);
-            this.panel8.Controls.Add(this.tbCore);
-            this.panel8.Controls.Add(this.tbType);
             this.panel8.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel8.Location = new System.Drawing.Point(0, 24);
             this.panel8.Margin = new System.Windows.Forms.Padding(0);
@@ -346,30 +345,6 @@ namespace EverLoader
             this.lblTitle.Size = new System.Drawing.Size(32, 15);
             this.lblTitle.TabIndex = 0;
             this.lblTitle.Text = "Title";
-            // 
-            // tbCore
-            // 
-            this.tbCore.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbCore.Enabled = false;
-            this.tbCore.Location = new System.Drawing.Point(4, 18);
-            this.tbCore.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tbCore.Name = "tbCore";
-            this.tbCore.Size = new System.Drawing.Size(325, 23);
-            this.tbCore.TabIndex = 1;
-            this.tbCore.TabStop = false;
-            // 
-            // tbType
-            // 
-            this.tbType.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbType.Enabled = false;
-            this.tbType.Location = new System.Drawing.Point(4, 18);
-            this.tbType.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tbType.Name = "tbType";
-            this.tbType.Size = new System.Drawing.Size(325, 23);
-            this.tbType.TabIndex = 1;
-            this.tbType.TabStop = false;
             // 
             // panel9
             // 
@@ -997,8 +972,8 @@ namespace EverLoader
             // selectSDDriveToolStripMenuItem
             // 
             this.selectSDDriveToolStripMenuItem.Name = "selectSDDriveToolStripMenuItem";
-            this.selectSDDriveToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
-            this.selectSDDriveToolStripMenuItem.Text = "Select MicroSD drive";
+            this.selectSDDriveToolStripMenuItem.Size = new System.Drawing.Size(218, 22);
+            this.selectSDDriveToolStripMenuItem.Text = "Select MicroSD drive/folder";
             this.selectSDDriveToolStripMenuItem.DropDownOpening += new System.EventHandler(this.selectSDDriveToolStripMenuItem_DropDownOpening);
             // 
             // toolStripMenuItem1
@@ -1046,7 +1021,6 @@ namespace EverLoader
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33334F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33334F));
             this.tableLayoutPanel1.Controls.Add(this.groupBox3, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.btnAddGames, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.groupBox2, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.groupBox1, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnSelectSD, 1, 2);
@@ -1056,6 +1030,7 @@ namespace EverLoader
             this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.pbEverSD, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.panel6, 0, 3);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel7, 0, 2);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 24);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -1076,7 +1051,7 @@ namespace EverLoader
             this.btnSelectSD.Size = new System.Drawing.Size(331, 27);
             this.btnSelectSD.TabIndex = 5;
             this.btnSelectSD.TabStop = false;
-            this.btnSelectSD.Text = "Select MicroSD drive";
+            this.btnSelectSD.Text = "Select MicroSD";
             this.btnSelectSD.UseVisualStyleBackColor = true;
             this.btnSelectSD.Click += new System.EventHandler(this.btnSelectSD_Click);
             // 
@@ -1640,6 +1615,37 @@ namespace EverLoader
             this.lblNumberOfGamesSelected.Size = new System.Drawing.Size(8, 20);
             this.lblNumberOfGamesSelected.TabIndex = 5;
             // 
+            // tableLayoutPanel7
+            // 
+            this.tableLayoutPanel7.ColumnCount = 3;
+            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 4F));
+            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 56F));
+            this.tableLayoutPanel7.Controls.Add(this.btnNewSDFolder, 2, 0);
+            this.tableLayoutPanel7.Controls.Add(this.btnAddGames, 0, 0);
+            this.tableLayoutPanel7.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel7.Location = new System.Drawing.Point(0, 536);
+            this.tableLayoutPanel7.Margin = new System.Windows.Forms.Padding(0);
+            this.tableLayoutPanel7.Name = "tableLayoutPanel7";
+            this.tableLayoutPanel7.RowCount = 1;
+            this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel7.Size = new System.Drawing.Size(345, 41);
+            this.tableLayoutPanel7.TabIndex = 13;
+            // 
+            // btnNewSDFolder
+            // 
+            this.btnNewSDFolder.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnNewSDFolder.Enabled = false;
+            this.btnNewSDFolder.Location = new System.Drawing.Point(158, 7);
+            this.btnNewSDFolder.Margin = new System.Windows.Forms.Padding(7);
+            this.btnNewSDFolder.Name = "btnNewSDFolder";
+            this.btnNewSDFolder.Size = new System.Drawing.Size(180, 27);
+            this.btnNewSDFolder.TabIndex = 2;
+            this.btnNewSDFolder.TabStop = false;
+            this.btnNewSDFolder.Text = "Create New Folder on MicroSD";
+            this.btnNewSDFolder.UseVisualStyleBackColor = true;
+            this.btnNewSDFolder.Click += new System.EventHandler(this.btnNewSDFolder_Click);
+            // 
             // openGameImage
             // 
             this.openGameImage.Filter = "Images (*.bmp;*.png;*.jpg;*.jpeg;*.gif)|*.bmp;*.png;*.jpg;*.jpeg;*.gif";
@@ -1748,6 +1754,7 @@ namespace EverLoader
             ((System.ComponentModel.ISupportInitialize)(this.pbEverSD)).EndInit();
             this.panel6.ResumeLayout(false);
             this.panel6.PerformLayout();
+            this.tableLayoutPanel7.ResumeLayout(false);
             this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -1769,8 +1776,6 @@ namespace EverLoader
         private System.Windows.Forms.ToolStripMenuItem optimizeImagesToolStripMenuItem;
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.TextBox tbTitle;
-        private System.Windows.Forms.TextBox tbCore;
-        private System.Windows.Forms.TextBox tbType;
         private System.Windows.Forms.PictureBox pbConnected;
         private System.Windows.Forms.TextBox tbDescription;
         private System.Windows.Forms.Label lblDescription;
@@ -1872,6 +1877,8 @@ namespace EverLoader
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel15;
         private System.Windows.Forms.CheckBox cbMultiDisc;
+        private System.Windows.Forms.Button btnNewSDFolder;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel7;
     }
 }
 
