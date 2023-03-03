@@ -13,6 +13,8 @@ fi
 RA_CONFIG=
 if [ "$(cat /etc/rootfs_version | grep -i VS)" ]; then
   RA_CONFIG=retroarch_vs.cfg
+elif [ `cat /sys/class/drm/card0-HDMI-A-1/status` == "connected" ]; then
+  RA_CONFIG=retroarch_tvout.cfg
 else
   RA_CONFIG=retroarch.cfg
 fi
