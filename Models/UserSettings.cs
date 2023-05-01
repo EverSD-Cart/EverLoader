@@ -1,10 +1,4 @@
-﻿using EverLoader.Enums;
-using EverLoader.Services;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System;
 
 namespace EverLoader.Models
 {

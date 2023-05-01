@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TheGamesDBApiWrapper.Models.Entities;
+﻿using TheGamesDBApiWrapper.Models.Entities;
 
 namespace EverLoader.Models
 {
