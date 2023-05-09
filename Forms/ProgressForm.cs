@@ -5,20 +5,38 @@ namespace EverLoader
 {
     public partial class ProgressForm : Form
     {
-        private Form _parent;
+        private readonly Form _parent;
+
+        public int ProgressBarValue
+        {
+            get => progressBar1.Value;
+            set
+            {
+                if (progressBar1.Value == value) 
+                    return;
+                
+                progressBar1.Value = value;
+            }
+        }
+
+        public ProgressBarStyle ProgressBarStyle
+        {
+            get => progressBar1.Style;
+            set => progressBar1.Style = value;
+        }
 
         public ProgressForm()
         {
             InitializeComponent();
 
-            this.MaximumSize = this.MinimumSize = this.Size; //no resizing
+            MaximumSize = MinimumSize = Size; //no resizing
 
             progressBar1.Maximum = 100;
             progressBar1.Step = 1;
             progressBar1.Value = 0;
 
-            Reporter = new Progress<(string action, int item, int total)>((p)
-                => this.UpdateProgress(p.action, p.item, p.total));
+            Reporter = new Progress<(string action, int item, int total)>(p
+                => UpdateProgress(p.action, p.item, p.total));
         }
 
         public ProgressForm(Form parent, string actionText = "Preparing...", ProgressBarStyle progressStyle = ProgressBarStyle.Blocks) : this()
@@ -27,8 +45,8 @@ namespace EverLoader
             progressBar1.Style = progressStyle;
             _parent = parent;
             _parent.Enabled = false;
-            this.Show(_parent);
-            this.CenterToParent();
+            Show(_parent);
+            CenterToParent();
             Application.DoEvents();
         }
 
@@ -38,13 +56,13 @@ namespace EverLoader
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (_parent != null)
+            if (_parent is not null)
             {
                 _parent.Enabled = true;
                 _parent.BringToFront();
             }
 
-            if (disposing && (components != null))
+            if (disposing && components is not null)
             {
                 components.Dispose();
             }

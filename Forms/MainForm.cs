@@ -98,11 +98,12 @@ namespace EverLoader
                 var xPlatform = _appSettings.Platforms.FirstOrDefault(p => p.Name == x);
                 var yPlatform = _appSettings.Platforms.FirstOrDefault(p => p.Name == y);
                 if (xPlatform != null && yPlatform != null
-                    && xPlatform.Group == yPlatform.Group
-                    && xPlatform.GroupItemSortOrder * yPlatform.GroupItemSortOrder != 0)
+                                      && xPlatform.Group == yPlatform.Group
+                                      && xPlatform.GroupItemSortOrder * yPlatform.GroupItemSortOrder != 0)
                 {
                     return Comparer<int>.Default.Compare(xPlatform.GroupItemSortOrder, yPlatform.GroupItemSortOrder);
                 }
+
                 return Comparer<string>.Default.Compare(x == "Other" ? "ZZZ" : x, y == "Other" ? "ZZZ" : y);
             });
             cbPlatform.DataSource = items;
@@ -111,7 +112,6 @@ namespace EverLoader
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -134,13 +134,14 @@ namespace EverLoader
                 .Select(value => new
                 {
                     Group = "Filter by Feature",
-                    Text = (Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute)) as DescriptionAttribute).Description,
+                    Text = (Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()),
+                        typeof(DescriptionAttribute)) as DescriptionAttribute).Description,
                     Value = value.ToString()
                 }).ToList();
             //add platforms used by current collection of games
             foreach (var platform in _gamesManager.GetExistingGamePlatforms())
             {
-                dsRomFilter.Add(new 
+                dsRomFilter.Add(new
                 {
                     Group = "Filter by Platform",
                     Text = platform.GroupAndName,
@@ -178,8 +179,8 @@ namespace EverLoader
             if (_gamesManager.GamesDictionary.Count == 0)
             {
                 toolTip1.Show("Welcome to EverLoader; the easiest way to sync your ROMs to the EverSD cart!\n\n" +
-                    "It looks like your ROMs collection is still empty...\n\n" +
-                    "Click the 'Add New ROM(s)' button below to import your ROMs.", lvGames);
+                              "It looks like your ROMs collection is still empty...\n\n" +
+                              "Click the 'Add New ROM(s)' button below to import your ROMs.", lvGames);
             }
 
             //run stuff in the background
@@ -189,7 +190,10 @@ namespace EverLoader
                 {
                     await _romManager.Init();
                 }
-                catch (Exception) { /* ignore for now */ }
+                catch (Exception)
+                {
+                    /* ignore for now */
+                }
             });
         }
 
@@ -232,6 +236,7 @@ namespace EverLoader
             {
                 _game.GameInfoChanged -= Game_GameInfoChanged;
             }
+
             //bind with empty game object to clear the form fields
             _game = null;
             //_platform = null;
@@ -277,8 +282,10 @@ namespace EverLoader
 
                 cbMultiDisc.Visible = _game?.IsMultiDisc == true;
 
-                rbInternalCore.Enabled = !cbMultiDisc.Visible && platform?.InternalEmulator?.SupportedExtensions.Contains(ext) == true;
-                rbRetroArchCore.Enabled = cbRetroArchCore.Enabled = platform?.RetroArchCores?.Any(r => r.SupportedExtensions.Contains(ext)) == true;
+                rbInternalCore.Enabled = !cbMultiDisc.Visible &&
+                                         platform?.InternalEmulator?.SupportedExtensions.Contains(ext) == true;
+                rbRetroArchCore.Enabled = cbRetroArchCore.Enabled =
+                    platform?.RetroArchCores?.Any(r => r.SupportedExtensions.Contains(ext)) == true;
 
                 cbRetroArchCore.DataSource = rbRetroArchCore.Enabled
                     ? platform.RetroArchCores.Where(r => r.SupportedExtensions.Contains(ext))
@@ -338,7 +345,7 @@ namespace EverLoader
         /// </summary>
         private void UpdateMissingBiosFilesLabel()
         {
-            var missingBiosFiles = _gamesManager.GetMissingBiosFiles(_game, includeOptionalBios:true);
+            var missingBiosFiles = _gamesManager.GetMissingBiosFiles(_game, includeOptionalBios: true);
             lblMissingBiosFiles.Visible = missingBiosFiles.Length > 0;
             var platform = _gamesManager.GetGamePlatform(_game);
             if (platform != null)
@@ -349,7 +356,8 @@ namespace EverLoader
                 {
                     lblMissingBiosFiles.Text = "Upload required BIOS files";
                     lblMissingBiosFiles.LinkColor = Color.Red;
-                    missingBiosList = string.Join("\n - ", missingBiosFiles.Where(b => b.Required).Select(b => b.FileName));
+                    missingBiosList = string.Join("\n - ",
+                        missingBiosFiles.Where(b => b.Required).Select(b => b.FileName));
                     missingBiosText = "requires\nthese missing";
                 }
                 else
@@ -359,16 +367,22 @@ namespace EverLoader
                     missingBiosList = string.Join("\n - ", missingBiosFiles.Select(b => b.FileName));
                     missingBiosText = "supports\nthese optional";
                 }
-                toolTip1.SetToolTip(lblMissingBiosFiles, $"The {platform.Name} emulator {missingBiosText} BIOS files:\n - {missingBiosList}");
+
+                toolTip1.SetToolTip(lblMissingBiosFiles,
+                    $"The {platform.Name} emulator {missingBiosText} BIOS files:\n - {missingBiosList}");
             }
         }
 
         private void LoadBoxArt()
         {
-            if (_game?.Image != null) pbBoxArtSmall.ImageLocation = _game.Image; else pbBoxArtSmall.Image = Properties.Resources.NoBoxArtMedium;
-            if (_game?.ImageHD != null) pbBoxArtMedium.ImageLocation = _game.ImageHD; else pbBoxArtMedium.Image = Properties.Resources.NoBoxArtMedium;
-            if (_game?.Image1080 != null) pbBoxArtLarge.ImageLocation = _game.Image1080; else pbBoxArtLarge.Image = Properties.Resources.NoBoxArtLarge;
-            if (_game?.ImageBanner != null) pbBanner.ImageLocation = _game.ImageBanner; else pbBanner.Image = Properties.Resources.NoBannerArt;
+            if (_game?.Image != null) pbBoxArtSmall.ImageLocation = _game.Image;
+            else pbBoxArtSmall.Image = Properties.Resources.NoBoxArtMedium;
+            if (_game?.ImageHD != null) pbBoxArtMedium.ImageLocation = _game.ImageHD;
+            else pbBoxArtMedium.Image = Properties.Resources.NoBoxArtMedium;
+            if (_game?.Image1080 != null) pbBoxArtLarge.ImageLocation = _game.Image1080;
+            else pbBoxArtLarge.Image = Properties.Resources.NoBoxArtLarge;
+            if (_game?.ImageBanner != null) pbBanner.ImageLocation = _game.ImageBanner;
+            else pbBanner.Image = Properties.Resources.NoBannerArt;
 
             btnClearSmall.Enabled = _game?.Image != null;
             btnClearMedium.Enabled = _game?.ImageHD != null;
@@ -388,7 +402,6 @@ namespace EverLoader
                     //game name could have been changed
                     lvGames.SelectedItems[0].Text = _gamesManager.GetRomListTitle(_game);
                 }
-
             }
         }
 
@@ -419,7 +432,8 @@ namespace EverLoader
 
             if (!validDrive) return;
 
-            using (var progressForm = new ProgressForm(this, "Reading from MicroSD...", ProgressBarStyle.Marquee)) //TODO: real progress
+            using (var progressForm =
+                   new ProgressForm(this, "Reading from MicroSD...", ProgressBarStyle.Marquee)) //TODO: real progress
             {
                 //if there is a cartridge.json on the SD card, read the name
                 var cartJsonPath = $"{driveName}cartridge.json";
@@ -431,7 +445,8 @@ namespace EverLoader
 
                 /* pre-select games which are found on the SD card */
                 var cartGamesDir = new DirectoryInfo($"{driveName}game");
-                HashSet<string> cartGameIds = new HashSet<string>((cartGamesDir.Exists ? cartGamesDir.GetFiles("*.json") : new FileInfo[0])
+                HashSet<string> cartGameIds = new HashSet<string>(
+                    (cartGamesDir.Exists ? cartGamesDir.GetFiles("*.json") : new FileInfo[0])
                     .Select(j => Path.GetFileNameWithoutExtension(j.Name))
                     .Where(g => _gamesManager.GamesDictionary.ContainsKey(g)));
 
@@ -439,6 +454,7 @@ namespace EverLoader
                 {
                     game.IsSelected = cartGameIds.Contains(game.Id);
                 }
+
                 cbRomFilter_SelectedIndexChanged(null, null); //update checked games in current UI view
                 UpdateTotalSelectedGamesLabel();
                 /* end of pre-select code */
@@ -475,6 +491,7 @@ namespace EverLoader
             {
                 DeleteSelectedGames();
             }
+
             //select all
             if (e.KeyCode == Keys.A && e.Control)
             {
@@ -488,7 +505,8 @@ namespace EverLoader
         private void DeleteSelectedGames()
         {
             //ask user if sure
-            if (MessageBox.Show("Are you sure you want to delete these ROMs?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            if (MessageBox.Show("Are you sure you want to delete these ROMs?", "Confirm Delete",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 _gamesManager.DeleteGameByIds(lvGames.SelectedItems.Cast<ListViewItem>().Select(i => i.Name));
 
@@ -498,6 +516,7 @@ namespace EverLoader
                 {
                     listViewItem.Remove();
                 }
+
                 lvGames.Groups[0].Header = $"{lvGames.Items.Count} ROM(s)";
                 lvGames.EndUpdate();
 
@@ -532,14 +551,18 @@ namespace EverLoader
             {
                 gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Small));
             }
-            if (controlName == nameof(pbBoxArtMedium) || (controlName == nameof(pbBoxArtLarge) && _game.ImageHD == null))
+
+            if (controlName == nameof(pbBoxArtMedium) ||
+                (controlName == nameof(pbBoxArtLarge) && _game.ImageHD == null))
             {
                 gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Medium));
             }
+
             if (controlName == nameof(pbBoxArtLarge))
             {
                 gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Large));
             }
+
             if (controlName == nameof(pbBanner))
             {
                 gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner));
@@ -628,20 +651,54 @@ namespace EverLoader
                 return;
             }
 
-            //show warning if there are any games using RetroArch, but no /sdcard/retroarch directory
-            if (_gamesManager.Games.Any(g => g.IsSelected && g.RetroArchCore != null) && !Directory.Exists($"{Path.GetPathRoot(SDDrive)}retroarch"))
+            // show warning if there are any games using RetroArch, but no /sdcard/retroarch directory
+            if (_gamesManager.Games.Any(g => g.IsSelected && g.RetroArchCore is not null) &&
+                !Directory.Exists(Path.Combine(Path.GetPathRoot(SDDrive), "retroarch")))
             {
-                MessageBox.Show(
-                    "You've selected some games to run with RetroArch, but no RetroArch directory was found in the root of your MicroSD card.\n" +
-                    "Please download RetroArch from https://eversd.com/downloads and extract it to the root folder of your MicroSD card.",
-                    "No RetroArch found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                string text = string.Join(Environment.NewLine,
+                    "You've selected some games to run with RetroArch, but no RetroArch directory was found in the root of your MicroSD card.",
+                    "",
+                    "Would you like us to download and extract the RetroArch files to your MicroSD card?",
+                    "",
+                    "You could also download RetroArch manually from https://eversd.com/downloads and extract it to the root folder of your MicroSD card."
+                );
+
+                var result = MessageBox.Show(text,
+                    "No RetroArch found", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
+                    MessageBoxDefaultButton.Button1);
+
+                if (result == DialogResult.Yes)
+                {
+                    var progressForm = new ProgressForm(this, "Downloading RetroArch...");
+                    progressForm.UpdateProgress("Downloading RetroArch...", 0, 100);
+
+                    var progressIndicator = new Progress<float>(delegate(float f)
+                    {
+                        if (f >= 2)
+                        {
+                            progressForm.ProgressBarStyle = ProgressBarStyle.Marquee;
+                            progressForm.UpdateProgress("RetroArch downloaded, extracting to SD card...", 100, 100);
+                            return;
+                        }
+
+                        progressForm.ProgressBarValue = (int)Math.Floor(100 * f);
+                    });
+                    
+                    await RetroArchHelper.DownloadAndExtract(SDDrive, progressIndicator);
+                    
+                    progressForm.Close();
+                }
+                else
+                {
+                    return;
+                }
             }
 
             //show warning if one of the games selected for sync has missing BIOS file(s)
             foreach (var game in _gamesManager.Games.Where(g => g.IsSelected))
             {
-                var missingBiosFiles = _gamesManager.GetMissingBiosFiles(game, includeOptionalBios: false).Select(b => b.FileName);
+                var missingBiosFiles = _gamesManager.GetMissingBiosFiles(game, includeOptionalBios: false)
+                    .Select(b => b.FileName);
                 if (missingBiosFiles.Any())
                 {
                     MessageBox.Show(
@@ -661,11 +718,14 @@ namespace EverLoader
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Could not sync to MicroSD. Error message: \"{ex.Message}\".", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Could not sync to MicroSD. Error message: \"{ex.Message}\".", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
             }
-            MessageBox.Show("The selected ROMs were synced to MicroSD.\nPut the MicroSD card back in your EverSD cartridge and enjoy!",
+
+            MessageBox.Show(
+                "The selected ROMs were synced to MicroSD.\nPut the MicroSD card back in your EverSD cartridge and enjoy!",
                 "ROM Sync Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -675,6 +735,7 @@ namespace EverLoader
             {
                 menuItem.Checked = false;
             }
+
             var clickedItem = (ToolStripMenuItem)sender;
             clickedItem.Checked = true;
             await SelectSDDrive(clickedItem.Name);
@@ -700,21 +761,25 @@ namespace EverLoader
             else
             {
                 selectSDDriveToolStripMenuItem.DropDownItems.Clear();
-                
+
                 foreach (var drive in drives)
                 {
-                    var item = new ToolStripMenuItem($"{drive.Name} {string.Empty.PadLeft(30)} [Total size: {drive.TotalSize.ToSize()}]", null, driveToolStripMenuItem_Click, drive.Name);
+                    var item = new ToolStripMenuItem(
+                        $"{drive.Name} {string.Empty.PadLeft(30)} [Total size: {drive.TotalSize.ToSize()}]", null,
+                        driveToolStripMenuItem_Click, drive.Name);
                     AddDrivePathItem(item);
 
                     //check for subfolders of the /folders directory
                     var folders = new DirectoryInfo($"{drive.Name}folders");
                     if (folders.Exists)
-                    foreach (var dir in folders.GetDirectories())
-                    {
-                        var subitem = new ToolStripMenuItem($"{dir.FullName}\\", null, driveToolStripMenuItem_Click, dir.FullName + "\\");
-                        AddDrivePathItem(subitem);
-                    }
+                        foreach (var dir in folders.GetDirectories())
+                        {
+                            var subitem = new ToolStripMenuItem($"{dir.FullName}\\", null, driveToolStripMenuItem_Click,
+                                dir.FullName + "\\");
+                            AddDrivePathItem(subitem);
+                        }
                 }
+
                 if (!itemWasChecked)
                 {
                     await SelectSDDrive(null);
@@ -741,6 +806,7 @@ namespace EverLoader
                     {
                         pbBanner.Tag = 0;
                     }
+
                     LoadBoxArt();
                 }
             }
@@ -756,16 +822,21 @@ namespace EverLoader
                 switch (Enum.Parse(typeof(RomFeatureFilter), cbRomFilter.SelectedValue as string))
                 {
                     case RomFeatureFilter.SelectedForSync:
-                        gameInfos = _gamesManager.Games.Where(g => g.IsSelected); break;
+                        gameInfos = _gamesManager.Games.Where(g => g.IsSelected);
+                        break;
                     case RomFeatureFilter.RecentlyAdded:
-                        gameInfos = _gamesManager.Games.Where(g => g.IsRecentlyAdded); break;
+                        gameInfos = _gamesManager.Games.Where(g => g.IsRecentlyAdded);
+                        break;
                     case RomFeatureFilter.RomsWithoutBanner:
-                        gameInfos = _gamesManager.Games.Where(g => g.ImageBanner == null); break;
+                        gameInfos = _gamesManager.Games.Where(g => g.ImageBanner == null);
+                        break;
                     case RomFeatureFilter.RomsWithoutBoxart:
-                        gameInfos = _gamesManager.Games.Where(g => g.Image == null && g.Image1080 == null); break;
+                        gameInfos = _gamesManager.Games.Where(g => g.Image == null && g.Image1080 == null);
+                        break;
                     case RomFeatureFilter.RomsWithoutDescription:
-                        gameInfos = _gamesManager.Games.Where(g => g.romDescription == string.Empty); break;
-                        //default
+                        gameInfos = _gamesManager.Games.Where(g => g.romDescription == string.Empty);
+                        break;
+                    //default
                 }
             }
             else if (int.TryParse(cbRomFilter.SelectedValue as string, out int platformId))
@@ -819,10 +890,13 @@ namespace EverLoader
 
         private void ShowScrapingErrorMessageBox(Exception ex)
         {
-            MessageBox.Show($"There were problems calling the Scraping API.\nError message: \"{ex.Message}\".\nInner exception message: \"{ex.InnerException?.Message}\"", "Scraping Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(
+                $"There were problems calling the Scraping API.\nError message: \"{ex.Message}\".\nInner exception message: \"{ex.InnerException?.Message}\"",
+                "Scraping Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private bool IdleHandlerSet { get; set; }
+
         private void lvGames_SelectedIndexChanged(object sender, EventArgs e)
         {
             // this will fire every time items are selected or deselected.
@@ -852,20 +926,26 @@ namespace EverLoader
                 foreach (var romFilePath in dialog.FileNames)
                 {
                     Directory.CreateDirectory(platformRomsDir); //ensure directory exists
-                    var missingBiosFile = missingBiosFiles.FirstOrDefault(b => b.FileName.ToLower() == Path.GetFileName(romFilePath).ToLower());
-                    if (missingBiosFile?.MD5.Length > 0 && !missingBiosFile.MD5.Contains(HashHelper.CalculateHashcodes(romFilePath).Md5))
+                    var missingBiosFile = missingBiosFiles.FirstOrDefault(b =>
+                        b.FileName.ToLower() == Path.GetFileName(romFilePath).ToLower());
+                    if (missingBiosFile?.MD5.Length > 0 &&
+                        !missingBiosFile.MD5.Contains(HashHelper.CalculateHashcodes(romFilePath).Md5))
                     {
                         if (MessageBox.Show(
-                            $"Uploaded BIOS file '{missingBiosFile.FileName}' doesn't have the expected MD5 hash { string.Join(" or ", missingBiosFile.MD5) }." +
-                            "\nPlease try a different file.\n\n" +
-                            "Clicking 'OK' will copy the required MD5 hash(es) to your clipboard.",
-                            "BIOS file MD5 mismatch", MessageBoxButtons.OKCancel, MessageBoxIcon.Error) == DialogResult.OK)
+                                $"Uploaded BIOS file '{missingBiosFile.FileName}' doesn't have the expected MD5 hash {string.Join(" or ", missingBiosFile.MD5)}." +
+                                "\nPlease try a different file.\n\n" +
+                                "Clicking 'OK' will copy the required MD5 hash(es) to your clipboard.",
+                                "BIOS file MD5 mismatch", MessageBoxButtons.OKCancel, MessageBoxIcon.Error) ==
+                            DialogResult.OK)
                         {
                             Clipboard.SetText(string.Join(" ", missingBiosFile.MD5));
-                        }     
+                        }
+
                         continue;
                     }
-                    File.Copy(romFilePath, Path.Combine(platformRomsDir, Path.GetFileName(romFilePath)), overwrite:true);
+
+                    File.Copy(romFilePath, Path.Combine(platformRomsDir, Path.GetFileName(romFilePath)),
+                        overwrite: true);
                 }
 
                 UpdateMissingBiosFilesLabel();
@@ -881,19 +961,22 @@ namespace EverLoader
                 lbScrapeResults.Items.Clear();
                 lbScrapeResults.Enabled = true;
                 lbScrapeResults.DisplayMember = nameof(TgdbScrapeResult.GameName);
-                lbScrapeResults.Items.AddRange((await _scrapeManager.ScrapeByGameTitle(tbScrapeName.Text, platform.TGDB_PlatformIds)).ToArray());
+                lbScrapeResults.Items.AddRange(
+                    (await _scrapeManager.ScrapeByGameTitle(tbScrapeName.Text, platform.TGDB_PlatformIds)).ToArray());
             }
             catch (Exception ex)
             {
                 ShowScrapingErrorMessageBox(ex);
                 //continue
             }
+
             Cursor.Current = Cursors.Default;
             if (lbScrapeResults.Items.Count == 0)
             {
                 lbScrapeResults.Items.Add("[no results - try again using less words]");
             }
         }
+
         private void tbScrapeName_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Return)
@@ -909,10 +992,11 @@ namespace EverLoader
             {
                 if ((_game.romDescription != "" || _game.Image != null || _game.Image1080 != null)
                     && (lbScrapeResults.Tag as string) != "WARNING_SHOWN"
-                    && MessageBox.Show("This will overwrite the current ROM description and images with the scraped information.\nIs this OK?",
-                    "Applying scraped game content",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning) == DialogResult.No)
+                    && MessageBox.Show(
+                        "This will overwrite the current ROM description and images with the scraped information.\nIs this OK?",
+                        "Applying scraped game content",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning) == DialogResult.No)
                 {
                     return;
                 }
@@ -926,18 +1010,24 @@ namespace EverLoader
                 //lvGames.SelectedItems[0].Text = _gamesManager.GetRomListTitle(_game);
                 _game.romDescription = selectedResult.Game.Overview;
                 _game.romGenre = _romManager.MapToGenre(selectedResult.Game.Genres);
-                _game.romPlayers = selectedResult.Game.Players.HasValue ? selectedResult.Game.Players.Value : 1; //default 1
-                _game.romReleaseDate = selectedResult.Game.ReleaseDate.HasValue ? selectedResult.Game.ReleaseDate.Value.ToString("yyyy-MM-dd") : "";
+                _game.romPlayers =
+                    selectedResult.Game.Players.HasValue ? selectedResult.Game.Players.Value : 1; //default 1
+                _game.romReleaseDate = selectedResult.Game.ReleaseDate.HasValue
+                    ? selectedResult.Game.ReleaseDate.Value.ToString("yyyy-MM-dd")
+                    : "";
 
                 if (selectedResult.BoxArt != null)
                 {
-                    await _imageManager.ResizeImage($"{selectedResult.ImageBaseUrl}{selectedResult.BoxArt.FileName}", _game, _gamesManager.GetGameBoxartImageInfo(_game.Id));
+                    await _imageManager.ResizeImage($"{selectedResult.ImageBaseUrl}{selectedResult.BoxArt.FileName}",
+                        _game, _gamesManager.GetGameBoxartImageInfo(_game.Id));
                 }
 
                 if (selectedResult.Banners?.Length > 0)
                 {
                     pbBanner.Tag = 0; //reset banner offset
-                    await _imageManager.ResizeImage($"{selectedResult.ImageBaseUrl}{selectedResult.Banners[0].FileName}", _game, new[] { _gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner) });
+                    await _imageManager.ResizeImage(
+                        $"{selectedResult.ImageBaseUrl}{selectedResult.Banners[0].FileName}", _game,
+                        new[] { _gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner) });
                 }
 
                 llBannerNext.Visible = llBannerPrev.Visible = (selectedResult.Banners?.Length > 1);
@@ -958,14 +1048,18 @@ namespace EverLoader
 
                 if (((Control)sender).Name.Contains("Next"))
                 {
-                    if (++selectedResult.UIBannerIndex >= selectedResult.Banners.Length) selectedResult.UIBannerIndex = 0;
+                    if (++selectedResult.UIBannerIndex >= selectedResult.Banners.Length)
+                        selectedResult.UIBannerIndex = 0;
                 }
                 else
                 {
-                    if (--selectedResult.UIBannerIndex < 0) selectedResult.UIBannerIndex = selectedResult.Banners.Length - 1;
+                    if (--selectedResult.UIBannerIndex < 0)
+                        selectedResult.UIBannerIndex = selectedResult.Banners.Length - 1;
                 }
 
-                await _imageManager.ResizeImage($"{selectedResult.ImageBaseUrl}{selectedResult.Banners[selectedResult.UIBannerIndex].FileName}", _game, new[] { _gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner) });
+                await _imageManager.ResizeImage(
+                    $"{selectedResult.ImageBaseUrl}{selectedResult.Banners[selectedResult.UIBannerIndex].FileName}",
+                    _game, new[] { _gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner) });
 
                 await _gamesManager.SerializeGame(_game);
                 SetDataBindings(refreshOnly: true);
@@ -993,7 +1087,8 @@ namespace EverLoader
                     var bannerInfo = _gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner);
                     bannerInfo.VerticalOffset = (int)pbBanner.Tag;
 
-                    await _imageManager.ResizeImage(sourceImg, _game, new[] { bannerInfo }, saveOriginal: false); //no need to save original, as we already have it
+                    await _imageManager.ResizeImage(sourceImg, _game, new[] { bannerInfo },
+                        saveOriginal: false); //no need to save original, as we already have it
 
                     await _gamesManager.SerializeGame(_game);
                     SetDataBindings(refreshOnly: true);
@@ -1011,23 +1106,33 @@ namespace EverLoader
             switch (((Control)sender).Name)
             {
                 case nameof(pbBoxArtSmall):
-                    btnClearSmall.Location = new Point(pbBoxArtSmall.Location.X + pbBoxArtSmall.Width - btnClearSmall.Width, btnClearSmall.Location.Y);
+                    btnClearSmall.Location =
+                        new Point(pbBoxArtSmall.Location.X + pbBoxArtSmall.Width - btnClearSmall.Width,
+                            btnClearSmall.Location.Y);
                     break;
                 case nameof(pbBoxArtMedium):
-                    btnClearMedium.Location = new Point(pbBoxArtMedium.Location.X + pbBoxArtMedium.Width - btnClearMedium.Width, btnClearMedium.Location.Y);
+                    btnClearMedium.Location =
+                        new Point(pbBoxArtMedium.Location.X + pbBoxArtMedium.Width - btnClearMedium.Width,
+                            btnClearMedium.Location.Y);
                     break;
                 case nameof(pbBoxArtLarge):
-                    btnClearLarge.Location = new Point(pbBoxArtLarge.Location.X + pbBoxArtLarge.Width - btnClearLarge.Width, btnClearLarge.Location.Y);
+                    btnClearLarge.Location =
+                        new Point(pbBoxArtLarge.Location.X + pbBoxArtLarge.Width - btnClearLarge.Width,
+                            btnClearLarge.Location.Y);
                     break;
                 case nameof(pbBanner):
                     // reposition clear image
-                    btnClearBanner.Location = new Point(pbBanner.Location.X + pbBanner.Width - btnClearBanner.Width, btnClearBanner.Location.Y);
+                    btnClearBanner.Location = new Point(pbBanner.Location.X + pbBanner.Width - btnClearBanner.Width,
+                        btnClearBanner.Location.Y);
                     // reposition up/down buttons
                     llBannerUp.Location = new Point(pbBanner.Location.X + pbBanner.Width - 75, llBannerUp.Location.Y);
-                    llBannerDown.Location = new Point(pbBanner.Location.X + pbBanner.Width - 57, llBannerDown.Location.Y);
+                    llBannerDown.Location =
+                        new Point(pbBanner.Location.X + pbBanner.Width - 57, llBannerDown.Location.Y);
                     //left/right buttons
-                    llBannerPrev.Location = new Point(pbBanner.Location.X, pbBanner.Location.Y + (pbBanner.Height - llBannerPrev.Height) / 2);
-                    llBannerNext.Location = new Point(pbBanner.Location.X + pbBanner.Width - llBannerNext.Width, pbBanner.Location.Y + (pbBanner.Height - llBannerNext.Height) / 2);
+                    llBannerPrev.Location = new Point(pbBanner.Location.X,
+                        pbBanner.Location.Y + (pbBanner.Height - llBannerPrev.Height) / 2);
+                    llBannerNext.Location = new Point(pbBanner.Location.X + pbBanner.Width - llBannerNext.Width,
+                        pbBanner.Location.Y + (pbBanner.Height - llBannerNext.Height) / 2);
                     break;
             }
         }
@@ -1038,7 +1143,7 @@ namespace EverLoader
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 var allowedExtensions = _appSettings.Platforms.SelectMany(p => p.SupportedExtensions);
-                if (files.Any(f => allowedExtensions.Contains(Path.GetExtension(f)?.ToLower()))) 
+                if (files.Any(f => allowedExtensions.Contains(Path.GetExtension(f)?.ToLower())))
                 {
                     e.Effect = DragDropEffects.Copy;
                     return;
@@ -1063,7 +1168,8 @@ namespace EverLoader
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (files == null || files.Length > 1 || !Path.GetExtension(files[0].ToLower()).In(".bmp", ".png", ".jpg", ".jpeg", ".gif")) return;
+                if (files == null || files.Length > 1 ||
+                    !Path.GetExtension(files[0].ToLower()).In(".bmp", ".png", ".jpg", ".jpeg", ".gif")) return;
                 e.Effect = DragDropEffects.Copy;
             }
 
@@ -1109,6 +1215,7 @@ namespace EverLoader
         }
 
         #region toolstrip menu
+
         private void deleteSelectedGamesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DeleteSelectedGames();
@@ -1121,13 +1228,15 @@ namespace EverLoader
                 _game.GameInfoChanged -= Game_GameInfoChanged;
                 try
                 {
-                    await _gamesManager.EnrichGames(lvGames.SelectedItems.Cast<ListViewItem>().Select(s => s.Name), progressForm.Reporter);
+                    await _gamesManager.EnrichGames(lvGames.SelectedItems.Cast<ListViewItem>().Select(s => s.Name),
+                        progressForm.Reporter);
                 }
                 catch (Exception ex)
                 {
                     ShowScrapingErrorMessageBox(ex);
                     //show error, but don't break the flow
                 }
+
                 _game.GameInfoChanged += Game_GameInfoChanged;
                 SetDataBindings();
             }
@@ -1138,12 +1247,14 @@ namespace EverLoader
             var toolStripItem = sender as ToolStripItem;
 
             var firstGamePlatform = _gamesManager.GetGamePlatform((lvGames.SelectedItems[0] as ListViewItem).Name);
-            List<GameInfo> selectedGames = new List<GameInfo>(lvGames.SelectedItems.Cast<ListViewItem>().Select(s => _gamesManager.GetGameById(s.Name)).Where(g => g != null));
+            List<GameInfo> selectedGames = new List<GameInfo>(lvGames.SelectedItems.Cast<ListViewItem>()
+                .Select(s => _gamesManager.GetGameById(s.Name)).Where(g => g != null));
 
             string retroArchCore = null; //null = internal emulator
             if (toolStripItem.Text.Contains(":"))
             {
-                retroArchCore = firstGamePlatform.RetroArchCores.FirstOrDefault(c => c.DisplayName == toolStripItem.Text.Split(":")[1].Trim())?.CoreFileName;
+                retroArchCore = firstGamePlatform.RetroArchCores
+                    .FirstOrDefault(c => c.DisplayName == toolStripItem.Text.Split(":")[1].Trim())?.CoreFileName;
             }
 
             //now set the internal/external core for all selected games
@@ -1155,6 +1266,7 @@ namespace EverLoader
                     await _gamesManager.SerializeGame(game);
                 }
             }
+
             SetDataBindings(); //update form UI
         }
 
@@ -1167,7 +1279,8 @@ namespace EverLoader
             //if all selectedItems share the same platform, show additional contextMenuItem to choose internal/external core
             var firstGamePlatform = _gamesManager.GetGamePlatform((lvGames.SelectedItems[0] as ListViewItem).Name);
             if (firstGamePlatform == null) return;
-            HashSet<GameInfo> selectedGames = new HashSet<GameInfo>(lvGames.SelectedItems.Cast<ListViewItem>().Select(s => _gamesManager.GetGameById(s.Name)).Where(g => g != null));
+            HashSet<GameInfo> selectedGames = new HashSet<GameInfo>(lvGames.SelectedItems.Cast<ListViewItem>()
+                .Select(s => _gamesManager.GetGameById(s.Name)).Where(g => g != null));
             if (selectedGames.Any(g => g.romPlatformId != firstGamePlatform.Id)) return;
 
             if (firstGamePlatform.InternalEmulator != null)
@@ -1175,15 +1288,18 @@ namespace EverLoader
                 contextMenuStrip1.Items.Add(new ToolStripSeparator());
                 contextMenuStrip1.Items.Add("Selected ROM(s) -> Use Internal Emulator", null, setCoreMenuItem_Click);
             }
+
             if (firstGamePlatform.RetroArchCores.Length > 0)
             {
                 contextMenuStrip1.Items.Add(new ToolStripSeparator());
                 foreach (var core in firstGamePlatform.RetroArchCores)
                 {
-                    contextMenuStrip1.Items.Add("Selected ROM(s) -> Use RetroArch Core: " + core.DisplayName, null, setCoreMenuItem_Click);
+                    contextMenuStrip1.Items.Add("Selected ROM(s) -> Use RetroArch Core: " + core.DisplayName, null,
+                        setCoreMenuItem_Click);
                 }
             }
         }
+
         #endregion toolstrip menu
 
         private async void btnNewSDFolder_Click(object sender, EventArgs e)
@@ -1191,9 +1307,11 @@ namespace EverLoader
             using (var form = new CreateNewFolder(SDDrive))
             {
                 form.ShowDialog();
-                if (form.JustCreatedFolderName != null && Directory.Exists(Path.Combine(Path.GetPathRoot(SDDrive), "folders", form.JustCreatedFolderName)))
+                if (form.JustCreatedFolderName != null && Directory.Exists(Path.Combine(Path.GetPathRoot(SDDrive),
+                        "folders", form.JustCreatedFolderName)))
                 {
-                    await SelectSDDrive(Path.Combine(Path.GetPathRoot(SDDrive), "folders", form.JustCreatedFolderName) + "\\");
+                    await SelectSDDrive(Path.Combine(Path.GetPathRoot(SDDrive), "folders", form.JustCreatedFolderName) +
+                                        "\\");
                 }
             }
         }
