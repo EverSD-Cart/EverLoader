@@ -1,19 +1,13 @@
 using EverLoader.Forms;
-using EverLoader.Helpers;
 using EverLoader.Models;
 using EverLoader.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using TheGamesDBApiWrapper.Domain;
 using TheGamesDBApiWrapper.Models.Config;
 
 namespace EverLoader

@@ -11,7 +11,6 @@ using EverLoader.Helpers;
 using System.Threading.Tasks;
 using TheGamesDBApiWrapper.Models.Enums;
 using System.Globalization;
-using System.Threading;
 using System.Windows.Forms;
 using TheGamesDBApiWrapper.Domain;
 using EverLoader.Properties;

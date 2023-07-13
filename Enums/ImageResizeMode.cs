@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EverLoader.Enums
+﻿namespace EverLoader.Enums
 {
     public enum ImageResizeMode
     {
