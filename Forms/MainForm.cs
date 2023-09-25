@@ -651,9 +651,16 @@ namespace EverLoader
                 return;
             }
 
+            // get root directory of SD card (may be subfolder)
+            string sdDriveRoot = Directory.GetDirectoryRoot(SDDrive);
+            
             // show warning if there are any games using RetroArch, but no /sdcard/retroarch directory
             if (_gamesManager.Games.Any(g => g.IsSelected && g.RetroArchCore is not null) &&
-                !RetroArchHelper.IsAlreadyOnSdCard(SDDrive))
+       fix/retroarch_root_folder
+                RetroArchHelper.DirectoryNotExistingOrEmpty(sdDriveRoot))
+       
+                !RetroArchHelper.IsAlreadyOnSdCard(sdDriveRoot))
+       main
             {
                 string text = string.Join(Environment.NewLine,
                     "You've selected some games to run with RetroArch, but it seems RetroArch is not yet correctly setup on your MicroSD card.",
@@ -684,7 +691,7 @@ namespace EverLoader
                         progressForm.ProgressBarValue = (int)Math.Floor(100 * f);
                     });
                     
-                    await RetroArchHelper.DownloadAndExtract(SDDrive, progressIndicator);
+                    await RetroArchHelper.DownloadAndExtract(sdDriveRoot, progressIndicator);
                     
                     progressForm.Close();
                 }
