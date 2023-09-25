@@ -653,10 +653,10 @@ namespace EverLoader
 
             // show warning if there are any games using RetroArch, but no /sdcard/retroarch directory
             if (_gamesManager.Games.Any(g => g.IsSelected && g.RetroArchCore is not null) &&
-                RetroArchHelper.DirectoryNotExistingOrEmpty(SDDrive))
+                !RetroArchHelper.IsAlreadyOnSdCard(SDDrive))
             {
                 string text = string.Join(Environment.NewLine,
-                    "You've selected some games to run with RetroArch, but no RetroArch directory was found in the root of your MicroSD card.",
+                    "You've selected some games to run with RetroArch, but it seems RetroArch is not yet correctly setup on your MicroSD card.",
                     "",
                     "Would you like us to download and extract the RetroArch files to your MicroSD card?",
                     "",
@@ -664,7 +664,7 @@ namespace EverLoader
                 );
 
                 var result = MessageBox.Show(text,
-                    "No RetroArch found", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
+                    "RetroArch not found", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
                     MessageBoxDefaultButton.Button1);
 
                 if (result == DialogResult.Yes)

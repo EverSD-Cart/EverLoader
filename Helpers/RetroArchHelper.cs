@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -8,20 +10,22 @@ using EverLoader.Extensions;
 
 namespace EverLoader.Helpers;
 
+[SuppressMessage("ReSharper", "StringLiteralTypo")]
 public static class RetroArchHelper
 {
     /// <summary>
     /// Check if the RetroArch directory is not existing or empty
     /// </summary>
-    /// <param name="sdDrive">SDcard drive</param>
+    /// <param name="sdDrive">SD card drive</param>
     /// <returns>true if the directory does not exist or is empty</returns>
-    public static bool DirectoryNotExistingOrEmpty(string sdDrive)
+    public static bool IsAlreadyOnSdCard(string sdDrive)
     {
-        string path = Path.Combine(Path.GetPathRoot(sdDrive), "retroarch");
+        string? path = GetRetroArchPath(sdDrive);
+        if (path is null) throw new Exception("Failed to retrieve RetroArch path on SD card");
 
-        return !Directory.Exists(path) || !Directory.EnumerateFileSystemEntries(path).Any();
+        return Directory.Exists(path) && DirectoryContainsRelevantSubfolder(path);
     }
-    
+
     /// <summary>
     /// Download and extract the latest RetroArch EverSD files 
     /// </summary>
@@ -56,11 +60,49 @@ public static class RetroArchHelper
         }        
     }
 
+    /// <summary>
+    /// Create HTTP client
+    /// </summary>
+    /// <returns>HttpClient</returns>
     private static HttpClient CreateHttpClient()
     {
         HttpClientHandler clientHandler = new HttpClientHandler();
         clientHandler.ClientCertificateOptions = ClientCertificateOption.Automatic;
         
         return new HttpClient(clientHandler);
+    }
+    
+    /// <summary>
+    /// Directory contains relevant subfolders
+    /// </summary>
+    /// <param name="path">RetroArch path on SD card</param>
+    /// <returns>True if subfolders exist</returns>
+    private static bool DirectoryContainsRelevantSubfolder(string path)
+    {
+        var relevantSubfolders = new[] { "assets", "config" };
+        var directories = Directory.EnumerateDirectories(path);
+
+        return directories.Any(directory => relevantSubfolders.Contains(RemoveRetroArchPath(directory, path)));
+    }
+
+    /// <summary>
+    /// Remove RetroArch path from complete path
+    /// </summary>
+    /// <param name="directory">Directory to process</param>
+    /// <param name="retroArchPath">RetroArch path on SD card</param>
+    /// <returns>Path excluding the RetroArch root folder</returns>
+    private static string RemoveRetroArchPath(string directory, string retroArchPath) =>
+        directory[(retroArchPath.Length + 1)..];
+
+    /// <summary>
+    /// Get RetroArch path on SD card
+    /// </summary>
+    /// <param name="sdDrive">SD card drive</param>
+    private static string? GetRetroArchPath(string sdDrive)
+    {
+        string? pathRoot = Path.GetPathRoot(sdDrive);
+        return pathRoot is null
+            ? null
+            : Path.Combine(pathRoot, "retroarch");
     }
 }
