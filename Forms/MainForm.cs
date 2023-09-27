@@ -656,11 +656,7 @@ namespace EverLoader
             
             // show warning if there are any games using RetroArch, but no /sdcard/retroarch directory
             if (_gamesManager.Games.Any(g => g.IsSelected && g.RetroArchCore is not null) &&
-       fix/retroarch_root_folder
-                RetroArchHelper.DirectoryNotExistingOrEmpty(sdDriveRoot))
-       
                 !RetroArchHelper.IsAlreadyOnSdCard(sdDriveRoot))
-       main
             {
                 string text = string.Join(Environment.NewLine,
                     "You've selected some games to run with RetroArch, but it seems RetroArch is not yet correctly setup on your MicroSD card.",
