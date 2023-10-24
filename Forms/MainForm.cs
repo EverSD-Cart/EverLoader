@@ -653,7 +653,7 @@ namespace EverLoader
 
             // get root directory of SD card (may be subfolder)
             string sdDriveRoot = Directory.GetDirectoryRoot(SDDrive);
-            
+
             // show warning if there are any games using RetroArch, but no /sdcard/retroarch directory
             if (_gamesManager.Games.Any(g => g.IsSelected && g.RetroArchCore is not null) &&
                 !RetroArchHelper.IsAlreadyOnSdCard(sdDriveRoot))
