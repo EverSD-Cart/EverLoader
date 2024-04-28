@@ -18,9 +18,10 @@ Here is a list of all currently supported systems.
 | Atari 5200 (.a52, .bin)                                           |           ❌            | Atari800                                         |
 | NES / Famicom / Famicom Disk System (.nes, .fds, .fc)             |           ✅            | FCEUmm, Nestopia, QuickNES                       |
 | SNES / Super Famicom (.sfc, .smc)                                 |           ✅            | Snes9x, Snes9x2010                               |
+| Nintendo 64 (.n64, .z64)                                          |           ❌            | ParaLLEl N64                                     |
 | Sega Master System (.sms)                                         |           ✅            | PicoDrive                                        |
 | Sega Genesis / Mega Drive (.md, .bin, .smd, .gen)                 |           ✅            | PicoDrive, Genesis Plus GX, Genesis Plus GX Wide |
-| Sega CD (.chd, .cue, .m3u)                                        |           ❌            | Genesis Plus GX, Genesis Plus GX Wide            |
+| Sega CD (.chd, .bin + .cue, .m3u)                                 |           ❌            | PicoDrive. Genesis Plus GX, Genesis Plus GX Wide |
 | Sega 32X (.32x)                                                   |           ❌            | PicoDrive                                        |
 | Sega Dreamcast (.chd, .cdi)                                       |           ❌            | Flycast                                          |
 | NEC TurboGrafx-16 (CD) / PC Engine (CD) (.pce, .chd, .cue)        |    ✅<br>(.pce only)    | Mednafen PCE Fast                                |
@@ -34,13 +35,17 @@ Here is a list of all currently supported systems.
 
 ## Computers
 
-| Name                                                                     | Stock | RetroArch |
-|--------------------------------------------------------------------------|:-----:|-----------|
-| Commodore c64 (.prg, .d64)                                               |   ❌   | VICE x64  |
-| Commodore Amiga (.adf, .adz, .dms, .fdi, .ipf, .hdf, .hdz)               |   ❌   | PUAE      |
-| Sinclair ZX Spectrum (.tzx, .tap, .z80, .rzx, .scl, .trd)                |   ❌   | Fuse      |
-| Atari 400 / 800 / 800XL (.xfd, .atr, .atx, .cdm, .cas, .xex, .bas, .rom) |   ❌   | Atari800  |
-| Magnavox Odyssey 2 (.bin)                                                |   ✅   | O2EM      |
+| Name                                                                     | Stock  | RetroArch |
+|--------------------------------------------------------------------------|:------:|-----------|
+| Atari 400 / 800 / 800XL (.xfd, .atr, .atx, .cdm, .cas, .xex, .bas, .rom) |   ❌   | Atari800   |
+| Commodore 16 (.m3u, .prg, .tap)                                          |   ❌   | VICE x64   |
+| Commodore 64 (.crt, .d64, .m3u, .prg, .tap)                              |   ❌   | VICE x64   |
+| Commodore PLUS/4 (.m3u, .prg and .tap)                                   |   ❌   | VICE x64   |
+| Commodore Amiga (.adf, .adz, .dms, .fdi, .ipf, .hdf, .hdz)               |   ❌   | PUAE       |
+| Magnavox Odyssey 2 (.bin)                                                |   ✅   | O2EM       |
+| PC-DOS  (.dosz)                                                          |   ✅   | DOSBox-Pure|
+| Sinclair ZX Spectrum (.tzx, .tap, .z80, .rzx, .scl, .trd)                |   ❌   | Fuse       |
+| Sharp X68000 (.dim, .hdm, .hdf, .2hd, .img, .d88, .88d, .dup, .xdf, .m3u |   ❌   | PX68k      |
 
 
 ## Handhelds
