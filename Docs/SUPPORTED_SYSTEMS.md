@@ -43,7 +43,7 @@ Here is a list of all currently supported systems.
 | Commodore PLUS/4 (.m3u, .prg and .tap)                                   |   ❌   | VICE x64   |
 | Commodore Amiga (.adf, .adz, .dms, .fdi, .ipf, .hdf, .hdz)               |   ❌   | PUAE       |
 | Magnavox Odyssey 2 (.bin)                                                |   ✅   | O2EM       |
-| PC-DOS  (.dosz)                                                          |   ✅   | DOSBox-Pure|
+| PC-DOS  (.dosz)                                                          |   ❌   | DOSBox-Pure|
 | Sinclair ZX Spectrum (.tzx, .tap, .z80, .rzx, .scl, .trd)                |   ❌   | Fuse       |
 | Sharp X68000 (.dim, .hdm, .hdf, .2hd, .img, .d88, .88d, .dup, .xdf, .m3u |   ❌   | PX68k      |
 
