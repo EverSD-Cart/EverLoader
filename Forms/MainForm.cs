@@ -8,17 +8,16 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
-using TheGamesDBApiWrapper.Data.ApiClasses;
+using TreeView = System.Windows.Forms.TreeView;
+using TextBox = System.Windows.Forms.TextBox;
+using Button = System.Windows.Forms.Button;
 
 namespace EverLoader
 {
@@ -73,6 +72,9 @@ namespace EverLoader
 
             CheckUserSettings();
             PopulatePlatformCombobox();
+
+            GetFolderList();
+            BuildFolderTree("");
         }
 
         private void CheckUserSettings()
@@ -102,11 +104,12 @@ namespace EverLoader
                 var xPlatform = _appSettings.Platforms.FirstOrDefault(p => p.Name == x);
                 var yPlatform = _appSettings.Platforms.FirstOrDefault(p => p.Name == y);
                 if (xPlatform != null && yPlatform != null
-                    && xPlatform.Group == yPlatform.Group
-                    && xPlatform.GroupItemSortOrder * yPlatform.GroupItemSortOrder != 0)
+                                      && xPlatform.Group == yPlatform.Group
+                                      && xPlatform.GroupItemSortOrder * yPlatform.GroupItemSortOrder != 0)
                 {
                     return Comparer<int>.Default.Compare(xPlatform.GroupItemSortOrder, yPlatform.GroupItemSortOrder);
                 }
+
                 return Comparer<string>.Default.Compare(x == "Other" ? "ZZZ" : x, y == "Other" ? "ZZZ" : y);
             });
             cbPlatform.DataSource = items;
@@ -115,7 +118,6 @@ namespace EverLoader
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -144,7 +146,7 @@ namespace EverLoader
             //add platforms used by current collection of games
             foreach (var platform in _gamesManager.GetExistingGamePlatforms())
             {
-                dsRomFilter.Add(new 
+                dsRomFilter.Add(new
                 {
                     Group = "Filter by Platform",
                     Text = platform.GroupAndName,
@@ -182,8 +184,8 @@ namespace EverLoader
             if (_gamesManager.GamesDictionary.Count == 0)
             {
                 toolTip1.Show("Welcome to EverLoader; the easiest way to sync your ROMs to the EverSD cart!\n\n" +
-                    "It looks like your ROMs collection is still empty...\n\n" +
-                    "Click the 'Add New ROM(s)' button below to import your ROMs.", lvGames);
+                              "It looks like your ROMs collection is still empty...\n\n" +
+                              "Click the 'Add New ROM(s)' button below to import your ROMs.", lvGames);
             }
 
             //run stuff in the background
@@ -193,7 +195,10 @@ namespace EverLoader
                 {
                     await _romManager.Init();
                 }
-                catch (Exception) { /* ignore for now */ }
+                catch (Exception ex)
+                {
+                    /* ignore for now */
+                }
             });
         }
 
@@ -236,6 +241,7 @@ namespace EverLoader
             {
                 _game.GameInfoChanged -= Game_GameInfoChanged;
             }
+
             //bind with empty game object to clear the form fields
             _game = null;
             //_platform = null;
@@ -342,7 +348,7 @@ namespace EverLoader
         /// </summary>
         private void UpdateMissingBiosFilesLabel()
         {
-            var missingBiosFiles = _gamesManager.GetMissingBiosFiles(_game, includeOptionalBios:true);
+            var missingBiosFiles = _gamesManager.GetMissingBiosFiles(_game, includeOptionalBios: true);
             lblMissingBiosFiles.Visible = missingBiosFiles.Length > 0;
             var platform = _gamesManager.GetGamePlatform(_game);
             if (platform != null)
@@ -363,7 +369,9 @@ namespace EverLoader
                     missingBiosList = string.Join("\n - ", missingBiosFiles.Select(b => b.FileName));
                     missingBiosText = "supports\nthese optional";
                 }
-                toolTip1.SetToolTip(lblMissingBiosFiles, $"The {platform.Name} emulator {missingBiosText} BIOS files:\n - {missingBiosList}");
+
+                toolTip1.SetToolTip(lblMissingBiosFiles,
+                    $"The {platform.Name} emulator {missingBiosText} BIOS files:\n - {missingBiosList}");
             }
         }
 
@@ -392,33 +400,31 @@ namespace EverLoader
                     //game name could have been changed
                     lvGames.SelectedItems[0].Text = _gamesManager.GetRomListTitle(_game);
                 }
-
             }
         }
 
         private void btnSelectSD_Click(object sender, EventArgs e)
         {
-            fileToolStripMenuItem.ShowDropDown();
-            selectSDDriveToolStripMenuItem.ShowDropDown();
+            contextMenuStripMSD.Show(Cursor.Position);
         }
 
         private async Task SelectSDDrive(string driveName)
         {
             SDDrive = driveName;
             var validDrive = driveName != null;
-            pbConnected.Image = validDrive ? Properties.Resources.green : Properties.Resources.red;
-            btnSyncToSD.Enabled = validDrive;
-            btnNewSDFolder.Enabled = validDrive;
+            pbConnected2.Image = validDrive ? Properties.Resources.green : Properties.Resources.red;
+            btnSyncWithSDCard.Enabled = validDrive;
+            btnNewSDCardFolder.Enabled = validDrive;
             lblCartName.Enabled = validDrive;
-            tbCartName.Enabled = validDrive;
+            tbCartName2.Enabled = validDrive;
 
             if (validDrive)
             {
-                btnSelectSD.Text = $"MicroSD = {driveName}";
+                btnSelectedSD.Text = $"MicroSD = {driveName}";
             }
             else
             {
-                btnSelectSD.Text = "Select MicroSD";
+                btnSelectedSD.Text = "Select MicroSD";
             }
 
             if (!validDrive) return;
@@ -430,22 +436,82 @@ namespace EverLoader
                 if (await Task.Run(() => File.Exists(cartJsonPath)))
                 {
                     var cart = JsonConvert.DeserializeObject<Cartridge>(await File.ReadAllTextAsync(cartJsonPath));
-                    tbCartName.Text = cart.cartridgeName;
+                    tbCartName2.Text = cart.cartridgeName;
                 }
 
                 /* pre-select games which are found on the SD card */
                 var cartGamesDir = new DirectoryInfo($"{driveName}game");
-                HashSet<string> cartGameIds = new HashSet<string>((cartGamesDir.Exists ? cartGamesDir.GetFiles("*.json") : new FileInfo[0])
-                    .Select(j => Path.GetFileNameWithoutExtension(j.Name))
-                    .Where(g => _gamesManager.GamesDictionary.ContainsKey(g)));
 
+                var cartGameIds = cartGamesDir.GetFiles("*.json").Select(j => Path.GetFileNameWithoutExtension(j.Name)).ToArray();
+                if (cartGameIds.Length > 0)
+                {
+                    InitFolderList(SDDrive);
+                }
+
+                GetFolderList();
+
+                foreach (var gameId in cartGameIds)
+                {
+                    if (_gamesManager.Games.Select(j => j.Id).Contains(gameId))
+                    {
+                        var romPath = $"{driveName}game\\{gameId}.json";
+                        var gameJson = JsonConvert.DeserializeObject<GameInfo>(await File.ReadAllTextAsync(romPath));
+                        var romTitle = gameJson.romTitle;
+
+                        _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = romTitle, Path = romPath });
+                    }
+                    else
+                    {
+                        if (!gameId.Equals("retroarch"))
+                        {
+                            _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = gameId, Path = $"{driveName}game\\{gameId}.json", IsMissngInCollection = true });
+                        }
+                    }
+                }
+
+                if (Directory.Exists($"{driveName}folders"))
+                {
+                    cartGamesDir = new DirectoryInfo($"{driveName}folders");
+
+                    var gameFolders = cartGamesDir.GetDirectories();
+                    foreach (var gameFolder in gameFolders)
+                    {
+                        var gameFolderDir = new DirectoryInfo($"{gameFolder.FullName}\\game");
+                        cartGameIds = gameFolderDir.GetFiles("*.json").Select(j => Path.GetFileNameWithoutExtension(j.Name)).ToArray();
+                        foreach (var gameId in cartGameIds)
+                        {
+                            if (gameId == "_HOME")
+                            {
+                                continue;
+                            }
+
+                            if (_gamesManager.Games.Select(j => j.Id).Contains(gameId))
+                            {
+                                var romPath = $"{gameFolder}\\game\\{gameId}.json";
+                                var gameJson = JsonConvert.DeserializeObject<GameInfo>(await File.ReadAllTextAsync(romPath));
+                                var romTitle = gameJson.romTitle;
+
+                                _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = romTitle, Path = $"{gameFolder}\\game\\{gameId}.json" });
+                            }
+                            else
+                            {
+                                _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = gameId, Path = $"{gameFolder}\\game\\{gameId}.json", IsMissngInCollection = true });
+                            }
+                        }
+
+                    }
+                }
+
+                _gamesManager.GamesOnSDCard = _gamesManager.GamesOnSDCard.OrderBy(x => x.Title).ToList();
                 foreach (var game in _gamesManager.Games)
                 {
-                    game.IsSelected = cartGameIds.Contains(game.Id);
+                    game.IsPresentOnCartridge = _gamesManager.GamesOnSDCard.Where(g => g.Id == game.Id).Count() > 0;
                 }
-                cbRomFilter_SelectedIndexChanged(null, null); //update checked games in current UI view
+
                 UpdateTotalSelectedGamesLabel();
-                /* end of pre-select code */
+                UpdateTotalGamesOnSDCardLabel();
+
+                BuildFolderTree("");
             }
         }
 
@@ -479,6 +545,7 @@ namespace EverLoader
             {
                 DeleteSelectedGames();
             }
+
             //select all
             if (e.KeyCode == Keys.A && e.Control)
             {
@@ -502,6 +569,7 @@ namespace EverLoader
                 {
                     listViewItem.Remove();
                 }
+
                 lvGames.Groups[0].Header = $"{lvGames.Items.Count} ROM(s)";
                 lvGames.EndUpdate();
 
@@ -514,7 +582,12 @@ namespace EverLoader
 
         private void UpdateTotalSelectedGamesLabel()
         {
-            lblNumberOfGamesSelected.Text = $"{_gamesManager.Games.Count(g => g.IsSelected)} ROM(s) selected for Sync";
+            lblNumberOfGamesSelected.Text = $"{_gamesManager.Games.Count(g => g.IsSelected)} / {_gamesManager.Games.Count()} ROM(s) selected for Sync";
+        }
+
+        private void UpdateTotalGamesOnSDCardLabel()
+        {
+            lblNumberGamesSDCard.Text = $"{_gamesManager.GamesOnSDCard.Count()} ROM(s) and {_gamesManager.GamesOnSDCard.Count(i => i.IsFolder) - 1} Folders on Cartridge";
         }
 
         private async void pbGameImage_Click(object sender, EventArgs e)
@@ -536,14 +609,17 @@ namespace EverLoader
             {
                 gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Small));
             }
+
             if (controlName == nameof(pbBoxArtMedium) || (controlName == nameof(pbBoxArtLarge) && _game.ImageHD == null))
             {
                 gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Medium));
             }
+
             if (controlName == nameof(pbBoxArtLarge))
             {
                 gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Large));
             }
+
             if (controlName == nameof(pbBanner))
             {
                 gameImages.Add(_gamesManager.GetGameImageInfo(_game.Id, ImageType.Banner));
@@ -556,24 +632,6 @@ namespace EverLoader
             LoadBoxArt();
 
             await _gamesManager.SerializeGame(_game);
-        }
-
-        private async void btnAddGames_Click(object sender, EventArgs e)
-        {
-            var supportedExtensions = String.Join(";", _appSettings.Platforms
-                .SelectMany(p => p.SupportedExtensions).Distinct().Select(e => $"*{e}"));
-
-            OpenFileDialog dialog = new OpenFileDialog()
-            {
-                Multiselect = true,
-                Filter = $"Game ROMs ({supportedExtensions})|{supportedExtensions}",
-                Title = "Select Game ROM(s)"
-            };
-
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                await AddGames(dialog.FileNames);
-            }
         }
 
         private async Task AddGames(string[] fileNames)
@@ -661,7 +719,7 @@ namespace EverLoader
             {
                 try
                 {
-                    await _gamesManager.SyncToSd(SDDrive, tbCartName.Text, progressForm.Reporter);
+                    await _gamesManager.SyncToSd(SDDrive, tbCartName2.Text, "", progressForm.Reporter);
                 }
                 catch (Exception ex)
                 {
@@ -671,6 +729,15 @@ namespace EverLoader
             }
             MessageBox.Show("The selected ROMs were synced to MicroSD.\nPut the MicroSD card back in your EverSD cartridge and enjoy!",
                 "ROM Sync Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            foreach (var game in _gamesManager.Games)
+            {
+                game.IsSelected = false;
+            }
+
+            cbRomFilter_SelectedIndexChanged(sender, e);
+
+            await SelectSDDrive(SDDrive);
         }
 
         private async void driveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -679,57 +746,299 @@ namespace EverLoader
             {
                 menuItem.Checked = false;
             }
+
             var clickedItem = (ToolStripMenuItem)sender;
             clickedItem.Checked = true;
             await SelectSDDrive(clickedItem.Name);
         }
 
+        private void InitFolderList(string driveName)
+        {
+            _gamesManager.GamesOnSDCard.Clear();
+            var folderItem = new GameInfoTreeNode();
+
+            if (String.IsNullOrEmpty(driveName))
+            {
+                folderItem.Title = "Select MicroSD";
+            }
+            else
+            {
+                folderItem.Title = "Top Level / Root";
+            }
+
+            if (!String.IsNullOrEmpty(driveName))
+            {
+                folderItem.Path = driveName;
+            }
+            else
+            {
+                folderItem.Path = "";
+            }
+
+            folderItem.IsFolder = true;
+
+            _gamesManager.GamesOnSDCard.Add(folderItem);
+        }
+
+        private void GetFolderList()
+        {
+            if (_gamesManager.GamesOnSDCard.Count == 0)
+            {
+                InitFolderList(SDDrive);
+            }
+
+            var drive = SDDrive;
+            if (!String.IsNullOrEmpty(drive))
+            {
+                //check for subfolders of the /folders directory
+                var folders = new DirectoryInfo($"{drive}folders");
+                if (folders.Exists)
+                {
+                    foreach (var dir in folders.GetDirectories())
+                    {
+                        var folderSubItem = new GameInfoTreeNode();
+                        folderSubItem.Title = Path.GetFileName(dir.FullName);
+                        folderSubItem.Path = dir.FullName + "\\";
+                        folderSubItem.IsFolder = true;
+
+                        _gamesManager.GamesOnSDCard.Add(folderSubItem);
+                    }
+                }
+            }
+        }
+
+        private void BuildFolderTree(string search)
+        {
+            tvCartridge.Nodes.Clear();
+            var rootNode = new TreeNode();
+
+            foreach (var folder in _gamesManager.GamesOnSDCard)
+            {
+                if (folder.IsFolder)
+                {
+                    if (!String.IsNullOrEmpty(folder.Path) && folder.Path == SDDrive)
+                    {
+                        rootNode = new TreeNode(folder.Title);
+                        rootNode.Name = folder.Path;
+                        rootNode.ImageIndex = 2;
+                        tvCartridge.Nodes.Add(rootNode);
+                    }
+                    else
+                    {
+                        var folderNode = new TreeNode(folder.Title);
+                        folderNode.Name = folder.Path;
+                        folderNode.ImageIndex = 2;
+                        tvCartridge.Nodes.Add(folderNode);
+                    }
+                }
+            }
+
+            foreach (var folder in _gamesManager.GamesOnSDCard)
+            {
+                var addItem = false;
+
+                if (!String.IsNullOrEmpty(folder.Path) && folder.Path.StartsWith($"{SDDrive}game"))
+                {
+                    if (!folder.Path.StartsWith($"{SDDrive}game\\_"))
+                    {
+                        if (!String.IsNullOrEmpty(search))
+                        {
+                            if (folder.Title.ToUpper().Contains(search.ToUpper()))
+                            {
+                                addItem = true;
+                            }
+                        }
+                        else
+                        {
+                            addItem = true;
+                        }
+
+                        if (addItem)
+                        {
+                            var node = new TreeNode(folder.Title);
+                            node.Name = folder.Path;
+
+                            if (folder.IsMissngInCollection)
+                            {
+                                node.ImageIndex = 1;
+
+                            }
+
+                            rootNode.Nodes.Add(node);
+                        }
+                    }
+
+                }
+                else
+                {
+                    if (!folder.IsFolder)
+                    {
+                        var node = new TreeNode(folder.Title);
+                        node.Name = folder.Path;
+                        var folderNode = findParentNodeOfGamePath(node);
+                        if (folderNode != null)
+                        {
+                            if (!String.IsNullOrEmpty(search))
+                            {
+                                if (folder.Title.ToUpper().Contains(search.ToUpper()))
+                                {
+                                    addItem = true;
+                                }
+                            }
+                            else
+                            {
+                                addItem = true;
+                            }
+
+                            if (addItem)
+                            {
+                                if (folder.IsMissngInCollection)
+                                {
+                                    node.ImageIndex = 1;
+
+                                }
+
+                                folderNode.Nodes.Add(node);
+                            }
+                        }
+                    }
+                }
+            }
+
+            tvCartridge.ExpandAll();
+        }
+
+        private TreeNode findParentNodeOfGamePath(TreeNode node)
+        {
+            if (node.Name.StartsWith($"{SDDrive}folders\\"))
+            {
+                var i = node.Name.IndexOf("\\game\\");
+                if (i >= 0)
+                {
+                    var key = node.Name.Substring(0, i + 1);
+                    var nodeFound = tvCartridge.Nodes.Find(key, true);
+                    if (nodeFound.Length > 0)
+                    {
+                        return nodeFound[0];
+                    }
+                }
+                else
+                {
+                    return node;
+                }
+            }
+            else if (node.Name.StartsWith($"{SDDrive}game\\"))
+            {
+                var root = tvCartridge.Nodes.Find(SDDrive, true);
+                if (root.Length > 0)
+                {
+                    return root[0];
+                }
+            }
+            else if (node.Name == SDDrive)
+            {
+                return node;
+            }
+
+            return null;
+        }
 
         private async void selectSDDriveToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {
+            selectSDDrive_Opening(true);
+        }
+
+        private void contextMenuStripMSD_Opening(object sender, CancelEventArgs e)
+        {
+            selectSDDrive_Opening(false);
+        }
+
+        private async void selectSDDrive_Opening(bool isMenu)
+        {
             bool itemWasChecked = false;
             var drives = SDCardHelper.FindRemovableDrives();
-            if (drives.Length == 0)
+
+            if (isMenu)
             {
-                await SelectSDDrive(null);
-                if (selectSDDriveToolStripMenuItem.DropDownItems.Count == 0
-                    || selectSDDriveToolStripMenuItem.DropDownItems["notfound"] == null)
+                if (drives.Length == 0)
+                {
+                    await SelectSDDrive(null);
+
+                    if (selectSDDriveToolStripMenuItem.DropDownItems.Count == 0
+                        || selectSDDriveToolStripMenuItem.DropDownItems["notfound"] == null)
+                    {
+                        selectSDDriveToolStripMenuItem.DropDownItems.Clear();
+                        var item = new ToolStripMenuItem("No removable drive(s) found...", null, null, "notfound");
+                        item.ForeColor = Color.Red;
+                        selectSDDriveToolStripMenuItem.DropDownItems.Add(item);
+                    }
+                }
+                else
                 {
                     selectSDDriveToolStripMenuItem.DropDownItems.Clear();
-                    var item = new ToolStripMenuItem("No removable drive(s) found...", null, null, "notfound");
-                    item.ForeColor = Color.Red;
+
+                    foreach (var drive in drives)
+                    {
+                        var item = new ToolStripMenuItem(
+                            $"{drive.Name} {string.Empty.PadLeft(30)} [Total size: {drive.TotalSize.ToSize()}]", null,
+                            driveToolStripMenuItem_Click, drive.Name);
+
+                        AddDrivePathItem(item);
+                    }
+
+                    if (!itemWasChecked)
+                    {
+                        await SelectSDDrive(null);
+                    }
+                }
+
+                void AddDrivePathItem(ToolStripMenuItem item)
+                {
+                    item.Checked = SDDrive != null && item.Name == SDDrive;
+                    itemWasChecked |= item.Checked;
                     selectSDDriveToolStripMenuItem.DropDownItems.Add(item);
                 }
             }
             else
             {
-                selectSDDriveToolStripMenuItem.DropDownItems.Clear();
-                
-                foreach (var drive in drives)
-                {
-                    var item = new ToolStripMenuItem($"{drive.Name} {string.Empty.PadLeft(30)} [Total size: {drive.TotalSize.ToSize()}]", null, driveToolStripMenuItem_Click, drive.Name);
-                    AddDrivePathItem(item);
-
-                    //check for subfolders of the /folders directory
-                    var folders = new DirectoryInfo($"{drive.Name}folders");
-                    if (folders.Exists)
-                    foreach (var dir in folders.GetDirectories())
-                    {
-                        var subitem = new ToolStripMenuItem($"{dir.FullName}\\", null, driveToolStripMenuItem_Click, dir.FullName + "\\");
-                        AddDrivePathItem(subitem);
-                    }
-                }
-                if (!itemWasChecked)
+                if (drives.Length == 0)
                 {
                     await SelectSDDrive(null);
-                }
-            }
 
-            void AddDrivePathItem(ToolStripMenuItem item)
-            {
-                item.Checked = SDDrive != null && item.Name == SDDrive;
-                itemWasChecked |= item.Checked;
-                selectSDDriveToolStripMenuItem.DropDownItems.Add(item);
+                    if (contextMenuStripMSD.Items.Count == 0
+                        || contextMenuStripMSD.Items["notfound"] == null)
+                    {
+                        contextMenuStripMSD.Items.Clear();
+                        var item = new ToolStripMenuItem("No removable drive(s) found...", null, null, "notfound");
+                        item.ForeColor = Color.Red;
+                        contextMenuStripMSD.Items.Add(item);
+                    }
+                }
+                else
+                {
+                    contextMenuStripMSD.Items.Clear();
+
+                    foreach (var drive in drives)
+                    {
+                        var item = new ToolStripMenuItem(
+                            $"{drive.Name} {string.Empty.PadLeft(30)} [Total size: {drive.TotalSize.ToSize()}]", null,
+                            driveToolStripMenuItem_Click, drive.Name);
+
+                        AddDrivePathItem(item);
+                    }
+
+                    if (!itemWasChecked)
+                    {
+                        await SelectSDDrive(null);
+                    }
+                }
+
+                void AddDrivePathItem(ToolStripMenuItem item)
+                {
+                    item.Checked = SDDrive != null && item.Name == SDDrive;
+                    itemWasChecked |= item.Checked;
+                    contextMenuStripMSD.Items.Add(item);
+                }
             }
         }
 
@@ -745,6 +1054,7 @@ namespace EverLoader
                     {
                         pbBanner.Tag = 0;
                     }
+
                     LoadBoxArt();
                 }
             }
@@ -760,15 +1070,23 @@ namespace EverLoader
                 switch (Enum.Parse(typeof(RomFeatureFilter), cbRomFilter.SelectedValue as string))
                 {
                     case RomFeatureFilter.SelectedForSync:
-                        gameInfos = _gamesManager.Games.Where(g => g.IsSelected); break;
+                        gameInfos = _gamesManager.Games.Where(g => g.IsSelected);
+                        break;
                     case RomFeatureFilter.RecentlyAdded:
-                        gameInfos = _gamesManager.Games.Where(g => g.IsRecentlyAdded); break;
+                        gameInfos = _gamesManager.Games.Where(g => g.IsRecentlyAdded);
+                        break;
                     case RomFeatureFilter.RomsWithoutBanner:
-                        gameInfos = _gamesManager.Games.Where(g => g.ImageBanner == null); break;
+                        gameInfos = _gamesManager.Games.Where(g => g.ImageBanner == null);
+                        break;
                     case RomFeatureFilter.RomsWithoutBoxart:
-                        gameInfos = _gamesManager.Games.Where(g => g.Image == null && g.Image1080 == null); break;
+                        gameInfos = _gamesManager.Games.Where(g => g.Image == null && g.Image1080 == null);
+                        break;
                     case RomFeatureFilter.RomsWithoutDescription:
-                        gameInfos = _gamesManager.Games.Where(g => g.romDescription == string.Empty); break;
+                        gameInfos = _gamesManager.Games.Where(g => g.romDescription == string.Empty);
+                        break;
+                    case RomFeatureFilter.RomsNotPresentOnCartridge:
+                        gameInfos = _gamesManager.Games.Where(g => g.IsPresentOnCartridge == false);
+                        break;
                         //default
                 }
             }
@@ -776,6 +1094,11 @@ namespace EverLoader
             {
                 //filter on platform id
                 gameInfos = _gamesManager.Games.Where(g => g.romPlatformId == platformId);
+            }
+
+            if (!String.IsNullOrEmpty(tbSearchCollection.Text))
+            {
+                gameInfos = gameInfos.Where(g => g.romTitle.ToUpper().Contains(tbSearchCollection.Text.ToUpper()));
             }
 
             lvGames.BeginUpdate();
@@ -827,6 +1150,7 @@ namespace EverLoader
         }
 
         private bool IdleHandlerSet { get; set; }
+
         private void lvGames_SelectedIndexChanged(object sender, EventArgs e)
         {
             // this will fire every time items are selected or deselected.
@@ -860,16 +1184,17 @@ namespace EverLoader
                     if (missingBiosFile?.MD5.Length > 0 && !missingBiosFile.MD5.Contains(HashHelper.CalculateHashcodes(romFilePath).Md5))
                     {
                         if (MessageBox.Show(
-                            $"Uploaded BIOS file '{missingBiosFile.FileName}' doesn't have the expected MD5 hash { string.Join(" or ", missingBiosFile.MD5) }." +
+                            $"Uploaded BIOS file '{missingBiosFile.FileName}' doesn't have the expected MD5 hash {string.Join(" or ", missingBiosFile.MD5)}." +
                             "\nPlease try a different file.\n\n" +
                             "Clicking 'OK' will copy the required MD5 hash(es) to your clipboard.",
                             "BIOS file MD5 mismatch", MessageBoxButtons.OKCancel, MessageBoxIcon.Error) == DialogResult.OK)
                         {
                             Clipboard.SetText(string.Join(" ", missingBiosFile.MD5));
-                        }     
+                        }
+
                         continue;
                     }
-                    File.Copy(romFilePath, Path.Combine(platformRomsDir, Path.GetFileName(romFilePath)), overwrite:true);
+                    File.Copy(romFilePath, Path.Combine(platformRomsDir, Path.GetFileName(romFilePath)), overwrite: true);
                 }
 
                 UpdateMissingBiosFilesLabel();
@@ -892,12 +1217,14 @@ namespace EverLoader
                 ShowScrapingErrorMessageBox(ex);
                 //continue
             }
+
             Cursor.Current = Cursors.Default;
             if (lbScrapeResults.Items.Count == 0)
             {
                 lbScrapeResults.Items.Add("[no results - try again using less words]");
             }
         }
+
         private void tbScrapeName_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Return)
@@ -913,10 +1240,11 @@ namespace EverLoader
             {
                 if ((_game.romDescription != "" || _game.Image != null || _game.Image1080 != null)
                     && (lbScrapeResults.Tag as string) != "WARNING_SHOWN"
-                    && MessageBox.Show("This will overwrite the current ROM description and images with the scraped information.\nIs this OK?",
-                    "Applying scraped game content",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning) == DialogResult.No)
+                    && MessageBox.Show(
+                        "This will overwrite the current ROM description and images with the scraped information.\nIs this OK?",
+                        "Applying scraped game content",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning) == DialogResult.No)
                 {
                     return;
                 }
@@ -1042,7 +1370,7 @@ namespace EverLoader
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 var allowedExtensions = _appSettings.Platforms.SelectMany(p => p.SupportedExtensions);
-                if (files.Any(f => allowedExtensions.Contains(Path.GetExtension(f)?.ToLower()))) 
+                if (files.Any(f => allowedExtensions.Contains(Path.GetExtension(f)?.ToLower())))
                 {
                     e.Effect = DragDropEffects.Copy;
                     return;
@@ -1112,7 +1440,51 @@ namespace EverLoader
             }
         }
 
+        private void tvCartridge_OnDragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Copy;
+        }
+
+        private void tvCartridge_OnItemDrag(object sender, ItemDragEventArgs e)
+        {
+            DoDragDrop(e.Item, DragDropEffects.Copy);
+        }
+
+        private void tvCartridge_DragOver(object sender, DragEventArgs e)
+        {
+            // Retrieve the client coordinates of the mouse position.  
+            Point targetPoint = tvCartridge.PointToClient(new Point(e.X, e.Y));
+
+            // Select the node at the mouse position.  
+            tvCartridge.SelectedNode = tvCartridge.GetNodeAt(targetPoint);
+        }
+
+        private async void tvCartridge_OnDragDrop(object sender, DragEventArgs e)
+        {
+            TreeNode srcNode;
+
+            if (e.Data.GetDataPresent("System.Windows.Forms.TreeNode", false))
+            {
+                srcNode = (TreeNode)e.Data.GetData("System.Windows.Forms.TreeNode");
+
+                Point pt = ((TreeView)sender).PointToClient(new Point(e.X, e.Y));
+
+                TreeNode dstNode = ((TreeView)sender).GetNodeAt(pt);
+                dstNode = findParentNodeOfGamePath(dstNode);
+
+                if (dstNode != null)
+                {
+                    var success = await MoveGameOnSDCard(srcNode.Name, dstNode.Name);
+                    if (success)
+                    {
+                        await SelectSDDrive(SDDrive);
+                    }
+                }
+            }
+        }
+
         #region toolstrip menu
+
         private void deleteSelectedGamesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DeleteSelectedGames();
@@ -1132,6 +1504,7 @@ namespace EverLoader
                     ShowScrapingErrorMessageBox(ex);
                     //show error, but don't break the flow
                 }
+
                 _game.GameInfoChanged += Game_GameInfoChanged;
                 SetDataBindings();
             }
@@ -1159,6 +1532,7 @@ namespace EverLoader
                     await _gamesManager.SerializeGame(game);
                 }
             }
+
             SetDataBindings(); //update form UI
         }
 
@@ -1179,6 +1553,7 @@ namespace EverLoader
                 contextMenuStrip1.Items.Add(new ToolStripSeparator());
                 contextMenuStrip1.Items.Add("Selected ROM(s) -> Use Internal Emulator", null, setCoreMenuItem_Click);
             }
+
             if (firstGamePlatform.RetroArchCores.Length > 0)
             {
                 contextMenuStrip1.Items.Add(new ToolStripSeparator());
@@ -1188,9 +1563,100 @@ namespace EverLoader
                 }
             }
         }
+
+        private void contextMenuCartridge_Opening(object sender, CancelEventArgs e)
+        {
+            //clean previously dynamically added items
+            for (int i = contextMenuCartridge.Items.Count; i > 0; i--) contextMenuCartridge.Items.RemoveAt(i - 1);
+            if (_gamesManager.GamesOnSDCard.Count == 0) return;
+
+            var currNode = tvCartridge.SelectedNode;
+            if (currNode.Name.EndsWith("\\"))
+            {
+                if (!currNode.Name.Equals(SDDrive))
+                {
+                    contextMenuCartridge.Items.Add("Rename Folder", null, contextMenuCartridge_RenameFolder_Click);
+                    contextMenuStrip1.Items.Add(new ToolStripSeparator());
+                    contextMenuCartridge.Items.Add("Delete Folder", null, contextMenuCartridge_DeleteFolder_Click);
+                }
+            }
+            else if (currNode.Name.EndsWith(".json"))
+            {
+                contextMenuCartridge.Items.Add("Delete Game from Cartridge", null, contextMenuCartridge_DeleteGame_Click);
+
+                var gameRoot = _gamesManager.GetGameRootFromJsonPath(SDDrive, currNode.Name);
+                var gameId = _gamesManager.GetGameIdFromJsonPath(gameRoot, currNode.Name);
+                var exists = _gamesManager.GetGameById(gameId);
+                if (exists == null)
+                {
+                    contextMenuStrip1.Items.Add(new ToolStripSeparator());
+                    contextMenuCartridge.Items.Add("Import Game into ROM Collection", null, contextMenuCartridge_ImportGame_Click);
+                }
+            }
+        }
+
+        private async void contextMenuCartridge_RenameFolder_Click(object sender, EventArgs e)
+        {
+            var currNode = tvCartridge.SelectedNode;
+            var newName = Prompt.ShowDialog("Please enter new Name:", $"Rename Folder \"{currNode.Text}\"");
+            if (!String.IsNullOrEmpty(newName))
+            {
+                try
+                {
+                    var gameInfo = JsonConvert.DeserializeObject<Cartridge>(File.ReadAllText($"{currNode.Name}\\cartridge.json"));
+                    gameInfo.cartridgeName = newName;
+                    File.WriteAllText($"{currNode.Name}\\cartridge.json", JsonConvert.SerializeObject(gameInfo, Formatting.Indented));
+
+                    var orgPath = Path.GetDirectoryName(currNode.Name);
+                    var pathBase = orgPath.Substring(0, orgPath.LastIndexOf("\\"));
+                    var newPath = Path.Combine(pathBase, newName);
+
+                    Directory.Move(orgPath, newPath);
+                }
+                catch (Exception ex)
+                {
+                    var err = ex;
+                }
+
+                await SelectSDDrive(SDDrive);
+            }
+        }
+
+        private async void contextMenuCartridge_DeleteFolder_Click(object sender, EventArgs e)
+        {
+            var currNode = tvCartridge.SelectedNode;
+            if (MessageBox.Show($"Are you sure you want to delete this Folder (\"{currNode.Text}\") from the Cartridge?", "Confirm Delete",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            {
+                _gamesManager.DeleteGameFolderOnSD(new GameInfo { Id = currNode.Name }); //  SDDrive
+                await SelectSDDrive(SDDrive);
+            }
+        }
+
+        private async void contextMenuCartridge_DeleteGame_Click(object sender, EventArgs e)
+        {
+            //tvCartridge.SelectedNode = tvCartridge.GetNodeAt(e.X, e.Y);
+            var currNode = tvCartridge.SelectedNode;
+            if (MessageBox.Show($"Are you sure you want to delete this ROM (\"{currNode.Text}\") from the Cartridge?", "Confirm Delete",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            {
+                _gamesManager.DeleteGameFilesOnSD(new GameInfo { Id = currNode.Name }, _gamesManager.GetGameRootFromJsonPath(SDDrive, currNode.Name)); //  SDDrive
+                await SelectSDDrive(SDDrive);
+            }
+        }
+
+        private async void contextMenuCartridge_ImportGame_Click(object sender, EventArgs e)
+        {
+            var currNode = tvCartridge.SelectedNode;
+            var gameInfo = JsonConvert.DeserializeObject<GameInfo>(File.ReadAllText(currNode.Name));
+            var filePath = $"{_gamesManager.GetGameRootFromJsonPath(SDDrive, currNode.Name)}game\\{gameInfo.romFileName}";
+            var newGames = new List<string>();
+            newGames.Add(filePath);
+            await AddGames(newGames.ToArray());
+        }
         #endregion toolstrip menu
 
-        private async void btnNewSDFolder_Click(object sender, EventArgs e)
+        private async void btnNewSDCardFolder_Click(object sender, EventArgs e)
         {
             using (var form = new CreateNewFolder(SDDrive))
             {
@@ -1201,5 +1667,109 @@ namespace EverLoader
                 }
             }
         }
+        public async Task<bool> MoveGameOnSDCard(string currentCartJsonFilePath, string newSDCardLocationPath)
+        {
+            var ret = true;
+
+            try
+            {
+                var gameInfo = JsonConvert.DeserializeObject<GameInfo>(File.ReadAllText(currentCartJsonFilePath));
+
+                var success = await _gamesManager.CopyGameToSDPath(newSDCardLocationPath, gameInfo);
+                if (success)
+                {
+                    _gamesManager.DeleteGameFilesOnSD(gameInfo, _gamesManager.GetGameRootFromJsonPath(SDDrive, currentCartJsonFilePath));
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not sync to MicroSD. Error message: \"{ex.Message}\".", "Error",
+                   MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ret = false;
+            }
+
+            return ret;
+
+        }
+
+        private async void btnAddGame_Click(object sender, EventArgs e)
+        {
+            var supportedExtensions = String.Join("; ", _appSettings.Platforms
+                .SelectMany(p => p.SupportedExtensions).Distinct().Select(e => $"*{e}"));
+
+            OpenFileDialog dialog = new OpenFileDialog()
+            {
+                Multiselect = true,
+                Filter = $"Game ROMs ({supportedExtensions})|{supportedExtensions}",
+                Title = "Select Game ROM(s)"
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                await AddGames(dialog.FileNames);
+            }
+        }
+
+        private async void tvCartridge_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                TreeNode dstNode = tvCartridge.GetNodeAt(e.X, e.Y);
+                tvCartridge.SelectedNode = dstNode;
+
+                contextMenuCartridge.Show(Cursor.Position);
+                return;
+            }
+        }
+
+        private void tbSearchCollection_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                cbRomFilter_SelectedIndexChanged(sender, e);
+            }
+        }
+
+        private void tbSearchCartridge_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                BuildFolderTree(tbSearchCartridge.Text);
+            }
+        }
     }
+
+    public static class Prompt
+    {
+        public static string ShowDialog(string text, string caption)
+        {
+            Form prompt = new Form()
+            {
+                Width = 500,
+                Height = 120,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                Text = caption,
+                StartPosition = FormStartPosition.CenterScreen
+            };
+            //Label textLabel = new Label() { Left = 50, Top = 20, Width = 400, Text = text };
+            TextBox textBox = new TextBox() { Left = 50, Top = 20, Width = 400 };
+            Button confirmation = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 50, DialogResult = DialogResult.OK };
+            Button cancel = new Button() { Text = "Cancel", Left = 250, Width = 100, Top = 50, DialogResult = DialogResult.Cancel };
+            confirmation.Click += (sender, e) => { prompt.Close(); };
+            cancel.Click += (sender, e) =>
+            {
+                prompt.Close();
+            };
+            prompt.Controls.Add(textBox);
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(cancel);
+            //prompt.Controls.Add(textLabel);
+            prompt.AcceptButton = confirmation;
+            prompt.CancelButton = cancel;
+
+            return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+        }
+    }
+
+
 }

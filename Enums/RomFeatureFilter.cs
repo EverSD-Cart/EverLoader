@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
+﻿using System.ComponentModel;
 
 namespace EverLoader.Enums
 {
@@ -19,5 +16,7 @@ namespace EverLoader.Enums
         RomsWithoutBanner = 4,
         [Description("Show selected ROMs (for sync)")]
         SelectedForSync = 5,
+        [Description("Show ROMs not present on Cartridge")]
+        RomsNotPresentOnCartridge = 6,
     }
 }
