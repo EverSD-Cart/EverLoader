@@ -58,7 +58,7 @@ namespace EverLoader
             panel11 = new System.Windows.Forms.Panel();
             tbDescription = new System.Windows.Forms.TextBox();
             lblDescription = new System.Windows.Forms.Label();
-            groupBox2 = new System.Windows.Forms.GroupBox();
+            gbBoxArt = new System.Windows.Forms.GroupBox();
             tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             tableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
             panel12 = new AspectRatioPanel();
@@ -174,7 +174,7 @@ namespace EverLoader
             panel9.SuspendLayout();
             panel10.SuspendLayout();
             panel11.SuspendLayout();
-            groupBox2.SuspendLayout();
+            gbBoxArt.SuspendLayout();
             tableLayoutPanel5.SuspendLayout();
             tableLayoutPanel6.SuspendLayout();
             panel12.SuspendLayout();
@@ -216,7 +216,7 @@ namespace EverLoader
             groupBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             groupBox1.Name = "groupBox1";
             groupBox1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            groupBox1.Size = new System.Drawing.Size(381, 538);
+            groupBox1.Size = new System.Drawing.Size(381, 405);
             groupBox1.TabIndex = 2;
             groupBox1.TabStop = false;
             groupBox1.Text = "ROM Info";
@@ -241,7 +241,7 @@ namespace EverLoader
             tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 44F));
             tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 88F));
             tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            tableLayoutPanel4.Size = new System.Drawing.Size(375, 518);
+            tableLayoutPanel4.Size = new System.Drawing.Size(375, 385);
             tableLayoutPanel4.TabIndex = 0;
             // 
             // panel15
@@ -482,7 +482,7 @@ namespace EverLoader
             panel11.Location = new System.Drawing.Point(0, 156);
             panel11.Margin = new System.Windows.Forms.Padding(0);
             panel11.Name = "panel11";
-            panel11.Size = new System.Drawing.Size(375, 362);
+            panel11.Size = new System.Drawing.Size(375, 229);
             panel11.TabIndex = 3;
             // 
             // tbDescription
@@ -508,18 +508,19 @@ namespace EverLoader
             lblDescription.TabIndex = 4;
             lblDescription.Text = "Description";
             // 
-            // groupBox2
+            // gbBoxArt
             // 
-            groupBox2.Controls.Add(tableLayoutPanel5);
-            groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            groupBox2.Location = new System.Drawing.Point(905, 2);
-            groupBox2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            groupBox2.Name = "groupBox2";
-            groupBox2.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            groupBox2.Size = new System.Drawing.Size(383, 538);
-            groupBox2.TabIndex = 3;
-            groupBox2.TabStop = false;
-            groupBox2.Text = "Box Art";
+            gbBoxArt.Controls.Add(tableLayoutPanel5);
+            gbBoxArt.Dock = System.Windows.Forms.DockStyle.Fill;
+            gbBoxArt.Location = new System.Drawing.Point(905, 2);
+            gbBoxArt.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            gbBoxArt.Name = "gbBoxArt";
+            gbBoxArt.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            gbBoxArt.Size = new System.Drawing.Size(383, 405);
+            gbBoxArt.TabIndex = 3;
+            gbBoxArt.TabStop = false;
+            gbBoxArt.Text = "Box Art";
+            gbBoxArt.Visible = false;
             // 
             // tableLayoutPanel5
             // 
@@ -534,7 +535,7 @@ namespace EverLoader
             tableLayoutPanel5.RowCount = 2;
             tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 61.87291F));
             tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 38.12709F));
-            tableLayoutPanel5.Size = new System.Drawing.Size(377, 518);
+            tableLayoutPanel5.Size = new System.Drawing.Size(377, 385);
             tableLayoutPanel5.TabIndex = 0;
             // 
             // tableLayoutPanel6
@@ -552,7 +553,7 @@ namespace EverLoader
             tableLayoutPanel6.Name = "tableLayoutPanel6";
             tableLayoutPanel6.RowCount = 1;
             tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            tableLayoutPanel6.Size = new System.Drawing.Size(377, 320);
+            tableLayoutPanel6.Size = new System.Drawing.Size(377, 238);
             tableLayoutPanel6.TabIndex = 0;
             // 
             // panel12
@@ -564,7 +565,7 @@ namespace EverLoader
             panel12.Location = new System.Drawing.Point(152, 0);
             panel12.Margin = new System.Windows.Forms.Padding(0);
             panel12.Name = "panel12";
-            panel12.Size = new System.Drawing.Size(130, 320);
+            panel12.Size = new System.Drawing.Size(130, 238);
             panel12.TabIndex = 1;
             // 
             // label5
@@ -622,7 +623,7 @@ namespace EverLoader
             panel13.Location = new System.Drawing.Point(282, 0);
             panel13.Margin = new System.Windows.Forms.Padding(0);
             panel13.Name = "panel13";
-            panel13.Size = new System.Drawing.Size(95, 320);
+            panel13.Size = new System.Drawing.Size(95, 238);
             panel13.TabIndex = 2;
             // 
             // label6
@@ -680,7 +681,7 @@ namespace EverLoader
             panel7.Location = new System.Drawing.Point(0, 0);
             panel7.Margin = new System.Windows.Forms.Padding(0);
             panel7.Name = "panel7";
-            panel7.Size = new System.Drawing.Size(152, 320);
+            panel7.Size = new System.Drawing.Size(152, 238);
             panel7.TabIndex = 0;
             // 
             // label4
@@ -739,10 +740,10 @@ namespace EverLoader
             panel14.Controls.Add(pbBanner);
             panel14.Controls.Add(label8);
             panel14.Dock = System.Windows.Forms.DockStyle.Fill;
-            panel14.Location = new System.Drawing.Point(0, 320);
+            panel14.Location = new System.Drawing.Point(0, 238);
             panel14.Margin = new System.Windows.Forms.Padding(0);
             panel14.Name = "panel14";
-            panel14.Size = new System.Drawing.Size(377, 198);
+            panel14.Size = new System.Drawing.Size(377, 147);
             panel14.TabIndex = 1;
             // 
             // llBannerDown
@@ -865,7 +866,7 @@ namespace EverLoader
             gbCollection.Name = "gbCollection";
             gbCollection.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
             tableLayoutPanel1.SetRowSpan(gbCollection, 2);
-            gbCollection.Size = new System.Drawing.Size(284, 763);
+            gbCollection.Size = new System.Drawing.Size(284, 633);
             gbCollection.TabIndex = 3;
             gbCollection.TabStop = false;
             gbCollection.Text = "ROM Collection";
@@ -892,7 +893,7 @@ namespace EverLoader
             tblLayoutCollection.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             tblLayoutCollection.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             tblLayoutCollection.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            tblLayoutCollection.Size = new System.Drawing.Size(278, 743);
+            tblLayoutCollection.Size = new System.Drawing.Size(278, 613);
             tblLayoutCollection.TabIndex = 3;
             // 
             // button5
@@ -932,7 +933,7 @@ namespace EverLoader
             lvGames.Location = new System.Drawing.Point(3, 102);
             lvGames.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             lvGames.Name = "lvGames";
-            lvGames.Size = new System.Drawing.Size(272, 519);
+            lvGames.Size = new System.Drawing.Size(272, 389);
             lvGames.Sorting = System.Windows.Forms.SortOrder.Ascending;
             lvGames.TabIndex = 0;
             lvGames.TabStop = false;
@@ -952,7 +953,7 @@ namespace EverLoader
             // btnSyncWithSDCard
             // 
             btnSyncWithSDCard.Dock = System.Windows.Forms.DockStyle.Fill;
-            btnSyncWithSDCard.Location = new System.Drawing.Point(3, 666);
+            btnSyncWithSDCard.Location = new System.Drawing.Point(3, 536);
             btnSyncWithSDCard.Name = "btnSyncWithSDCard";
             btnSyncWithSDCard.Size = new System.Drawing.Size(272, 44);
             btnSyncWithSDCard.TabIndex = 17;
@@ -963,7 +964,7 @@ namespace EverLoader
             // lblNumberOfGamesSelected
             // 
             lblNumberOfGamesSelected.AutoSize = true;
-            lblNumberOfGamesSelected.Location = new System.Drawing.Point(3, 623);
+            lblNumberOfGamesSelected.Location = new System.Drawing.Point(3, 493);
             lblNumberOfGamesSelected.Name = "lblNumberOfGamesSelected";
             lblNumberOfGamesSelected.Size = new System.Drawing.Size(12, 15);
             lblNumberOfGamesSelected.TabIndex = 18;
@@ -972,7 +973,7 @@ namespace EverLoader
             // tbSearchCollection
             // 
             tbSearchCollection.Dock = System.Windows.Forms.DockStyle.Fill;
-            tbSearchCollection.Location = new System.Drawing.Point(3, 646);
+            tbSearchCollection.Location = new System.Drawing.Point(3, 516);
             tbSearchCollection.Name = "tbSearchCollection";
             tbSearchCollection.PlaceholderText = "Search collection";
             tbSearchCollection.Size = new System.Drawing.Size(272, 23);
@@ -1045,9 +1046,9 @@ namespace EverLoader
             tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.5F));
             tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
             tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            tableLayoutPanel1.Controls.Add(gbBoxArt, 3, 0);
             tableLayoutPanel1.Controls.Add(gbCartridge, 0, 0);
             tableLayoutPanel1.Controls.Add(gbCollection, 1, 0);
-            tableLayoutPanel1.Controls.Add(groupBox2, 3, 0);
             tableLayoutPanel1.Controls.Add(groupBox1, 2, 0);
             tableLayoutPanel1.Controls.Add(groupBox4, 2, 1);
             tableLayoutPanel1.Controls.Add(tableLayoutPanel2, 3, 1);
@@ -1055,11 +1056,11 @@ namespace EverLoader
             tableLayoutPanel1.Location = new System.Drawing.Point(0, 24);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 2;
-            tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 70.7953F));
-            tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 29.2046928F));
+            tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 64.2764053F));
+            tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 35.7236F));
             tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            tableLayoutPanel1.Size = new System.Drawing.Size(1291, 767);
+            tableLayoutPanel1.Size = new System.Drawing.Size(1291, 637);
             tableLayoutPanel1.TabIndex = 5;
             // 
             // gbCartridge
@@ -1071,7 +1072,7 @@ namespace EverLoader
             gbCartridge.Name = "gbCartridge";
             gbCartridge.Padding = new System.Windows.Forms.Padding(2);
             tableLayoutPanel1.SetRowSpan(gbCartridge, 2);
-            gbCartridge.Size = new System.Drawing.Size(221, 763);
+            gbCartridge.Size = new System.Drawing.Size(221, 633);
             gbCartridge.TabIndex = 13;
             gbCartridge.TabStop = false;
             gbCartridge.Text = "ROMs on current Cartridge";
@@ -1102,7 +1103,7 @@ namespace EverLoader
             tblLayoutCartridge.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             tblLayoutCartridge.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             tblLayoutCartridge.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            tblLayoutCartridge.Size = new System.Drawing.Size(217, 743);
+            tblLayoutCartridge.Size = new System.Drawing.Size(217, 613);
             tblLayoutCartridge.TabIndex = 0;
             // 
             // tbCartName2
@@ -1144,7 +1145,7 @@ namespace EverLoader
             // lblNumberGamesSDCard
             // 
             lblNumberGamesSDCard.AutoSize = true;
-            lblNumberGamesSDCard.Location = new System.Drawing.Point(3, 623);
+            lblNumberGamesSDCard.Location = new System.Drawing.Point(3, 493);
             lblNumberGamesSDCard.Name = "lblNumberGamesSDCard";
             lblNumberGamesSDCard.Size = new System.Drawing.Size(12, 15);
             lblNumberGamesSDCard.TabIndex = 8;
@@ -1154,7 +1155,7 @@ namespace EverLoader
             // 
             btnNewSDCardFolder.Dock = System.Windows.Forms.DockStyle.Fill;
             btnNewSDCardFolder.Enabled = false;
-            btnNewSDCardFolder.Location = new System.Drawing.Point(3, 666);
+            btnNewSDCardFolder.Location = new System.Drawing.Point(3, 536);
             btnNewSDCardFolder.Name = "btnNewSDCardFolder";
             btnNewSDCardFolder.Size = new System.Drawing.Size(211, 44);
             btnNewSDCardFolder.TabIndex = 19;
@@ -1171,7 +1172,7 @@ namespace EverLoader
             tvCartridge.Location = new System.Drawing.Point(3, 103);
             tvCartridge.Name = "tvCartridge";
             tvCartridge.SelectedImageIndex = 0;
-            tvCartridge.Size = new System.Drawing.Size(211, 517);
+            tvCartridge.Size = new System.Drawing.Size(211, 387);
             tvCartridge.TabIndex = 20;
             tvCartridge.ItemDrag += tvCartridge_OnItemDrag;
             tvCartridge.DragDrop += tvCartridge_OnDragDrop;
@@ -1195,7 +1196,7 @@ namespace EverLoader
             tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
             tableLayoutPanel7.Controls.Add(pictureBox3, 0, 0);
             tableLayoutPanel7.Controls.Add(pbConnected2, 0, 0);
-            tableLayoutPanel7.Location = new System.Drawing.Point(3, 716);
+            tableLayoutPanel7.Location = new System.Drawing.Point(3, 586);
             tableLayoutPanel7.Name = "tableLayoutPanel7";
             tableLayoutPanel7.RowCount = 1;
             tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -1229,7 +1230,7 @@ namespace EverLoader
             // tbSearchCartridge
             // 
             tbSearchCartridge.Dock = System.Windows.Forms.DockStyle.Fill;
-            tbSearchCartridge.Location = new System.Drawing.Point(3, 646);
+            tbSearchCartridge.Location = new System.Drawing.Point(3, 516);
             tbSearchCartridge.Name = "tbSearchCartridge";
             tbSearchCartridge.PlaceholderText = "Search Cartridge";
             tbSearchCartridge.Size = new System.Drawing.Size(211, 23);
@@ -1240,11 +1241,11 @@ namespace EverLoader
             // 
             groupBox4.Controls.Add(tableLayoutPanel3);
             groupBox4.Dock = System.Windows.Forms.DockStyle.Fill;
-            groupBox4.Location = new System.Drawing.Point(518, 544);
+            groupBox4.Location = new System.Drawing.Point(518, 411);
             groupBox4.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             groupBox4.Name = "groupBox4";
             groupBox4.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            groupBox4.Size = new System.Drawing.Size(381, 221);
+            groupBox4.Size = new System.Drawing.Size(381, 224);
             groupBox4.TabIndex = 7;
             groupBox4.TabStop = false;
             groupBox4.Text = "Button Mapping";
@@ -1264,7 +1265,7 @@ namespace EverLoader
             tableLayoutPanel3.RowCount = 2;
             tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 108F));
             tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 68F));
-            tableLayoutPanel3.Size = new System.Drawing.Size(375, 201);
+            tableLayoutPanel3.Size = new System.Drawing.Size(375, 204);
             tableLayoutPanel3.TabIndex = 9;
             // 
             // panel3
@@ -1490,7 +1491,7 @@ namespace EverLoader
             panel1.Location = new System.Drawing.Point(0, 108);
             panel1.Margin = new System.Windows.Forms.Padding(0);
             panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(375, 93);
+            panel1.Size = new System.Drawing.Size(375, 96);
             panel1.TabIndex = 30;
             // 
             // tbMappingDPAD
@@ -1566,13 +1567,13 @@ namespace EverLoader
             tableLayoutPanel2.Controls.Add(groupBox5, 0, 0);
             tableLayoutPanel2.Controls.Add(gbScrapeByName, 0, 1);
             tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            tableLayoutPanel2.Location = new System.Drawing.Point(902, 542);
+            tableLayoutPanel2.Location = new System.Drawing.Point(902, 409);
             tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 2;
             tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 73F));
             tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            tableLayoutPanel2.Size = new System.Drawing.Size(389, 225);
+            tableLayoutPanel2.Size = new System.Drawing.Size(389, 228);
             tableLayoutPanel2.TabIndex = 10;
             // 
             // groupBox5
@@ -1656,7 +1657,7 @@ namespace EverLoader
             gbScrapeByName.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             gbScrapeByName.Name = "gbScrapeByName";
             gbScrapeByName.Padding = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            gbScrapeByName.Size = new System.Drawing.Size(385, 146);
+            gbScrapeByName.Size = new System.Drawing.Size(385, 149);
             gbScrapeByName.TabIndex = 1;
             gbScrapeByName.TabStop = false;
             gbScrapeByName.Text = "Scrape by game title";
@@ -1667,7 +1668,7 @@ namespace EverLoader
             lbScrapeResults.Enabled = false;
             lbScrapeResults.FormattingEnabled = true;
             lbScrapeResults.ItemHeight = 15;
-            lbScrapeResults.Location = new System.Drawing.Point(2, 49);
+            lbScrapeResults.Location = new System.Drawing.Point(2, 52);
             lbScrapeResults.Name = "lbScrapeResults";
             lbScrapeResults.Size = new System.Drawing.Size(381, 94);
             lbScrapeResults.TabIndex = 2;
@@ -1823,7 +1824,7 @@ namespace EverLoader
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             BackColor = System.Drawing.SystemColors.Control;
-            ClientSize = new System.Drawing.Size(1291, 791);
+            ClientSize = new System.Drawing.Size(1291, 661);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(menuStrip1);
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
@@ -1849,7 +1850,7 @@ namespace EverLoader
             panel10.PerformLayout();
             panel11.ResumeLayout(false);
             panel11.PerformLayout();
-            groupBox2.ResumeLayout(false);
+            gbBoxArt.ResumeLayout(false);
             tableLayoutPanel5.ResumeLayout(false);
             tableLayoutPanel6.ResumeLayout(false);
             panel12.ResumeLayout(false);
@@ -1899,7 +1900,7 @@ namespace EverLoader
 
         #endregion
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.GroupBox gbBoxArt;
         private System.Windows.Forms.GroupBox gbCollection;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;

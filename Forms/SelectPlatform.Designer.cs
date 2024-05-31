@@ -29,80 +29,91 @@ namespace EverLoader.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            this.label1 = new System.Windows.Forms.Label();
-            this.cbPossiblePlatforms = new System.Windows.Forms.ComboBox();
-            this.btnSelectPlatformOK = new System.Windows.Forms.Button();
-            this.lblGame = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.SuspendLayout();
+            label1 = new System.Windows.Forms.Label();
+            cbPossiblePlatforms = new System.Windows.Forms.ComboBox();
+            btnSelectPlatformOK = new System.Windows.Forms.Button();
+            lblGame = new System.Windows.Forms.Label();
+            label2 = new System.Windows.Forms.Label();
+            btnSelectPlatformCancel = new System.Windows.Forms.Button();
+            SuspendLayout();
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 13);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(187, 15);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Could not autodetect platform for";
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(13, 13);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(187, 15);
+            label1.TabIndex = 0;
+            label1.Text = "Could not autodetect platform for";
             // 
             // cbPossiblePlatforms
             // 
-            this.cbPossiblePlatforms.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbPossiblePlatforms.FormattingEnabled = true;
-            this.cbPossiblePlatforms.Location = new System.Drawing.Point(206, 35);
-            this.cbPossiblePlatforms.Name = "cbPossiblePlatforms";
-            this.cbPossiblePlatforms.Size = new System.Drawing.Size(218, 23);
-            this.cbPossiblePlatforms.TabIndex = 1;
+            cbPossiblePlatforms.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbPossiblePlatforms.FormattingEnabled = true;
+            cbPossiblePlatforms.Location = new System.Drawing.Point(206, 35);
+            cbPossiblePlatforms.Name = "cbPossiblePlatforms";
+            cbPossiblePlatforms.Size = new System.Drawing.Size(218, 23);
+            cbPossiblePlatforms.TabIndex = 1;
             // 
             // btnSelectPlatformOK
             // 
-            this.btnSelectPlatformOK.Location = new System.Drawing.Point(430, 35);
-            this.btnSelectPlatformOK.Name = "btnSelectPlatformOK";
-            this.btnSelectPlatformOK.Size = new System.Drawing.Size(75, 23);
-            this.btnSelectPlatformOK.TabIndex = 2;
-            this.btnSelectPlatformOK.Text = "OK";
-            this.btnSelectPlatformOK.UseVisualStyleBackColor = true;
-            this.btnSelectPlatformOK.Click += new System.EventHandler(this.btnSelectPlatformOK_Click);
+            btnSelectPlatformOK.Location = new System.Drawing.Point(430, 35);
+            btnSelectPlatformOK.Name = "btnSelectPlatformOK";
+            btnSelectPlatformOK.Size = new System.Drawing.Size(75, 23);
+            btnSelectPlatformOK.TabIndex = 2;
+            btnSelectPlatformOK.Text = "OK";
+            btnSelectPlatformOK.UseVisualStyleBackColor = true;
+            btnSelectPlatformOK.Click += btnSelectPlatformOK_Click;
             // 
             // lblGame
             // 
-            this.lblGame.AutoSize = true;
-            this.lblGame.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblGame.Location = new System.Drawing.Point(206, 13);
-            this.lblGame.Name = "lblGame";
-            this.lblGame.Size = new System.Drawing.Size(53, 15);
-            this.lblGame.TabIndex = 4;
-            this.lblGame.Text = "lblGame";
+            lblGame.AutoSize = true;
+            lblGame.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            lblGame.Location = new System.Drawing.Point(206, 13);
+            lblGame.Name = "lblGame";
+            lblGame.Size = new System.Drawing.Size(53, 15);
+            lblGame.TabIndex = 4;
+            lblGame.Text = "lblGame";
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 38);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(125, 15);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Please select platform:";
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(13, 38);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(125, 15);
+            label2.TabIndex = 5;
+            label2.Text = "Please select platform:";
+            // 
+            // btnSelectPlatformCancel
+            // 
+            btnSelectPlatformCancel.Location = new System.Drawing.Point(430, 64);
+            btnSelectPlatformCancel.Name = "btnSelectPlatformCancel";
+            btnSelectPlatformCancel.Size = new System.Drawing.Size(75, 23);
+            btnSelectPlatformCancel.TabIndex = 6;
+            btnSelectPlatformCancel.Text = "Cancel";
+            btnSelectPlatformCancel.UseVisualStyleBackColor = true;
+            btnSelectPlatformCancel.Click += btnSelectPlatformCancel_Click;
             // 
             // SelectPlatform
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(512, 66);
-            this.ControlBox = false;
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.lblGame);
-            this.Controls.Add(this.btnSelectPlatformOK);
-            this.Controls.Add(this.cbPossiblePlatforms);
-            this.Controls.Add(this.label1);
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "SelectPlatform";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Select Game Platform";
-            this.TopMost = true;
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(512, 96);
+            ControlBox = false;
+            Controls.Add(btnSelectPlatformCancel);
+            Controls.Add(label2);
+            Controls.Add(lblGame);
+            Controls.Add(btnSelectPlatformOK);
+            Controls.Add(cbPossiblePlatforms);
+            Controls.Add(label1);
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "SelectPlatform";
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            Text = "Select Game Platform";
+            TopMost = true;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -112,5 +123,6 @@ namespace EverLoader.Forms
         private System.Windows.Forms.Button btnSelectPlatformOK;
         private System.Windows.Forms.Label lblGame;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btnSelectPlatformCancel;
     }
 }

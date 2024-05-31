@@ -442,16 +442,18 @@ namespace EverLoader
                 /* pre-select games which are found on the SD card */
                 var cartGamesDir = new DirectoryInfo($"{driveName}game");
 
-                var cartGameIds = cartGamesDir.GetFiles("*.json").Select(j => Path.GetFileNameWithoutExtension(j.Name)).ToArray();
-                if (cartGameIds.Length > 0)
+                var gameJsonPaths = cartGamesDir.GetFiles("*.json");
+                if (gameJsonPaths.Length > 0)
                 {
                     InitFolderList(SDDrive);
                 }
 
                 GetFolderList();
 
-                foreach (var gameId in cartGameIds)
+                foreach (var gameJsonPath in gameJsonPaths)
                 {
+                    var gameId = Path.GetFileNameWithoutExtension(gameJsonPath.Name);
+
                     if (_gamesManager.Games.Select(j => j.Id).Contains(gameId))
                     {
                         var romPath = $"{driveName}game\\{gameId}.json";
@@ -464,7 +466,8 @@ namespace EverLoader
                     {
                         if (!gameId.Equals("retroarch"))
                         {
-                            _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = gameId, Path = $"{driveName}game\\{gameId}.json", IsMissngInCollection = true });
+                            var gameJson = JsonConvert.DeserializeObject<GameInfo>(await File.ReadAllTextAsync(gameJsonPath.FullName));
+                            _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = $"{gameId} ({gameJson.romTitle})", Path = $"{driveName}game\\{gameId}.json", IsMissngInCollection = true });
                         }
                     }
                 }
@@ -477,9 +480,11 @@ namespace EverLoader
                     foreach (var gameFolder in gameFolders)
                     {
                         var gameFolderDir = new DirectoryInfo($"{gameFolder.FullName}\\game");
-                        cartGameIds = gameFolderDir.GetFiles("*.json").Select(j => Path.GetFileNameWithoutExtension(j.Name)).ToArray();
-                        foreach (var gameId in cartGameIds)
+                        gameJsonPaths = gameFolderDir.GetFiles("*.json");
+
+                        foreach (var gameJsonPath in gameJsonPaths)
                         {
+                            var gameId = Path.GetFileNameWithoutExtension(gameJsonPath.Name);
                             if (gameId == "_HOME")
                             {
                                 continue;
@@ -495,10 +500,10 @@ namespace EverLoader
                             }
                             else
                             {
-                                _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = gameId, Path = $"{gameFolder}\\game\\{gameId}.json", IsMissngInCollection = true });
+                                var gameJson = JsonConvert.DeserializeObject<GameInfo>(await File.ReadAllTextAsync(gameJsonPath.FullName));
+                                _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = $"{gameId} ({gameJson.romTitle})", Path = $"{gameFolder}\\game\\{gameId}.json", IsMissngInCollection = true });
                             }
                         }
-
                     }
                 }
 
@@ -1064,6 +1069,8 @@ namespace EverLoader
         {
             IEnumerable<GameInfo> gameInfos = _gamesManager.Games; //default
 
+            gbBoxArt.Visible = false;
+
             var romFeatureFilters = Enum.GetNames(typeof(RomFeatureFilter));
             if (romFeatureFilters.Contains(cbRomFilter.SelectedValue as string))
             {
@@ -1134,6 +1141,8 @@ namespace EverLoader
 
         private void lvGames_MouseClick(object sender, MouseEventArgs e)
         {
+            gbBoxArt.Visible = true;
+
             if (e.Button == MouseButtons.Right)
             {
                 var focusedItem = lvGames.FocusedItem;
@@ -1276,6 +1285,8 @@ namespace EverLoader
 
                 await _gamesManager.SerializeGame(_game);
                 SetDataBindings(refreshOnly: true);
+
+                gbBoxArt.Visible = true;
 
                 _game.GameInfoChanged += Game_GameInfoChanged;
             }
@@ -1576,7 +1587,7 @@ namespace EverLoader
                 if (!currNode.Name.Equals(SDDrive))
                 {
                     contextMenuCartridge.Items.Add("Rename Folder", null, contextMenuCartridge_RenameFolder_Click);
-                    contextMenuStrip1.Items.Add(new ToolStripSeparator());
+                    contextMenuCartridge.Items.Add(new ToolStripSeparator());
                     contextMenuCartridge.Items.Add("Delete Folder", null, contextMenuCartridge_DeleteFolder_Click);
                 }
             }
@@ -1589,8 +1600,26 @@ namespace EverLoader
                 var exists = _gamesManager.GetGameById(gameId);
                 if (exists == null)
                 {
-                    contextMenuStrip1.Items.Add(new ToolStripSeparator());
-                    contextMenuCartridge.Items.Add("Import Game into ROM Collection", null, contextMenuCartridge_ImportGame_Click);
+                    var extensionIsSupported = false;
+                    try
+                    {
+                        var gameInfo = JsonConvert.DeserializeObject<GameInfo>(File.ReadAllText($"{currNode.Name}"));
+                        if (gameInfo != null)
+                        {
+                            extensionIsSupported = _appSettings.Platforms.SelectMany(p => p.SupportedExtensions).Distinct().Select(e => e).Contains(Path.GetExtension(gameInfo.romFileName));
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+
+                    if (extensionIsSupported)
+                    {
+                        contextMenuCartridge.Items.Add(new ToolStripSeparator());
+                        contextMenuCartridge.Items.Add("Import Game into ROM Collection", null, contextMenuCartridge_ImportGame_Click);
+                    }
                 }
             }
         }
@@ -1663,7 +1692,7 @@ namespace EverLoader
                 form.ShowDialog();
                 if (form.JustCreatedFolderName != null && Directory.Exists(Path.Combine(Path.GetPathRoot(SDDrive), "folders", form.JustCreatedFolderName)))
                 {
-                    await SelectSDDrive(Path.Combine(Path.GetPathRoot(SDDrive), "folders", form.JustCreatedFolderName) + "\\");
+                    await SelectSDDrive(SDDrive);
                 }
             }
         }
@@ -1719,6 +1748,40 @@ namespace EverLoader
 
                 contextMenuCartridge.Show(Cursor.Position);
                 return;
+            }
+            else if (e.Button == MouseButtons.Left)
+            {
+                TreeNode dstNode = tvCartridge.GetNodeAt(e.X, e.Y);
+
+                var gameId = Path.GetFileNameWithoutExtension(dstNode.Name);
+
+                var found = false;
+                foreach (var groupItem in lvGames.Groups)
+                {
+                    var items = ((ListViewGroup)groupItem).Items;
+
+                    foreach (var item in items)
+                    {
+                        var currItem = (ListViewItem)item;
+                        currItem.Selected = false;
+                        if (currItem.Name.ToLower().Equals(gameId.ToLower()))
+                        {
+                            gbBoxArt.Visible = true;
+
+                            currItem.Selected = true;
+                            currItem.EnsureVisible();
+
+                            lvGames.Focus();
+
+                            found = true;
+                        }
+                    }
+                }
+
+                if (!found)
+                {
+                    cbRomFilter_SelectedIndexChanged(null, null);
+                }
             }
         }
 

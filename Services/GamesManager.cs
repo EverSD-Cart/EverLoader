@@ -392,7 +392,7 @@ namespace EverLoader.Services
             var metaFiles = new List<string>();
             foreach (var line in File.ReadAllLines(cueFilePath))
             {
-                if (!line.StartsWith("FILE \"") || line.Split('"').Length != 3) continue;
+                if (!line.Trim().StartsWith("FILE \"") || line.Split('"').Length != 3) continue;
                 metaFiles.Add(Path.Combine(Path.GetDirectoryName(cueFilePath), line.Split('"')[1]));
             }
             return metaFiles;
@@ -464,6 +464,40 @@ namespace EverLoader.Services
 
                 var romExtracted = false;
                 var romTmpFilePath = "";
+
+                var f = new FileInfo(romPath);
+
+                if (!f.Exists || f.Length == 0)
+                {
+                    var msg = $"Trying to add this file to collection:\n\n{romPath}\n\nBut it doesn't exist!\n\n";
+                    msg += "Do you want to select the correct file?";
+
+                    var answer = MessageBox.Show(msg, "", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                    if (answer == DialogResult.Yes)
+                    {
+                        OpenFileDialog dialog = new OpenFileDialog()
+                        {
+                            Multiselect = false,
+                            Filter = $"*.*|*.*",
+                            Title = "Select ROM file",
+                            InitialDirectory = Path.GetDirectoryName(romPath),
+                            FileName = romPath
+                        };
+
+                        if (dialog.ShowDialog() == DialogResult.OK)
+                        {
+                            romPath = dialog.FileNames[0];
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
 
                 if (Path.GetExtension(romPath).ToLower() == ".zip")
                 {
@@ -876,7 +910,14 @@ namespace EverLoader.Services
                         using (var form = new SelectPlatform(possiblePlatforms, game))
                         {
                             form.ShowDialog();
-                            game.romPlatformId = form.SelectedPlatform.Id;
+                            if (form.SelectedPlatform != null)
+                            {
+                                game.romPlatformId = form.SelectedPlatform.Id;
+                            } else
+                            {
+                                game.romPlatform = "";
+                            }
+                            
                             if (form.UseAsDefault)
                             {
                                 useAsDefaultExtensions.Add(ext, game.romPlatformId);
