@@ -1453,12 +1453,12 @@ namespace EverLoader
 
         private void tvCartridge_OnDragEnter(object sender, DragEventArgs e)
         {
-            e.Effect = DragDropEffects.Copy;
+            e.Effect = DragDropEffects.Move;
         }
 
         private void tvCartridge_OnItemDrag(object sender, ItemDragEventArgs e)
         {
-            DoDragDrop(e.Item, DragDropEffects.Copy);
+            DoDragDrop(e.Item, DragDropEffects.Move);
         }
 
         private void tvCartridge_DragOver(object sender, DragEventArgs e)
@@ -1703,12 +1703,17 @@ namespace EverLoader
             try
             {
                 var gameInfo = JsonConvert.DeserializeObject<GameInfo>(File.ReadAllText(currentCartJsonFilePath));
+                gameInfo.Id = _gamesManager.GetGameIdFromJsonPath(SDDrive, currentCartJsonFilePath);
 
                 var success = await _gamesManager.CopyGameToSDPath(newSDCardLocationPath, gameInfo);
-                if (success)
+                if (!success)
                 {
-                    _gamesManager.DeleteGameFilesOnSD(gameInfo, _gamesManager.GetGameRootFromJsonPath(SDDrive, currentCartJsonFilePath));
+                    MessageBox.Show($"Could not move game to folder - perhaps the game doesn't exist in the collection?", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
                 }
+
+                _gamesManager.DeleteGameFilesOnSD(gameInfo, _gamesManager.GetGameRootFromJsonPath(SDDrive, currentCartJsonFilePath));
             }
             catch (Exception ex)
             {
@@ -1718,7 +1723,6 @@ namespace EverLoader
             }
 
             return ret;
-
         }
 
         private async void btnAddGame_Click(object sender, EventArgs e)

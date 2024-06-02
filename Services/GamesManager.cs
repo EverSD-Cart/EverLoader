@@ -188,7 +188,7 @@ namespace EverLoader.Services
 
             return ret;
         }
-        public async Task<bool>   CopyGameToSDPath(string sdDrive, GameInfo gameParam)
+        public async Task<bool> CopyGameToSDPath(string sdDrive, GameInfo gameParam)
         {
             bool ret = true;
             if (gameParam.Id is null)
@@ -197,6 +197,11 @@ namespace EverLoader.Services
             }
 
             var game = GetGameById(gameParam.Id);
+            if (game == null)
+            {
+                   return false;
+            }
+
             var platform = _appSettings.Platforms.SingleOrDefault(p => p.Id == game.romPlatformId);
             if (platform == null) return false;
 
