@@ -1,5 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
-SCRIPT_DIR=$(dirname "$BASH_SOURCE")
-
-/usr/bin/blastretro "${SCRIPT_DIR}/../{CORE_FILENAME}" "${SCRIPT_DIR}/../game/{ROM_FILENAME}"
+GAME_LIB={CORE_FILENAME}
+GAME_TO_LAUNCH="game/{ROM_FILENAME}"

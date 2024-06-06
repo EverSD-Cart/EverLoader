@@ -1,22 +1,20 @@
 #!/bin/bash -x
 
 SCRIPT_DIR=$(dirname "$BASH_SOURCE")
-cd "${SCRIPT_DIR}/../retroarch"
+slot=${SCRIPT_DIR%????????}
 
-RA_PATH=/usr/bin/retroarch2
-if [ -f retroarch ]; then
-  cp -u retroarch /tmp
-  chmod +x /tmp/retroarch
-  RA_PATH=/tmp/retroarch
-fi
-
-RA_CONFIG=
+IS_HANDHELD=0
 if [ "$(cat /etc/rootfs_version | grep -i VS)" ]; then
-  RA_CONFIG=retroarch_vs.cfg
-elif [ `cat /sys/class/drm/card0-HDMI-A-1/status` == "connected" ]; then
-  RA_CONFIG=retroarch_tvout.cfg
+	IS_HANDHELD=0
+elif [ "$(cat /etc/rootfs_version | grep -i 'Super Pocket')" ]; then
+	IS_HANDHELD=1
 else
-  RA_CONFIG=retroarch.cfg
+	IS_HANDHELD=1
 fi
 
-${RA_PATH} -c "./config/${RA_CONFIG}" -L "./cores/{CORE_FILENAME}" "../roms/{ROM_FILENAME}"
+env \
+    HOME=$slot/ \
+    IS_HANDHELD=${IS_HANDHELD} \
+    XDG_CONFIG_HOME=$slot/ \
+    LD_LIBRARY_PATH=$slot/retroarch/lib \
+    /usr/bin/retroarch2 -c "$slot/retroarch/config/retroarch.cfg" -L "$slot/retroarch/cores/{CORE_FILENAME}" "$slot/roms/{ROM_FILENAME}"
