@@ -470,7 +470,7 @@ namespace EverLoader
                             var gameJson = JsonConvert.DeserializeObject<GameInfo>(await File.ReadAllTextAsync(gameJsonPath.FullName));
                             if (gameJson != null)
                             {
-                                _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = $"{gameId} ({gameJson.romTitle})", Path = $"{driveName}game\\{gameId}.json", IsMissngInCollection = true });
+                                _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = $"{gameJson.romFileName} ({gameJson.romTitle})", Path = $"{driveName}game\\{gameId}.json", IsMissngInCollection = true });
                             }
                         }
                     }
@@ -505,7 +505,7 @@ namespace EverLoader
                             else
                             {
                                 var gameJson = JsonConvert.DeserializeObject<GameInfo>(await File.ReadAllTextAsync(gameJsonPath.FullName));
-                                _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = $"{gameId} ({gameJson.romTitle})", Path = $"{gameFolder}\\game\\{gameId}.json", IsMissngInCollection = true });
+                                _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = $"{gameJson.romFileName} ({gameJson.romTitle})", Path = $"{gameFolder}\\game\\{gameId}.json", IsMissngInCollection = true });
                             }
                         }
                     }
@@ -1809,7 +1809,7 @@ namespace EverLoader
                 if (!isRoot && (gameInfo == null || gameInfo.IsMissngOnCartridge))
                 {
                     var msg = $"Missing: {Path.Combine(Path.GetPathRoot(dstNode.Name), "game", gameId + ".json")}";
-                    lblNumberGamesSDCard.Text = $"{msg.Substring(0, 30)}...";
+                    lblNumberGamesSDCard.Text = $"{msg.Substring(0, 30 > msg.Length ? msg.Length : 30)}...";
                     toolTipLabel.SetToolTip(lblNumberGamesSDCard, msg);
 
                     if (tvCartridge.SelectedNode != null)
