@@ -30,6 +30,7 @@ namespace EverLoader
         private readonly AppUpdateManager _appUpdateManager;
         private readonly AppSettings _appSettings;
         private readonly UserSettingsManager _userSettingsManager;
+        private ToolTip toolTipLabel = new ToolTip();
         public string SDDrive { get; set; }
 
         public MainForm(GamesManager gamesManager,
@@ -467,7 +468,10 @@ namespace EverLoader
                         if (!gameId.Equals("retroarch"))
                         {
                             var gameJson = JsonConvert.DeserializeObject<GameInfo>(await File.ReadAllTextAsync(gameJsonPath.FullName));
-                            _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = $"{gameId} ({gameJson.romTitle})", Path = $"{driveName}game\\{gameId}.json", IsMissngInCollection = true });
+                            if (gameJson != null)
+                            {
+                                _gamesManager.GamesOnSDCard.Add(new GameInfoTreeNode { Id = gameId, Title = $"{gameId} ({gameJson.romTitle})", Path = $"{driveName}game\\{gameId}.json", IsMissngInCollection = true });
+                            }
                         }
                     }
                 }
@@ -802,7 +806,19 @@ namespace EverLoader
                     foreach (var dir in folders.GetDirectories())
                     {
                         var folderSubItem = new GameInfoTreeNode();
-                        folderSubItem.Title = Path.GetFileName(dir.FullName);
+                        var gameJsonPath = _gamesManager.GetGameJsonFromFolderPath(dir.FullName);
+
+                        if (File.Exists(gameJsonPath))
+                        {
+                            var gameInfo = JsonConvert.DeserializeObject<GameInfo>(File.ReadAllText(gameJsonPath));
+                            folderSubItem.Title = gameInfo.romTitle;
+                        }
+                        else
+                        {
+                            folderSubItem.IsMissngOnCartridge = true;
+                            folderSubItem.Title = Path.GetFileName(dir.FullName);
+                        }
+
                         folderSubItem.Path = dir.FullName + "\\";
                         folderSubItem.IsFolder = true;
 
@@ -817,22 +833,33 @@ namespace EverLoader
             tvCartridge.Nodes.Clear();
             var rootNode = new TreeNode();
 
+            if (!string.IsNullOrWhiteSpace(SDDrive))
+            {
+                var rootGameInfo = _gamesManager.GetGameJsonFromSDCardByPath(SDDrive);
+                rootNode.Text = rootGameInfo.Title;
+                rootNode.Name = rootGameInfo.Path;
+                rootNode.ImageIndex = 2;
+                tvCartridge.Nodes.Add(rootNode);
+            }
+
             foreach (var folder in _gamesManager.GamesOnSDCard)
             {
                 if (folder.IsFolder)
                 {
                     if (!String.IsNullOrEmpty(folder.Path) && folder.Path == SDDrive)
                     {
-                        rootNode = new TreeNode(folder.Title);
-                        rootNode.Name = folder.Path;
-                        rootNode.ImageIndex = 2;
-                        tvCartridge.Nodes.Add(rootNode);
+                        // rootNode already exists 
                     }
                     else
                     {
                         var folderNode = new TreeNode(folder.Title);
                         folderNode.Name = folder.Path;
                         folderNode.ImageIndex = 2;
+                        if (folder.IsMissngOnCartridge)
+                        {
+                            folderNode.ImageIndex = 3;
+                        }
+
                         tvCartridge.Nodes.Add(folderNode);
                     }
                 }
@@ -911,6 +938,7 @@ namespace EverLoader
             }
 
             tvCartridge.ExpandAll();
+            rootNode.EnsureVisible();
         }
 
         private TreeNode findParentNodeOfGamePath(TreeNode node)
@@ -1632,15 +1660,17 @@ namespace EverLoader
             {
                 try
                 {
-                    var gameInfo = JsonConvert.DeserializeObject<Cartridge>(File.ReadAllText($"{currNode.Name}\\cartridge.json"));
-                    gameInfo.cartridgeName = newName;
-                    File.WriteAllText($"{currNode.Name}\\cartridge.json", JsonConvert.SerializeObject(gameInfo, Formatting.Indented));
+                    var folderPath = currNode.Name;
 
-                    var orgPath = Path.GetDirectoryName(currNode.Name);
-                    var pathBase = orgPath.Substring(0, orgPath.LastIndexOf("\\"));
-                    var newPath = Path.Combine(pathBase, newName);
+                    var gameJsonPath = _gamesManager.GetGameJsonFromFolderPath(folderPath);
+                    var gameInfo = JsonConvert.DeserializeObject<GameInfo>(File.ReadAllText(gameJsonPath));
+                    gameInfo.romTitle = newName;
+                    File.WriteAllText(gameJsonPath, JsonConvert.SerializeObject(gameInfo, Formatting.Indented));
 
-                    Directory.Move(orgPath, newPath);
+                    var gameCartridgeJson = $"{currNode.Name}\\cartridge.json";
+                    var cartInfo = JsonConvert.DeserializeObject<Cartridge>(File.ReadAllText(gameCartridgeJson));
+                    cartInfo.cartridgeName = newName;
+                    File.WriteAllText(gameCartridgeJson, JsonConvert.SerializeObject(cartInfo, Formatting.Indented));
                 }
                 catch (Exception ex)
                 {
@@ -1657,7 +1687,7 @@ namespace EverLoader
             if (MessageBox.Show($"Are you sure you want to delete this Folder (\"{currNode.Text}\") from the Cartridge?", "Confirm Delete",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
-                _gamesManager.DeleteGameFolderOnSD(new GameInfo { Id = currNode.Name }); //  SDDrive
+                _gamesManager.DeleteGameFolderOnSD(new GameInfo { Id = currNode.Name }, SDDrive);
                 await SelectSDDrive(SDDrive);
             }
         }
@@ -1756,8 +1786,62 @@ namespace EverLoader
             else if (e.Button == MouseButtons.Left)
             {
                 TreeNode dstNode = tvCartridge.GetNodeAt(e.X, e.Y);
-
+                tvCartridge.SelectedNode = dstNode;
+                var isFolder = false;
+                var isRoot = false;
                 var gameId = Path.GetFileNameWithoutExtension(dstNode.Name);
+
+                if (String.IsNullOrEmpty(gameId))
+                {
+                    if (dstNode.Name.Equals(SDDrive))
+                    {
+                        isRoot = true;
+                    }
+                    else
+                    {
+                        gameId = "_" + _gamesManager.GetFolderIdFromPath(dstNode.Name);
+                    }
+
+                    isFolder = true;
+                }
+
+                var gameInfo = _gamesManager.GetGameJsonFromSDCardByGameId(gameId);
+                if (!isRoot && (gameInfo == null || gameInfo.IsMissngOnCartridge))
+                {
+                    var msg = $"Missing: {Path.Combine(Path.GetPathRoot(dstNode.Name), "game", gameId + ".json")}";
+                    lblNumberGamesSDCard.Text = $"{msg.Substring(0, 30)}...";
+                    toolTipLabel.SetToolTip(lblNumberGamesSDCard, msg);
+
+                    if (tvCartridge.SelectedNode != null)
+                    {
+                        tvCartridge.SelectedNode.ImageIndex = 3;
+                        tvCartridge.SelectedNode.SelectedImageIndex = 3;
+                    }
+                }
+                else if (!isFolder && gameInfo != null && gameInfo.IsMissngInCollection)
+                {
+                    var msg = $"Missing in Collection";
+                    lblNumberGamesSDCard.Text = msg;
+                    toolTipLabel.SetToolTip(lblNumberGamesSDCard, msg);
+                    if (tvCartridge.SelectedNode != null)
+                    {
+                        tvCartridge.SelectedNode.ImageIndex = 1;
+                        tvCartridge.SelectedNode.SelectedImageIndex = 1;
+                    }
+                }
+                else
+                {
+                    UpdateTotalGamesOnSDCardLabel();
+                    toolTipLabel.SetToolTip(lblNumberGamesSDCard, "");
+                    if (isFolder)
+                    {
+                        if (tvCartridge.SelectedNode != null)
+                        {
+                            tvCartridge.SelectedNode.ImageIndex = 2;
+                            tvCartridge.SelectedNode.SelectedImageIndex = 2;
+                        }
+                    }
+                }
 
                 var found = false;
                 foreach (var groupItem in lvGames.Groups)

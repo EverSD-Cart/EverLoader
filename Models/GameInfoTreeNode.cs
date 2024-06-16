@@ -13,5 +13,6 @@ namespace EverLoader.Models
         public string Path { get; set; }
         public bool IsFolder { get; set; }
         public bool IsMissngInCollection { get; set; }
+        public bool IsMissngOnCartridge { get; set; }
     }
 }

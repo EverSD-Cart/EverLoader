@@ -1188,6 +1188,7 @@ namespace EverLoader
             imageList1.Images.SetKeyName(0, "check.png");
             imageList1.Images.SetKeyName(1, "warning.png");
             imageList1.Images.SetKeyName(2, "folder.png");
+            imageList1.Images.SetKeyName(3, "warning_red.png");
             // 
             // tableLayoutPanel7
             // 

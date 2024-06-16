@@ -184,7 +184,14 @@ namespace EverLoader.Services
 
         public GameInfoTreeNode GetGameJsonFromSDCardByGameId(string gameId)
         {
-            var ret = GamesOnSDCard.Where(g => g.Id == gameId).ToList().FirstOrDefault();
+            var ret = GamesOnSDCard.Where(g => g.Id != null && g.Id.ToLower() == gameId.ToLower()).ToList().FirstOrDefault();
+
+            return ret;
+        }
+
+        public GameInfoTreeNode GetGameJsonFromSDCardByPath(string path)
+        {
+            var ret = GamesOnSDCard.Where(g => g.Path != null && g.Path.ToLower() == path.ToLower()).ToList().FirstOrDefault();
 
             return ret;
         }
@@ -776,12 +783,17 @@ namespace EverLoader.Services
                     File.Delete(f.FullName);
                 });
         }
-        public void DeleteGameFolderOnSD(GameInfo game)
+        public void DeleteGameFolderOnSD(GameInfo game, string SDDrive)
         {
-            var t = Path.GetDirectoryName(game.Id);
-            Directory.Delete(game.Id, true);
-
+            var folderPath = game.Id;
+            var gameJsonPath = GetGameJsonFromFolderPath(folderPath);
+            
+            //a folder also has "game files" which need to be deleted
+            DeleteGameFilesOnSD(new GameInfo { Id = gameJsonPath }, GetGameRootFromJsonPath(SDDrive, gameJsonPath));  
+            
+            Directory.Delete(folderPath, true);
         }
+
         public void DeleteGameByIds(IEnumerable<string> ids)
         {
             foreach (string id in ids)
@@ -1193,6 +1205,26 @@ namespace EverLoader.Services
             }
 
             return ret;
+        }
+
+        public string GetFolderIdFromPath(string path)
+        {
+            if (path[path.Length - 1] == '\\')
+            {
+                path = path.Substring(0, path.Length - 1);
+            }
+            var indexFolder = path.LastIndexOf("\\");
+            var folderName = path.Substring(indexFolder + 1, path.Length - (indexFolder + 1));
+            return folderName;
+        }
+
+        public string GetGameJsonFromFolderPath(string dir)
+        {
+            var folderName = GetFolderIdFromPath(dir);  
+            var gameJsonFileName = folderName + ".json";
+
+            string gameJsonFilePath = Path.Combine(Path.GetPathRoot(dir), "game", $"_{gameJsonFileName}");
+            return gameJsonFilePath;
         }
     }
 }
