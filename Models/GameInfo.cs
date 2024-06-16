@@ -1,10 +1,4 @@
-﻿using EverLoader.JsonConverters;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
+﻿using Newtonsoft.Json;
 
 namespace EverLoader.Models
 {
@@ -79,5 +73,7 @@ namespace EverLoader.Models
         public bool IsSelected { get; set; } //indicates if game is selected in UI
         [JsonIgnore]
         public bool IsRecentlyAdded { get; set; } //indicates if game was recently added in the app
+        [JsonIgnore]
+        public bool IsPresentOnCartridge { get; set; } //indicates if game exists on the inserted cartridge/microsd
     }
 }

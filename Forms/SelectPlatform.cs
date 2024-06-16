@@ -34,5 +34,11 @@ namespace EverLoader.Forms
             //UseAsDefault = cbUseAsDefault.Checked;
             this.Close();
         }
+
+        private void btnSelectPlatformCancel_Click(object sender, EventArgs e)
+        {
+            SelectedPlatform = null;
+            this.Close();
+        }
     }
 }
